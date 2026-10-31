@@ -3094,7 +3094,61 @@
     function renderGuide() {
       const G = GUIDE[LANG], i = state.guideTopic || 0, g = G[i];
       $("#view-guide").innerHTML = `
-    <div class="view-head"><div><h1>📖 ${L("วิธีใช้งานระบบ", "How to use")}</h1><p>${L("กดเลือกหัวข้อที่ต้องการ", "Pick a topic")}</p></div></div>
+    <div class="view-head"><div><h1>📖 ${L("วิธีใช้งานระบบ", "How to use")}</h1><p>${L("ที่มาของปัญหา • ปรัชญาการออกแบบ • คู่มือการใช้งาน", "Origin of the problem • Design philosophy • How to use")}</p></div></div>
+
+    <article class="card" style="margin-bottom:16px;border:1px solid rgba(245,158,11,.35);background:radial-gradient(700px 300px at 100% 0,rgba(245,158,11,.12),transparent 70%),radial-gradient(600px 300px at 0 100%,rgba(16,185,129,.1),transparent 70%),var(--surface)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="pill pill-amber" style="font-size:.82rem">⚡ FlowRecover Manifesto</span>
+        <span class="muted sm">• ${L("ที่มาและเป้าหมายของระบบ", "Origin & Purpose")}</span>
+      </div>
+      <h2 style="font-size:1.35rem;line-height:1.35;margin-bottom:10px">
+        ${L("“ทำไมวางแผนตารางเวลาอย่างดี แต่พอ 10 โมงก็พังหมดแล้ว?”", "“Why do perfect schedules always fall apart by 10 AM?”")}
+      </h2>
+      <p style="color:var(--text);font-size:.92rem;line-height:1.65;margin-bottom:16px">
+        ${L(
+          "ชีวิตการทำงานจริงไม่เหมือนแอป To-Do ทั่วไป เพราะ<b>งานแทรกคือเรื่องธรรมชาติ</b>ที่หลีกเลี่ยงไม่ได้ ทั้งหัวหน้าเรียกประชุมด่วน ลูกค้าตามงาน หรือปัญหากระทันหัน แต่แอปจัดตารางแบบเดิมกลับ 'แข็งทื่อ' เมื่อโดนแทรกเพียง 30–45 นาที ตารางที่เหลือทั้งวันจะพังทั้งแผง ต้องมานั่งลบหรือเลื่อนเวลาทีละช่องด้วยมือ และเมื่อกลับมาทำงานเดิม เรามักจะ 'ลืมว่าทำค้างไว้ตรงไหน' ต้องเสียเวลาอีก 15–20 นาทีเพื่อรื้อฟื้นสมาธิ (Context Switching Penalty)",
+          "Real work life isn't rigid like traditional to-do apps. <b>Interruptions are inevitable</b> — urgent calls, unexpected meetings, or shifting priorities. Traditional calendars shatter after a 30-minute interruption, forcing you to manually re-plan your whole day. Worse, returning to your original task incurs a steep cognitive penalty: you forget where you left off and waste 15–20 minutes regaining focus."
+        )}
+      </p>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:12px;margin-bottom:14px">
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--rose)">
+          <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px">💥 <span>${L("ที่มาของปัญหา (The Pain)", "The Pain Point")}</span></div>
+          <div class="muted sm" style="line-height:1.55">
+            ${L(
+              "• โดนงานแทรกจนตารางรวนทั้งวัน<br>• เสียพลังงานสมองกับการจัดตารางใหม่<br>• สมาธิหลุด กลับมาทำต่อแล้วลืมจุดค้าง<br>• งานล้นมือจนหมดไฟ ปล่อยจอยทิ้งตาราง",
+              "• Schedules ruined by sudden interruptions<br>• Mental fatigue from continuous rescheduling<br>• Focus lost; forgetting where you left off<br>• Overwhelm leading to abandoned planning"
+            )}
+          </div>
+        </div>
+
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--amber)">
+          <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px">⚡ <span>${L("ระบบแก้ให้อย่างไร? (The Solution)", "How FlowRecover Solves It")}</span></div>
+          <div class="muted sm" style="line-height:1.55">
+            ${L(
+              "• <b>ปุ่มงานแทรก ⏸️:</b> กดหยุดเวลาทันทีเมื่อมีเรื่องด่วน<br>• <b>Context Bookmark 📌:</b> จด 1 ประโยคว่าค้างตรงไหน<br>• <b>Auto-Reflow 🔁:</b> เลื่อนคิวงานที่เหลือให้อัตโนมัติ<br>• <b>งานรอง 📦:</b> ย้ายงานที่ไม่ด่วนไปวันถัดไปใน 1 คลิก",
+              "• <b>Interruption Button ⏸️:</b> Pause and time interruptions<br>• <b>Context Bookmark 📌:</b> 1-sentence note of where you stopped<br>• <b>Auto-Reflow 🔁:</b> Automatically shifts remaining tasks<br>• <b>Secondary Tasks 📦:</b> Shift overflow tasks to tomorrow in 1 tap"
+            )}
+          </div>
+        </div>
+
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--emerald)">
+          <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px">🎯 <span>${L("ชีวิตครบวงจร (Life Harmony)", "Whole-Life Harmony")}</span></div>
+          <div class="muted sm" style="line-height:1.55">
+            ${L(
+              "• ผูกงานรายวันกับ <b>🗂️ โปรเจค</b> และเอกสาร Drive<br>• <b>Life Planner 4 หมวด:</b> เป้าหมาย 5 มิติ (C/G), นิสัยและอารมณ์ (H/M), การเงินและออม (F), สมดุลชีวิต (W/L)<br>• เป็นระบบปฏิบัติการเพื่อฟื้นคืนเวลาและชีวิต",
+              "• Connect daily tasks to <b>🗂️ Projects</b> & Drive files<br>• <b>4-Pillar Life Planner:</b> Career & Goals (C/G), Health & Mind (H/M), Finance (F), Work/Life Balance (W/L)<br>• A complete personal operating system"
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);flex-wrap:wrap;gap:8px">
+        <span class="sm">💡 <b>${L("หัวใจสำคัญของระบบ:", "Core Philosophy:")}</b> ${L("“อย่าพยายามควบคุมทุกอย่างให้เป๊ะ แต่จงมีระบบที่ยืดหยุ่นพอที่จะกู้คืนตัวเองได้ในทุกการขัดจังหวะ”", "“Don't aim for rigid control; build a system resilient enough to recover from any disruption.”")}</span>
+        <span class="chip chip-emerald">Self-Healing Workflow</span>
+      </div>
+    </article>
+
     <div class="grid guide-layout">
       <nav class="card" aria-label="${L("สารบัญ", "Contents")}"><ul class="toc">${G.map((x, j) => `<li><button class="${i === j ? "on" : ""}" data-act="guide" data-v="${j}" id="guide-${j}"><span class="n">${j + 1}</span><span>${x.i} ${esc(x.t)}</span></button></li>`).join("")}</ul></nav>
       <article class="card" id="guide-detail"><h2 style="font-size:1.25rem;margin-bottom:16px">${g.i} ${esc(g.t)}</h2>
