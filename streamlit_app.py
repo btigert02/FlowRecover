@@ -1,8 +1,15 @@
 import streamlit as st
-import streamlit.components.v1 as components
+import shutil
 from pathlib import Path
 
-# Configure Streamlit page for maximum screen estate & mobile responsiveness
+# Ensure static/index.html is always in sync with index.html
+base_dir = Path(__file__).parent
+static_dir = base_dir / "static"
+static_dir.mkdir(exist_ok=True)
+index_file = base_dir / "index.html"
+if index_file.exists():
+    shutil.copy(index_file, static_dir / "index.html")
+
 st.set_page_config(
     page_title="FlowRecover x Life Planner",
     page_icon="⚡",
@@ -10,7 +17,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Hide Streamlit default chrome & style iframe to take full viewport
+# Custom CSS & immediate redirect to native static app (breaks out of iframe for Google Auth)
 st.markdown("""
     <style>
         #MainMenu, header, footer, .stDeployButton, [data-testid="stToolbar"], [data-testid="stHeader"] {
@@ -22,26 +29,24 @@ st.markdown("""
             margin: 0 !important;
             max-width: 100vw !important;
             height: 100vh !important;
-            overflow: hidden !important;
-        }
-        div[data-testid="stVerticalBlock"] {
-            gap: 0 !important;
-        }
-        iframe {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            border: none !important;
-            z-index: 999999 !important;
+            background: #0f172a;
         }
     </style>
+    <meta http-equiv="refresh" content="0; url=/app/static/index.html">
+    <script>
+        if (window.location.pathname !== "/app/static/index.html") {
+            window.location.replace("/app/static/index.html");
+        }
+    </script>
 """, unsafe_allow_html=True)
 
-# Read and render index.html
-html_path = Path(__file__).parent / "index.html"
-with open(html_path, "r", encoding="utf-8") as f:
-    html_content = f.read()
-
-components.html(html_content, height=1200, scrolling=True)
+st.markdown("""
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:85vh;color:#e5e7eb;font-family:'Segoe UI',sans-serif;text-align:center;padding:24px">
+    <div style="font-size:3.5rem;margin-bottom:12px;filter:drop-shadow(0 0 20px #f59e0b)">⚡</div>
+    <h1 style="font-size:1.8rem;margin-bottom:8px;font-weight:700">FlowRecover x Life Planner</h1>
+    <p style="color:#94a3b8;font-size:1rem;margin-bottom:28px">กำลังเปิดหน้าระบบเต็มจอเพื่อความปลอดภัยในการเข้าสู่ระบบ...</p>
+    <a href="/app/static/index.html" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#0f172a;padding:16px 36px;border-radius:99px;font-weight:700;text-decoration:none;font-size:1.1rem;box-shadow:0 10px 25px rgba(245,158,11,.4)">
+        🚀 แตะที่นี่เพื่อเปิดแอปทันที
+    </a>
+</div>
+""", unsafe_allow_html=True)
