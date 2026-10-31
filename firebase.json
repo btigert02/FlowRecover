@@ -1,9 +1,18 @@
 {
-  "hosting": {
-    "public": ".",
-    "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "functions/**", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "/api/stripe-webhook", "function": { "functionId": "stripeWebhook", "region": "asia-southeast1" } }]
-  },
+  "hosting": [
+    {
+      "site": "flowrecover",
+      "public": ".",
+      "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "functions/**", "**/.*", "**/node_modules/**"],
+      "rewrites": [{ "source": "/api/stripe-webhook", "function": { "functionId": "stripeWebhook", "region": "asia-southeast1" } }]
+    },
+    {
+      "site": "flowrecover-app",
+      "public": ".",
+      "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "functions/**", "**/.*", "**/node_modules/**"],
+      "rewrites": [{ "source": "/api/stripe-webhook", "function": { "functionId": "stripeWebhook", "region": "asia-southeast1" } }]
+    }
+  ],
   "firestore": { "rules": "firestore.rules" },
   "functions": { "source": "functions" }
 }
