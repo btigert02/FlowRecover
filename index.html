@@ -386,6 +386,11 @@
       color: var(--emerald)
     }
 
+    .pill-sky {
+      background: rgba(56, 189, 248, .15);
+      color: var(--sky)
+    }
+
     .seg {
       display: flex;
       gap: 6px;
@@ -3094,7 +3099,53 @@
     function renderGuide() {
       const G = GUIDE[LANG], i = state.guideTopic || 0, g = G[i];
       $("#view-guide").innerHTML = `
-    <div class="view-head"><div><h1>📖 ${L("วิธีใช้งานระบบ", "How to use")}</h1><p>${L("ที่มาของปัญหา • ปรัชญาการออกแบบ • คู่มือการใช้งาน", "Origin of the problem • Design philosophy • How to use")}</p></div></div>
+    <div class="view-head"><div><h1>📖 ${L("วิธีใช้งานระบบ", "How to use")}</h1><p>${L("จุดประสงค์และผู้ใช้งาน • ปรัชญาการออกแบบ • คู่มือการใช้งาน", "Purpose & Audience • Design Philosophy • How to use")}</p></div></div>
+
+    <article class="card" style="margin-bottom:16px;border:1px solid rgba(56,189,248,.35);background:radial-gradient(700px 300px at 0 0,rgba(56,189,248,.12),transparent 70%),radial-gradient(600px 300px at 100% 100%,rgba(167,139,250,.12),transparent 70%),var(--surface)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <span class="pill pill-sky" style="font-size:.82rem">🎯 ${L("วิสัยทัศน์และที่มา", "Creator's Vision & Purpose")}</span>
+        <span class="muted sm">• ${L("จุดประสงค์หลัก และเครื่องมือนี้สร้างมาเพื่อใคร", "Core Purpose & Who It's Built For")}</span>
+      </div>
+      <h2 style="font-size:1.35rem;line-height:1.35;margin-bottom:10px">
+        ${L(
+          "“จัดการงานและเป้าหมายชีวิต — ไม่หลุดโฟกัสในแต่ละวัน แม้ต้องรับผิดชอบหลายโปรเจคพร้อมกัน”",
+          "“Manage Daily Work & Life Goals — Stay Laser-Focused While Juggling Multiple Projects”"
+        )}
+      </h2>
+      <p style="color:var(--text);font-size:.92rem;line-height:1.65;margin-bottom:16px">
+        ${L(
+          "<b>ไม่ใช่แค่แอปปฏิทินทั่วไป:</b> ปฏิทินเดิมทำได้แค่นัดหมายเวลา แต่ตอบไม่ได้ว่า <i>'งานนี้ทำถึงขั้นตอนไหนแล้ว? วันนี้ต้องโฟกัสอะไรก่อน? แล้วเป้าหมายชีวิตในแต่ละด้านยังเดินหน้าอยู่ไหม?'</i> ระบบนี้ถูกสร้างขึ้นมาจาก <b>ปัญหาจริงของผู้สร้างเอง</b> ที่ต้องทำงานหลายอย่างพร้อมกัน มีหลายโปรเจคและเช็กลิสต์ในมือ สมองล้ากับการคอยจำว่าอันไหนทำหรือยัง อันไหนถึงขั้นตอนไหน วันนี้ต้องทำอะไรบ้าง และไม่อยากให้ชีวิตมีแต่งานจนลืมเป้าหมายมิติอื่น เครื่องมือนี้จึงเป็น <b>ศูนย์บัญชาการจัดการงาน จัดลำดับความสำคัญ และขับเคลื่อนเป้าหมายชีวิตระยะสั้น–กลาง–ยาว</b> ให้เดินหน้าไปพร้อมกันทุกวัน",
+          "<b>Not just a calendar app:</b> Standard calendars only hold time appointments, but cannot answer: <i>'Where is this task in its workflow? What must I execute today? Are my multidimensional life goals progressing?'</i> FlowRecover was born from the <b>creator's own daily struggle</b>: managing multiple concurrent projects, complex workflows, and endless checklists where memory fatigue made it easy to lose focus. This tool was built as a <b>central operating system to prioritize daily focus, track step-by-step progress, and drive short-, mid-, and long-term life goals simultaneously</b>."
+        )}
+      </p>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:12px;margin-bottom:14px">
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--sky)">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px">🎯 <span>${L("จุดประสงค์หลักของระบบ (Core Purpose)", "Core Purpose of FlowRecover")}</span></div>
+          <div class="muted sm" style="line-height:1.6">
+            ${L(
+              "• <b>ไม่หลุดโฟกัสในแต่ละวัน:</b> จัดลำดับความสำคัญได้ชัดเจน รู้ทันทีว่าวันนี้ต้องทำอะไรก่อน–หลัง ไม่พลาดงานสำคัญ<br>• <b>คุม Flow งานและเช็กลิสต์:</b> ติดตามขั้นตอนได้ชัดเจน รู้ว่าอันนี้ทำหรือยัง ถึงขั้นตอนไหนแล้ว ไม่ต้องพึ่งความจำ<br>• <b>ขับเคลื่อนเป้าหมายชีวิตทุกมิติ:</b> เชื่อมงานรายวันเข้ากับเป้าหมายชีวิตระยะสั้น กลาง ยาว ในแต่ละด้านของตัวเอง",
+              "• <b>Laser Focus Every Day:</b> Crystal-clear priority ranking so you execute the right work first without missing what matters.<br>• <b>Track Workflow & Checklists:</b> Know exactly which step each task is in, what's done, and what's next without mental overload.<br>• <b>Drive Whole-Life Goals:</b> Anchor day-to-day actions to short-, mid-, and long-term milestones across every life dimension."
+            )}
+          </div>
+        </div>
+
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--violet)">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px">👥 <span>${L("เครื่องมือนี้เหมาะกับใคร? (Who It's For)", "Who Is This Tool Built For?")}</span></div>
+          <div class="muted sm" style="line-height:1.6">
+            ${L(
+              "• <b>คนที่ต้องทำงานหลายอย่างพร้อมกัน:</b> มีหลายโปรเจค มีเช็กลิสต์เยอะ ต้องการเห็นภาพรวมว่างานไหนถึงไหน<br>• <b>คนที่เบื่อแอปปฏิทินแบบเดิม:</b> ที่แข็งทื่อและไม่เข้าใจจังหวะการลงมือทำงานจริง (Deep Work & Flow State)<br>• <b>คนที่ต้องการจัดระเบียบชีวิตทั้งระบบ:</b> ไม่ใช่แค่ทำงานให้เสร็จ แต่ต้องการดูแลสุขภาพ การเงิน อารมณ์ และเป้าหมายชีวิตควบคู่กัน",
+              "• <b>Multi-Project Handlers & Creators:</b> Anyone juggling multiple projects, checklists, and workflows needing a single source of truth.<br>• <b>Those Outgrowing Rigid Calendars:</b> People who need flexible time-blocking tuned for actual deep work and real-world execution.<br>• <b>Holistic High Performers:</b> Anyone who wants to achieve work milestones while systematically nurturing health, finance, and life balance."
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);flex-wrap:wrap;gap:8px">
+        <span class="sm">💡 <b>${L("แนวคิดสำคัญ:", "Guiding Principle:")}</b> ${L("“เปลี่ยนความสับสนของการทำงานหลายโปรเจค ให้กลายเป็น Flow ที่โฟกัส นิ่ง และพาเป้าหมายชีวิตทุกด้านเดินหน้าไปพร้อมกัน”", "“Turn the chaos of multiple projects into a calm, focused flow that advances every dimension of your life.”")}</span>
+        <span class="chip" style="background:rgba(56,189,248,.2);color:var(--sky)">Life & Work Operating System</span>
+      </div>
+    </article>
 
     <article class="card" style="margin-bottom:16px;border:1px solid rgba(245,158,11,.35);background:radial-gradient(700px 300px at 100% 0,rgba(245,158,11,.12),transparent 70%),radial-gradient(600px 300px at 0 100%,rgba(16,185,129,.1),transparent 70%),var(--surface)">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
