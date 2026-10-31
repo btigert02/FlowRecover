@@ -2111,6 +2111,9 @@
   <dialog id="demo-dlg" closedby="any" aria-labelledby="demo-title">
     <form class="dlg-body" data-form="demoLogin" id="demo-login-form"></form>
   </dialog>
+  <dialog id="admin-dlg" closedby="any" aria-labelledby="admin-dlg-title">
+    <form class="dlg-body" data-form="adminUnlock" id="admin-unlock-form"></form>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -2133,6 +2136,9 @@
     const STRIPE_QR_LINK = "https://buy.stripe.com/dRmaEXbFm4mm3yL72400002";
     const META_PIXEL_ID = "";            // e.g. "123456789012345" — enables ad conversion tracking
     const SHOW_OWNER_SIMULATOR = true;   // ตั้งเป็น false เมื่อเปิดให้ลูกค้าใช้งานจริง
+    // 🔑 Admin & Lifetime Access
+    const ADMIN_SECRET_KEY = "FLOW-ADMIN-LIFETIME"; // รหัสสำหรับกรอกเพื่อปลดล็อกฟรีตลอดชีพ
+    const ADMIN_EMAILS = ["btigert02@gmail.com"];     // อีเมลที่ได้รับสิทธิ์ฟรีตลอดชีพอัตโนมัติเมื่อล็อกอิน
     const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2";
     const FIREBASE_READY = !FIREBASE_CONFIG.apiKey.startsWith("YOUR_");
     const TRIAL_MS = 7 * 24 * 3600 * 1000;
@@ -2229,6 +2235,9 @@
     /* ===================== Subscription ===================== */
     function subInfo() {
       const s = state.sub;
+      if (s.is_admin || s.plan === "lifetime_admin") {
+        return { pro: true, until: null, is_admin: true };
+      }
       if (s.subscription_status === "pro") {
         if (s.pro_until && Date.now() > s.pro_until) return { pro: false, rem: 0, pct: 0, expired: true, lapsed: true };
         return { pro: true, until: s.pro_until || null };
@@ -2259,8 +2268,22 @@
         history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
       }
     }
+    function grantAdminLifetime(notify = true) {
+      state.sub = { ...state.sub, subscription_status: "pro", plan: "lifetime_admin", is_admin: true, pro_until: null, simulated: false };
+      save(); renderBanner(); checkPaywall(); if ($("#account-dlg").open) renderAccount();
+      if (notify) toast(L("🎉 ปลดล็อกสิทธิ์ Admin ฟรีตลอดชีพเรียบร้อยแล้ว!", "🎉 Lifetime Admin PRO unlocked successfully!"));
+    }
+    function checkAdminUrl() {
+      const q = new URLSearchParams(location.search);
+      const key = q.get("admin_key") || q.get("admin_code") || q.get("code");
+      if (key && key.trim().toUpperCase() === ADMIN_SECRET_KEY.toUpperCase()) {
+        grantAdminLifetime(true);
+        ["admin_key", "admin_code", "code"].forEach(k => q.delete(k));
+        history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
+      }
+    }
     function applyServerSub(d) {
-      if (state.sub.simulated) return;
+      if (state.sub.simulated || state.sub.is_admin || state.sub.plan === "lifetime_admin") return;
       const start = d.trial_start_at?.toMillis?.() ?? state.sub.trial_start_at ?? Date.now();
       let status = d.subscription_status || "trial";
       let until = d.pro_until?.toMillis?.() ?? null;
@@ -2471,8 +2494,8 @@
       const s = subInfo();
       if (s.pro) {
         el.className = "banner pro";
-        const until = s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
-        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><button class="link sm" data-act="${s.until ? "payChoose" : "account"}" id="banner-manage">${s.until ? L("ต่ออายุ", "Renew") : L("จัดการ", "Manage")}</button>`;
+        const until = s.is_admin ? L(" • สิทธิ์ Admin ฟรีตลอดชีพ 👑", " • Lifetime Admin 👑") : s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
+        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><button class="link sm" data-act="${s.is_admin ? "account" : s.until ? "payChoose" : "account"}" id="banner-manage">${s.is_admin ? L("บัญชี", "Account") : s.until ? L("ต่ออายุ", "Renew") : L("จัดการ", "Manage")}</button>`;
         return;
       }
       if (s.expired) { el.className = "banner expired"; el.innerHTML = `<span>🔒 ${s.lapsed ? L("แพ็กเกจ PRO หมดอายุ", "PRO pass expired") : L("หมดเวลาทดลองใช้ฟรี 7 วัน", "7-day free trial ended")}</span>${proBtn("banner-pay")}`; return; }
@@ -3085,8 +3108,20 @@
       <ul class="checks"><li>${L("Focus Cockpit + ปุ่มงานแทรก + Auto-Reflow ไม่จำกัด", "Unlimited Focus Cockpit, interruption button & Auto-Reflow")}</li><li>${L("กิจวัตรทำซ้ำ, โปรเจค, ลิงก์แชร์ทีม, ผังเชื่อมโยง", "Routines, projects, team share links, relationship map")}</li><li>${L("Life Planner ครบ 4 หมวด", "Full 4-section Life Planner")}</li><li>${L("แจ้งเตือนสมาร์ทวอทช์ & ซิงค์ทุกอุปกรณ์", "Smartwatch alerts & sync across devices")}</li></ul></div>
     <b>${L("เลือกวิธีชำระเงิน", "Choose a payment method")}</b>
     ${payOptionsHTML("pw")}
-    <div class="row" style="justify-content:center"><button class="link sm" data-act="logout" id="btn-paywall-logout">${L("ออกจากระบบ", "Sign out")}</button>${SHOW_OWNER_SIMULATOR ? '<button class="link sm" data-act="toggleSim" id="btn-paywall-sim">🛠 Owner Simulator</button>' : ""}</div>
+    <div class="row" style="justify-content:center"><button class="link sm" data-act="logout" id="btn-paywall-logout">${L("ออกจากระบบ", "Sign out")}</button>${SHOW_OWNER_SIMULATOR ? '<button class="link sm" data-act="toggleSim" id="btn-paywall-sim">🛠 Owner Simulator</button>' : ""}<button class="link sm" data-act="openAdminDlg" id="btn-paywall-admin">🔑 Admin Key</button></div>
     <div id="paywall-sim" hidden>${simHTML("pw")}</div>`;
+    }
+    function renderAdminDlg() {
+      const f = $("#admin-unlock-form"); if (!f) return;
+      f.innerHTML = `
+    <div class="dlg-head"><h2 id="admin-dlg-title">🔑 ${L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="admin-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <p class="muted sm">${L("ใส่รหัสลับเพื่อปลดล็อกสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Access)", "Enter secret key to unlock Lifetime PRO access.")}</p>
+    <label class="field"><span>${L("รหัสปลดล็อก", "Secret Key")}</span>
+      <input class="input mono" name="code" required placeholder="FLOW-ADMIN-..." autofocus autocomplete="off" style="text-transform:uppercase"></label>
+    <div class="row" style="margin-top:6px">
+      <button class="btn btn-amber grow" type="submit">✨ ${L("ปลดล็อกทันที", "Unlock Lifetime")}</button>
+      <button class="btn" type="button" data-act="closeDlg" data-id="admin-dlg">${L("ยกเลิก", "Cancel")}</button>
+    </div>`;
     }
     function renderPayDlg() {
       $("#pay-body").innerHTML = `
@@ -3096,13 +3131,14 @@
     }
     function renderAccount() {
       const u = state.user || {}, s = subInfo();
-      const status = s.pro ? `<span class="pill pill-emerald">👑 PRO${s.until ? " • " + L("ถึง ", "until ") + fmtDate(dkey(new Date(s.until))) : " • 99฿/" + L("เดือน", "mo")}</span>` : s.expired ? `<span class="pill pill-rose">🔒 ${L("หมดอายุ", "Expired")}</span>` : `<span class="pill pill-amber">🎁 ${L(`ทดลองฟรี เหลือ ${Math.ceil(s.rem / 864e5)} วัน`, `Trial: ${Math.ceil(s.rem / 864e5)} days left`)}</span>`;
+      const status = s.is_admin ? `<span class="pill pill-emerald">👑 PRO • ${L("Admin ฟรีตลอดชีพ", "Lifetime Admin")}</span>` : s.pro ? `<span class="pill pill-emerald">👑 PRO${s.until ? " • " + L("ถึง ", "until ") + fmtDate(dkey(new Date(s.until))) : " • 99฿/" + L("เดือน", "mo")}</span>` : s.expired ? `<span class="pill pill-rose">🔒 ${L("หมดอายุ", "Expired")}</span>` : `<span class="pill pill-amber">🎁 ${L(`ทดลองฟรี เหลือ ${Math.ceil(s.rem / 864e5)} วัน`, `Trial: ${Math.ceil(s.rem / 864e5)} days left`)}</span>`;
       $("#account-body").innerHTML = `
     <div class="dlg-head"><h2 id="account-title">${L("บัญชีของฉัน", "My account")}</h2><button class="icon-btn" data-act="closeDlg" data-id="account-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-account">✕</button></div>
     <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:1.3rem">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || "?").charAt(0).toUpperCase())}</div>
       <div class="grow"><b>${esc(u.name || "")}</b><div class="muted sm">${esc(u.email || "")}</div></div></div>
     <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
-    ${s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("ต่ออายุล่วงหน้า", "Renew early") : L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/month")}</b>${payOptionsHTML("ac")}`}
+    ${s.is_admin ? `<p class="muted sm center" style="padding:8px 0">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("ต่ออายุล่วงหน้า", "Renew early") : L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/month")}</b>${payOptionsHTML("ac")}`}
+    <div class="row" style="justify-content:center"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button></div>
     ${simHTML("ac")}
     <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
     }
@@ -3144,6 +3180,7 @@
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
       account: () => { renderAccount(); $("#account-dlg").showModal(); },
+      openAdminDlg: () => { renderAdminDlg(); $("#admin-dlg").showModal(); },
       payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
       ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
       closeDlg: d => $("#" + d.id).close(),
@@ -3238,11 +3275,27 @@
       addStep: (fd, f) => { const p = proj(f.dataset.pid); const title = fd.title.trim(); if (!p || !title) return; p.steps.push({ id: uid(), title, status: "todo" }); rerender(); document.getElementById(`fsi-${p.id}`)?.focus(); },
       addLink: (fd, f) => { const p = proj(f.dataset.pid); const url = fd.url.trim(); if (!p || !/^https?:\/\//i.test(url)) { toast(L("ลิงก์ต้องขึ้นต้นด้วย https://", "Link must start with https://")); return; } p.links.push({ id: uid(), label: fd.label.trim(), url }); rerender(); },
       addHabit: fd => { const name = fd.name.trim(); if (!name) return; P().habits.push({ id: uid(), name }); rerender(); },
+      adminUnlock: fd => {
+        const code = (fd.code || "").trim();
+        if (code.toUpperCase() === ADMIN_SECRET_KEY.toUpperCase()) {
+          $("#admin-dlg")?.close();
+          grantAdminLifetime(true);
+        } else {
+          toast(L("❌ รหัสไม่ถูกต้อง", "❌ Invalid code"));
+        }
+      },
       demoLogin: fd => {
         const email = fd.email.trim().toLowerCase(), name = fd.name.trim();
         state.user = { uid: "demo_" + b64e(email).slice(0, 12), name, email, photo: "", demo: true };
-        if (state.sub.owner_email !== email) { state.sub = { subscription_status: "trial", trial_start_at: Date.now(), owner_email: email }; track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" }); }
-        $("#demo-dlg").close(); seed(); save(); showApp(); toast(L(`👋 ยินดีต้อนรับ ${name}! เริ่มทดลองใช้ฟรี 7 วัน`, `👋 Welcome ${name}! Your 7-day free trial has started`));
+        if (ADMIN_EMAILS.some(e => e.toLowerCase() === email)) {
+          state.sub = { subscription_status: "pro", plan: "lifetime_admin", is_admin: true, pro_until: null, owner_email: email };
+        } else if (state.sub.owner_email !== email) {
+          state.sub = { subscription_status: "trial", trial_start_at: Date.now(), owner_email: email };
+          track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
+        }
+        $("#demo-dlg").close(); seed(); save(); showApp();
+        if (state.sub.is_admin) toast(L(`👑 ยินดีต้อนรับ Admin ${name}! ได้รับสิทธิ์ฟรีตลอดชีพ`, `👑 Welcome Admin ${name}! Lifetime access granted`));
+        else toast(L(`👋 ยินดีต้อนรับ ${name}! เริ่มทดลองใช้ฟรี 7 วัน`, `👋 Welcome ${name}! Your 7-day free trial has started`));
       }
     };
     function addCrud(name, fd) {
@@ -3325,6 +3378,9 @@
             state.sub = { subscription_status: "trial", trial_start_at: Date.now(), pro_pending_at: state.sub.pro_pending_at, pro_until: state.sub.pro_until };
             track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
           }
+          if (ADMIN_EMAILS.some(e => e.toLowerCase() === (u.email || "").toLowerCase())) {
+            grantAdminLifetime(false);
+          }
           unsub = fb.onSnapshot(uref, s => s.exists() && applyServerSub(s.data()));
           const ds = await fb.getDoc(fb.doc(fb.db, "users", u.uid, "data", "main"));
           if (ds.exists()) { const keep = { user: state.user, sub: state.sub, lang: state.lang }; state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep }); state.queueDate = dkey(); state.plannerDate = dkey(); }
@@ -3357,6 +3413,7 @@
     } else {
       renderStatic();
       handleStripeReturn();
+      checkAdminUrl();
       if (FIREBASE_READY) {
         try { await initFirebase(); }
         catch (e) { console.error(e); fb = null; toast(L("เชื่อมต่อ Firebase ไม่สำเร็จ — ใช้โหมดสาธิต", "Firebase connection failed — using demo mode")); state.user ? showApp() : showAuth(); }
