@@ -791,6 +791,29 @@
       animation: glow 2.6s ease-in-out infinite
     }
 
+    .rest-btn {
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      color: #fff !important;
+      box-shadow: 0 10px 24px -8px rgba(16, 185, 129, .5);
+      border: 1px solid rgba(52, 211, 153, .4) !important;
+    }
+
+    .rest-btn:hover {
+      box-shadow: 0 14px 28px -6px rgba(16, 185, 129, .65);
+      transform: translateY(-1px);
+    }
+
+    .cockpit.resting {
+      border: 1px solid rgba(16, 185, 129, .45);
+      background: radial-gradient(700px 300px at 0 0, rgba(16, 185, 129, .15), transparent 70%),
+                  radial-gradient(600px 300px at 100% 100%, rgba(56, 189, 248, .12), transparent 70%),
+                  var(--surface);
+    }
+
+    .task.rest-task {
+      border-left: 3px solid var(--emerald);
+    }
+
     .bookmark-note {
       padding: 10px 12px;
       border-radius: 12px;
@@ -2126,6 +2149,9 @@
   <dialog id="admin-dlg" closedby="any" aria-labelledby="admin-dlg-title">
     <form class="dlg-body" data-form="adminUnlock" id="admin-unlock-form"></form>
   </dialog>
+  <dialog id="rest-dlg" closedby="any" aria-labelledby="rest-dlg-title">
+    <div class="dlg-body" id="rest-dlg-body"></div>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -2198,7 +2224,7 @@
       theme: "dark", tab: "focus", plannerSec: "cg", projSub: "list", guideTopic: 0,
       queueDate: null, plannerDate: null, openProject: null,
       ideas: [], tasks: [], routines: [], projects: [],
-      focus: { interrupt: null, log: [], lastReflow: null },
+      focus: { interrupt: null, log: [], lastReflow: null, rest: null },
       alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {} },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
@@ -2543,8 +2569,8 @@
 
     /* ---------- ⚡ Focus ---------- */
     function renderFocus() {
-      const I = state.focus.interrupt, cur = currentTask(), nxt = nextTask(), today = dkey();
-      lastCockpitKey = I ? "int" : cur ? cur.id : "none:" + (nxt?.id || "");
+      const I = state.focus.interrupt, Rst = state.focus.rest, cur = currentTask(), nxt = nextTask(), today = dkey();
+      lastCockpitKey = I ? "int" : Rst ? "rest" : cur ? cur.id : "none:" + (nxt?.id || "");
       let cockpit;
       if (I) {
         const t = state.tasks.find(x => x.id === I.taskId);
@@ -2559,6 +2585,30 @@
         <input id="interrupt-reason" class="input" data-bind="focus.interrupt.reason" value="${esc(I.reason)}" placeholder="${L("เช่น หัวหน้าเรียกประชุมด่วน", "e.g. Boss called an urgent meeting")}"></label>
       <button class="btn btn-emerald btn-xl" data-act="resume" id="btn-resume">▶️ ${L("กลับมาทำงานเดิมต่อ", "Resume my task")}</button>
     </article>`;
+      } else if (Rst) {
+        const t = state.tasks.find(x => x.id === Rst.taskId);
+        const elapsedSec = Math.max(0, (Date.now() - Rst.startedAt) / 1000);
+        const totalSec = Math.max(1, Rst.durMins * 60);
+        const remainSec = Math.max(0, (Rst.targetEndMs - Date.now()) / 1000);
+        cockpit = `<article class="card cockpit resting" id="cockpit">
+      <div class="cockpit-top">
+        <span class="pill pill-emerald pulse-dot">☕ ${L("กำลังพักผ่อน & ชาร์จพลัง", "Resting & Recharging")}</span>
+        <span class="muted mono sm">${L("ครบเวลา", "Until")} ${fmtClock(Rst.targetEndMs)}</span>
+      </div>
+      <div class="big-timer emerald" id="rest-timer">${fmtDur(remainSec)}</div>
+      <p class="muted center sm" style="margin:4px 0 8px">${L(`พักผ่อน ${Rst.durMins} นาที • ระบบนับถอยหลังพร้อมแจ้งเตือนเมื่อครบเวลา`, `${Rst.durMins} min break • live countdown with gentle chime`)}</p>
+      <div class="bar" style="margin:6px 0 14px"><i id="rest-bar" style="width:${Math.min(100, (elapsedSec / totalSec) * 100)}%;background:linear-gradient(90deg, var(--emerald), var(--sky))"></i></div>
+      <div style="background:var(--surface-2);padding:12px;border-radius:14px;border-left:3px solid var(--emerald);margin-bottom:14px;font-size:.88rem;line-height:1.55">
+        🌿 <b>${L("พักผ่อนตามสบายครับ:", "Mindful Recharge:")}</b> ${L("“เราไม่ได้ทำงานตลอดเวลา — การพักผ่อนคือการเติมพลังให้สมองโฟกัสได้อย่างเฉียบคม” ดื่มน้ำสักแก้ว ยืดเส้นสาย หรือพักสายตาสักครู่", "“We don't work all the time — breaks are vital fuel for creative focus.” Drink water, stretch, or rest your eyes.")}
+      </div>
+      ${t ? `<div class="paused-task" style="margin-bottom:12px">⏸️ ${L("งานที่จะกลับมาทำต่อ", "Task to resume")}: <b>${esc(t.title)}</b></div>` : ""}
+      <div class="row" style="gap:8px;margin-bottom:12px">
+        <button class="btn btn-sm grow" data-act="extendRest" data-v="5">＋ 5 ${L("นาที", "min")}</button>
+        <button class="btn btn-sm grow" data-act="extendRest" data-v="10">＋ 10 ${L("นาที", "min")}</button>
+        <button class="btn btn-sm grow" data-act="extendRest" data-v="15">＋ 15 ${L("นาที", "min")}</button>
+      </div>
+      <button class="btn btn-amber btn-xl" data-act="endRest" id="btn-end-rest" style="width:100%">⚡ ${L("ชาร์จพลังเต็มที่แล้ว (พร้อมลุยงานต่อ)", "Fully recharged! (Resume work)")}</button>
+    </article>`;
       } else if (cur) {
         const p = proj(cur.projectId);
         cockpit = `<article class="card cockpit" id="cockpit">
@@ -2567,7 +2617,10 @@
       <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(p.title)}</span>` : `<span class="chip">📌 ${L("งานทั่วไป", "General task")}</span>`}${prioChip(cur)}</div>
       ${cur.bookmark ? `<div class="bookmark-note">📌 ${L("ทำค้างไว้ล่าสุด", "Last bookmark")}: ${esc(cur.bookmark)}</div>` : ""}
       <div><div class="big-timer" id="cd">--:--</div><p class="muted center sm" style="margin:6px 0 10px">${L("เวลาคงเหลือของบล็อกนี้", "Time left in this block")}</p><div class="bar"><i id="cd-bar"></i></div></div>
-      <button class="btn btn-amber btn-xl interrupt-btn" data-act="interrupt" id="btn-interrupt">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+      <div class="row" style="gap:10px;margin-bottom:8px">
+        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1;min-width:160px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" id="btn-rest" style="flex:1;min-width:160px">☕ ${L("พักผ่อน / ชาร์จพลัง", "Take a Break")}</button>
+      </div>
       <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
     </article>`;
       } else {
@@ -2575,7 +2628,10 @@
       <div class="cockpit-top"><span class="pill">☕ ${L("ช่วงว่าง", "Free time")}</span><span class="muted sm">${fmtDate(today)}</span></div>
       <h2 class="cockpit-title">${nxt ? L("งานถัดไป: ", "Up next: ") + esc(nxt.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
       ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
-      <button class="btn btn-amber btn-xl interrupt-btn" data-act="interrupt" id="btn-interrupt">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+      <div class="row" style="gap:10px;margin-bottom:8px">
+        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1;min-width:160px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" id="btn-rest" style="flex:1;min-width:160px">☕ ${L("พักผ่อน / ชาร์จพลัง", "Take a Break")}</button>
+      </div>
       <button class="btn" data-act="tab" data-tab="queue" id="btn-go-queue">＋ ${L("เพิ่มงานในคิว", "Add to queue")}</button>
     </article>`;
       }
@@ -2629,8 +2685,23 @@
   </article>`;
     }
     function tickCockpit() {
-      const I = state.focus.interrupt;
+      const I = state.focus.interrupt, Rst = state.focus.rest;
       if (I) { const el = document.getElementById("int-timer"); if (el) el.textContent = fmtDur((Date.now() - I.startedAt) / 1000); return; }
+      if (Rst) {
+        const el = document.getElementById("rest-timer");
+        const remainSec = Math.max(0, (Rst.targetEndMs - Date.now()) / 1000);
+        if (el) el.textContent = fmtDur(remainSec);
+        const bar = document.getElementById("rest-bar");
+        const elapsedSec = (Date.now() - Rst.startedAt) / 1000;
+        const totalSec = Math.max(1, Rst.durMins * 60);
+        if (bar) bar.style.width = Math.min(100, (elapsedSec / totalSec) * 100) + "%";
+        if (remainSec <= 0 && !Rst.alarmed) {
+          Rst.alarmed = true;
+          beep(); vibrate([300, 120, 300, 120, 700]);
+          toast(L("🔔 ครบเวลาพักผ่อนแล้วครับ! พร้อมลุยงานต่อหรือยัง? ⚡", "🔔 Break time is up! Ready to get back in the flow? ⚡"));
+        }
+        return;
+      }
       const el = document.getElementById("cd"); if (!el) return;
       const n = nowMin(), cur = currentTask();
       if (cur) {
@@ -2645,11 +2716,12 @@
       const live = isToday && !t.done && t.start <= n && n < t.start + t.dur;
       const overdue = isToday && !t.done && t.start + t.dur <= n;
       const over = !t.done && t.start + t.dur > DAY_END;
-      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""}">
+      const isRest = t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title);
+      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isRest ? "rest-task" : ""}">
     <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
     <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span></div>
-      <div class="task-title">${esc(t.title)}</div>
-      <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
+      <div class="task-title">${isRest ? "☕ " : ""}${esc(t.title.replace(/^☕\s*/, ""))}</div>
+      <div class="chips">${isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
     <div class="task-actions"><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
   </li>`;
@@ -2675,7 +2747,15 @@
           <button class="${date === addDays(today, 1) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 1)}" id="qd-tomorrow">${L("พรุ่งนี้", "Tomorrow")}</button>
           <button class="${date === addDays(today, 2) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 2)}" id="qd-after">${fmtDate(addDays(today, 2))}</button>
         </div>
-        <article class="card"><h3>＋ ${L("เพิ่มบล็อกงาน", "Add a time block")} • ${fmtDate(date)}</h3>
+        <article class="card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <h3 style="margin:0">＋ ${L("เพิ่มบล็อกงาน / เวลาพัก", "Add a block / rest")} • ${fmtDate(date)}</h3>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="15" title="${L("แทรกพัก 15 นาที", "Insert 15 min break")}">☕ ${L("+ พัก 15น.", "+ 15m Break")}</button>
+              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="30" title="${L("แทรกพักเที่ยง 30 นาที", "Insert 30 min break")}">🥪 ${L("+ พัก 30น.", "+ 30m Break")}</button>
+              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="60" title="${L("แทรกพัก 60 นาที", "Insert 60 min rest")}">🌿 ${L("+ พัก 60น.", "+ 60m Rest")}</button>
+            </div>
+          </div>
           <form class="form-grid" data-form="addTask" id="form-add-task" autocomplete="off">
             <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" id="task-title" required placeholder="${L("เช่น ทำสไลด์นำเสนอลูกค้า", "e.g. Prepare client pitch deck")}"></label>
             <label class="field"><span>${L("เวลาเริ่ม", "Start time")}</span><input class="input" type="time" name="start" id="task-start" value="${suggestStart(date)}" required></label>
@@ -2997,8 +3077,9 @@
             ["วงจรไม่ให้งานหลุด", "วางคิว → โฟกัส → ถูกแทรก → กลับมาทำต่อ → ระบบเลื่อนตารางที่เหลือให้อัตโนมัติ"]]
         },
         {
-          t: "วิธีใช้ปุ่ม “งานแทรก” & เลื่อนตารางอัตโนมัติ", i: "⏸️", s: [
+          t: "วิธีใช้ปุ่ม “งานแทรก” & ปุ่ม “พักผ่อน” & เลื่อนตารางอัตโนมัติ", i: "⏸️", s: [
             ["เปิดหน้า ⚡ โฟกัส/แทรก", "จะเห็นงานของชั่วโมงนี้ พร้อมตัวนับเวลาถอยหลังและหลอดความคืบหน้า"],
+            ["ปุ่ม ☕ พักผ่อน / ชาร์จพลัง", "เราไม่ได้ทำงานตลอดเวลา! แตะปุ่มพักผ่อนเพื่อเลือกพัก 5, 15, 30 หรือ 60 นาที ระบบจะสลับเป็นโหมด Zen ผ่อนคลายพร้อมนับเวลาถอยหลัง และปรับเลื่อนตารางที่เหลือให้อัตโนมัติเมื่อพักเสร็จ"],
             ["มีคนมาแทรก กด ⏸️ มีงานด่วนแทรก! ทันที", "ระบบเริ่มจับเวลาที่เสียไปกับงานแทรกโดยอัตโนมัติ"],
             ["พิมพ์ Context Bookmark", "จดสั้นๆ ว่าทำค้างถึงไหน ขั้นต่อไปคืออะไร กลับมาแล้วจะต่องานได้ทันทีไม่ต้องนึก"],
             ["กด ▶️ กลับมาทำงานเดิมต่อ", "ระบบ Auto-Reflow จะเลื่อนคิวงานที่เหลือของวันนี้ออกไปตามจำนวนนาทีที่ถูกแทรก"],
@@ -3062,8 +3143,9 @@
             ["The no-drop loop", "Plan → focus → get interrupted → resume → the rest of your day reflows automatically."]]
         },
         {
-          t: "Using the “Interruption” button & auto-reflow", i: "⏸️", s: [
+          t: "Using the “Interruption” & “Take a Break” buttons & auto-reflow", i: "⏸️", s: [
             ["Open ⚡ Focus", "You'll see this hour's task with a countdown and progress bar."],
+            ["☕ Rest & Recharge button", "We don't work all the time! Tap the break button to pick 5, 15, 30, or 60 min. The cockpit switches to calming Zen mode with a live timer and shifts remaining tasks automatically when done."],
             ["Someone interrupts? Tap ⏸️ Urgent interruption!", "The app starts timing how long the interruption takes."],
             ["Write a Context Bookmark", "Note where you stopped and what's next, so you can pick up instantly."],
             ["Tap ▶️ Resume my task", "Auto-Reflow pushes the rest of today's queue back by the minutes you lost."],
@@ -3329,6 +3411,29 @@
       <button class="btn" type="button" data-act="closeDlg" data-id="admin-dlg">${L("ยกเลิก", "Cancel")}</button>
     </div>`;
     }
+    function renderRestDlg() {
+      const b = $("#rest-dlg-body"); if (!b) return;
+      b.innerHTML = `
+    <div class="dlg-head"><h2 id="rest-dlg-title">☕ ${L("พักผ่อน & ชาร์จพลัง", "Rest & Recharge Break")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="rest-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <p class="muted sm" style="line-height:1.6">${L("“เราไม่ได้ทำงานตลอดเวลา” — สมองมนุษย์ต้องมีช่วงผ่อนคลายเพื่อฟื้นฟูสมาธิและกักเก็บพลังงานสำหรับช่วงต่อไป", "“We don't work all the time” — give your mind space to recharge so you can return with clarity.")}</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px;margin:16px 0">
+      <button class="btn" data-act="startRest" data-mins="5" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">☕</span><b>5 ${L("นาที", "min")}</b><small class="muted">${L("พักสายตา / ดื่มน้ำ", "Eye rest / water")}</small></button>
+      <button class="btn btn-emerald" data-act="startRest" data-mins="15" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">🍵</span><b>15 ${L("นาที", "min")}</b><small style="color:#d1fae5">${L("ชากาแฟ / ยืดเส้น (แนะนำ)", "Coffee / stretch")}</small></button>
+      <button class="btn" data-act="startRest" data-mins="30" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">🥪</span><b>30 ${L("นาที", "min")}</b><small class="muted">${L("พักเที่ยง / Power Nap", "Lunch / Nap")}</small></button>
+      <button class="btn" data-act="startRest" data-mins="60" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">🌿</span><b>60 ${L("นาที", "min")}</b><small class="muted">${L("พักยาว / ออกกำลังกาย", "Deep rest / exercise")}</small></button>
+    </div>
+    <form data-form="customRest" class="row" style="gap:8px;margin-bottom:12px">
+      <input class="input" type="number" name="mins" min="1" max="180" placeholder="${L("หรือกำหนดเวลาเอง (นาที)", "Or custom minutes")}" style="flex:1">
+      <button class="btn btn-amber" type="submit">✨ ${L("เริ่มพักผ่อน", "Start Break")}</button>
+    </form>
+    <div style="background:var(--surface-2);padding:10px 12px;border-radius:12px;font-size:.85rem;line-height:1.5;border-left:3px solid var(--emerald)">
+      💡 <b>Auto-Reflow:</b> ${L("เมื่อกดเริ่มพักผ่อน ระบบจะบันทึกสถานะงานปัจจุบันไว้ และปรับเลื่อนตารางงานที่เหลือให้อัตโนมัติ เพื่อให้คุณได้พักผ่อนอย่างสบายใจโดยไม่ต้องกังวลเรื่องงาน", "FlowRecover will bookmark your current work and reflow remaining tasks automatically so you can truly unwind.")}
+    </div>`;
+    }
     function renderPayDlg() {
       $("#pay-body").innerHTML = `
     <div class="dlg-head"><h2 id="pay-title">👑 FlowRecover PRO • 99฿/${L("เดือน", "mo")}</h2><button class="icon-btn" data-act="closeDlg" data-id="pay-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-pay">✕</button></div>
@@ -3417,6 +3522,74 @@
         state.focus.interrupt = null; rerender();
         toast(lost ? L(`🔁 Auto-Reflow: เลื่อน ${count} งาน ออกไป ${lost} นาที`, `🔁 Auto-Reflow: shifted ${count} tasks by ${lost} min`) : L("▶️ กลับมาโฟกัสต่อ (เสียเวลาไม่ถึง 1 นาที)", "▶️ Back to focus (less than 1 min lost)"));
       },
+      openRestDlg: () => { renderRestDlg(); $("#rest-dlg").showModal(); },
+      startRest: d => {
+        const mins = Number(d.mins) || 15;
+        const cur = currentTask();
+        state.focus.rest = {
+          taskId: cur?.id || null,
+          startedAt: Date.now(),
+          durMins: mins,
+          targetEndMs: Date.now() + mins * 60000,
+          startMin: nowMin(),
+          bookmark: cur?.bookmark || "",
+          alarmed: false
+        };
+        $("#rest-dlg")?.close();
+        vibrate([80, 50, 80]);
+        rerender();
+        toast(L(`☕ เริ่มพักผ่อน ${mins} นาที — ชาร์จพลังให้เต็มที่นะครับ 🌿`, `☕ Started ${mins} min break — enjoy your recharge 🌿`));
+      },
+      extendRest: d => {
+        const Rst = state.focus.rest; if (!Rst) return;
+        const addMins = Number(d.v) || 5;
+        Rst.durMins += addMins;
+        Rst.targetEndMs += addMins * 60000;
+        Rst.alarmed = false;
+        rerender();
+        toast(L(`☕ เพิ่มเวลาพักผ่อนอีก ${addMins} นาที`, `☕ Added ${addMins} more minutes of rest`));
+      },
+      endRest: () => {
+        const Rst = state.focus.rest; if (!Rst) return;
+        const actualMins = Math.max(1, Math.round((Date.now() - Rst.startedAt) / 60000));
+        const today = dkey();
+        const t = state.tasks.find(x => x.id === Rst.taskId);
+        let count = 0;
+        if (actualMins > 0) {
+          const pivot = t ? t.start : Rst.startMin;
+          if (t) t.dur += actualMins;
+          state.tasks.forEach(x => {
+            if (x.date === today && !x.done && x !== t && x.start >= pivot) {
+              x.start += actualMins;
+              count++;
+            }
+          });
+        }
+        state.focus.log.push({ date: today, mins: actualMins, reason: L("☕ พักผ่อน & ชาร์จพลัง", "☕ Rest & Recharge"), taskId: Rst.taskId, at: Date.now() });
+        state.focus.lastReflow = { date: today, lost: actualMins, count, at: Date.now() };
+        state.focus.rest = null;
+        rerender();
+        toast(L(`✨ ชาร์จพลังเสร็จสิ้น (${actualMins} นาที) • ปรับเลื่อนคิวงานให้เรียบร้อย พร้อมลุยต่อ!`, `✨ Break complete (${actualMins} min) • Queue reflowed, ready to focus!`));
+      },
+      quickBreak: d => {
+        const dur = Number(d.dur) || 15;
+        const date = state.queueDate || dkey();
+        const title = dur >= 30 ? L("🥪 พักกลางวัน / ชาร์จพลัง", "🥪 Lunch & Recharge") : L("☕ พักเบรก / ชาร์จพลัง", "☕ Coffee & Rest Break");
+        state.tasks.push({
+          id: uid(),
+          title,
+          date,
+          start: toMin(suggestStart(date)),
+          dur,
+          projectId: null,
+          priority: "secondary",
+          done: false,
+          bookmark: "",
+          isBreak: true
+        });
+        rerender();
+        toast(L(`☕ แทรกเวลาพัก ${dur} นาทีเข้าคิวแล้ว`, `☕ Inserted ${dur} min break into queue`));
+      },
       dismissReflow: () => { state.focus.lastReflow = null; rerender(); },
       toggleTask: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.done = !t.done; rerender(); if (t.done) { toast(L("✅ เยี่ยม! +10 แต้ม Level Up", "✅ Nice! +10 Level Up points")); vibrate(40); } },
       delTask: d => { if (!confirm(L("ลบงานนี้?", "Delete this task?"))) return; state.tasks = state.tasks.filter(x => x.id !== d.id); rerender(); },
@@ -3479,6 +3652,10 @@
       testAlert: () => { beep(); vibrate([300, 120, 300, 120, 700]); if (state.alerts.notify && "Notification" in window && Notification.permission === "granted") new Notification("⚡ FlowRecover", { body: L("ทดสอบการแจ้งเตือนสำเร็จ", "Notification test successful") }); toast(L("🔔 ทดสอบเสียง + สั่น", "🔔 Sound + vibration test")); }
     };
     const FORMS = {
+      customRest: fd => {
+        const mins = Math.max(1, Math.min(240, Number(fd.mins) || 15));
+        A.startRest({ mins });
+      },
       idea: (fd, f) => { const text = (fd.idea || "").trim(); if (!text) return; state.ideas.push({ id: uid(), text, at: Date.now() }); f.reset(); f.querySelector("input").blur(); save(); renderTopbar(); toast(L("💡 เก็บไอเดียแล้ว — กลับไปโฟกัสต่อ!", "💡 Idea saved — back to focus!")); },
       addTask: fd => {
         const title = fd.title.trim(); if (!title) return;
@@ -3618,7 +3795,7 @@
       if (!state.user || $("#app").hidden) return;
       tick++;
       if (state.tab === "focus") {
-        const cur = currentTask(), key = state.focus.interrupt ? "int" : cur ? cur.id : "none:" + (nextTask()?.id || "");
+        const cur = currentTask(), key = state.focus.interrupt ? "int" : state.focus.rest ? "rest" : cur ? cur.id : "none:" + (nextTask()?.id || "");
         if (key !== lastCockpitKey && !document.activeElement?.closest?.("#view-focus input, #view-focus textarea, #view-focus select")) renderView();
         else tickCockpit();
       }
