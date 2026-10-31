@@ -2383,7 +2383,23 @@
       const lastEnd = list.length ? Math.max(...list.map(t => t.start + t.dur)) : 0;
       return fmt(Math.min(23 * 60 + 45, Math.max(base, lastEnd)));
     }
-    const minLabel = m => L(`${m} นาที`, `${m} min`);
+    const minLabel = m => {
+      if (m < 60) return L(`${m} นาที`, `${m} min`);
+      const h = Math.floor(m / 60), r = m % 60;
+      return r ? L(`${h} ชม. ${r} น.`, `${h}h ${r}m`) : L(`${h} ชม.`, `${h}h`);
+    };
+    const durOptLabel = m => {
+      if (m < 60) return `${m} ${L("นาที", "min")}${m === 25 ? " (Pomodoro)" : ""}`;
+      const h = Math.floor(m / 60), r = m % 60;
+      let extra = "";
+      if (m === 90) extra = L(" — โฟกัสสูงสุด (Peak Focus)", " — Peak Focus");
+      else if (m === 180) extra = L(" — 3 ชม. (ขีดจำกัดแนะนำ)", " — 3 hrs (Recommended split limit)");
+      else if (m === 240) extra = L(" — 4 ชม. (ครึ่งวัน)", " — 4 hrs (Half day)");
+      else if (m === 360) extra = L(" — 6 ชม.", " — 6 hrs");
+      else if (m === 480) extra = L(" — 8 ชม. (เต็มวัน)", " — 8 hrs (Full day)");
+      if (!r) return `${h} ${L("ชั่วโมง", h > 1 ? "hours" : "hour")} (${m} ${L("นาที", "min")})${extra}`;
+      return `${h} ${L("ชม.", "h")} ${r} ${L("น.", "m")} (${m} ${L("นาที", "min")})${extra}`;
+    };
 
     /* ===================== Alerts ===================== */
     let audioCtx = null;
@@ -2650,9 +2666,16 @@
           <form class="form-grid" data-form="addTask" id="form-add-task" autocomplete="off">
             <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" id="task-title" required placeholder="${L("เช่น ทำสไลด์นำเสนอลูกค้า", "e.g. Prepare client pitch deck")}"></label>
             <label class="field"><span>${L("เวลาเริ่ม", "Start time")}</span><input class="input" type="time" name="start" id="task-start" value="${suggestStart(date)}" required></label>
-            <label class="field"><span>${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="task-dur">${[15, 25, 30, 45, 60, 90, 120, 180].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("")}</select></label>
+            <label class="field"><span>${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="task-dur">${[15, 25, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 480].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${durOptLabel(v)}</option>`).join("")}</select></label>
             <label class="field"><span>${L("ผูกกับโปรเจค", "Link to project")}</span><select class="input" name="project" id="task-project">${projOpts}</select></label>
-            <label class="field"><span>${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="task-priority"><option value="main">⭐ ${L("งานหลัก", "Main")}</option><option value="secondary">${L("งานรอง (ย้ายได้)", "Secondary (movable)")}</option></select></label>
+            <label class="field full"><span>${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="task-priority"><option value="main">⭐ ${L("งานหลัก (ต้องเสร็จวันนี้)", "Main (must finish today)")}</option><option value="secondary">${L("งานรอง (ย้ายได้เมื่อเวลาไม่พอ)", "Secondary (movable if needed)")}</option></select></label>
+            <div class="full" style="padding:12px 14px;border-radius:14px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.24);font-size:.82rem;line-height:1.55">
+              <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px">🧠 <span>${L("หลักจิตวิทยาการจัดเวลา (Productivity & Deep Work)", "Productivity Tip (Deep Work & Time-Blocking)")}</span></div>
+              <div class="muted sm" style="display:grid;gap:5px">
+                <div><b>1. ${L("ขีดจำกัดของสมอง (Ultradian Rhythm & Peak Focus):", "Brain limit (Ultradian Rhythm & Peak Focus):")}</b> ${L("สมองมนุษย์โฟกัสงานที่มีความเข้มข้นสูง (Deep Focus) ได้เต็มที่ต่อเนื่อง 90–120 นาที หลังจากนั้นสมองจะเริ่มล้า สมาธิหลุด และประสิทธิภาพตกลง การตั้งบล็อกไม่เกิน 180 นาทีจึงเป็น Safety Limit เพื่อป้องกันสมองล้า (Burnout)", "The human brain focuses deeply for 90–120 min before fatigue sets in. Keeping blocks under 180 min acts as a safety limit against cognitive burnout.")}</div>
+                <div><b>2. ${L("หลักการย่อยงาน (Task Breakdown):", "Task Breakdown principle:")}</b> ${L("หากงานต้องใช้เวลานานกว่า 3 ชม. แนะนำย่อยเป็น 2 บล็อก (เช่น 09:00–11:30 พักเบรก แล้วต่อ 13:00–15:30) จะช่วยให้ระบบ Auto-Reflow เลื่อนปรับคิวเมื่อโดนงานแทรกได้อย่างยืดหยุ่นกว่ามาก", "If a task takes over 3 hours, split it into 2 blocks with a rest break in between. This allows the Auto-Reflow system to smoothly shift remaining tasks after interruptions.")}</div>
+              </div>
+            </div>
             <button class="btn btn-amber full" type="submit" id="btn-add-task">＋ ${L("เพิ่มเข้าคิว", "Add to queue")}</button>
           </form></article>
         <article class="card"><div class="card-head"><h3>🗓️ ${fmtDate(date)}</h3><span class="chip">${L(`${list.length} งาน • เหลือ ${Math.floor(totalMin / 60)} ชม. ${totalMin % 60} น.`, `${list.length} tasks • ${Math.floor(totalMin / 60)}h ${totalMin % 60}m left`)}</span></div>
@@ -2966,7 +2989,8 @@
             ["มีคนมาแทรก กด ⏸️ มีงานด่วนแทรก! ทันที", "ระบบเริ่มจับเวลาที่เสียไปกับงานแทรกโดยอัตโนมัติ"],
             ["พิมพ์ Context Bookmark", "จดสั้นๆ ว่าทำค้างถึงไหน ขั้นต่อไปคืออะไร กลับมาแล้วจะต่องานได้ทันทีไม่ต้องนึก"],
             ["กด ▶️ กลับมาทำงานเดิมต่อ", "ระบบ Auto-Reflow จะเลื่อนคิวงานที่เหลือของวันนี้ออกไปตามจำนวนนาทีที่ถูกแทรก"],
-            ["คิวล้นเกิน 22:00?", "กด 📦 ย้ายงานรองไปพรุ่งนี้ ระบบจะย้ายงานที่ตั้งเป็น “งานรอง” ทั้งหมดในคลิกเดียว"]]
+            ["คิวล้นเกิน 22:00?", "กด 📦 ย้ายงานรองไปพรุ่งนี้ ระบบจะย้ายงานที่ตั้งเป็น “งานรอง” ทั้งหมดในคลิกเดียว"],
+            ["ทำไมบล็อกงานแนะนำไม่เกิน 180 นาที?", "สมองมนุษย์โฟกัสเข้มข้นได้สูงสุด 90–120 นาที หากงานยาวเกิน 3 ชม. แนะนำย่อยเป็น 2 ช่วงคั่นด้วยการพักเบรก เพื่อป้องกันสมองล้า (Burnout) และช่วยให้ระบบ Auto-Reflow ปรับเลื่อนได้ยืดหยุ่นกว่า"]]
         },
         {
           t: "วิธีตั้งคิวงานทำซ้ำ (ทุกวัน / วันเว้นวัน)", i: "🔁", s: [
@@ -3023,7 +3047,8 @@
             ["Someone interrupts? Tap ⏸️ Urgent interruption!", "The app starts timing how long the interruption takes."],
             ["Write a Context Bookmark", "Note where you stopped and what's next, so you can pick up instantly."],
             ["Tap ▶️ Resume my task", "Auto-Reflow pushes the rest of today's queue back by the minutes you lost."],
-            ["Queue spills past 22:00?", "Tap 📦 Move secondary tasks to tomorrow — all “secondary” tasks move in one click."]]
+            ["Queue spills past 22:00?", "Tap 📦 Move secondary tasks to tomorrow — all “secondary” tasks move in one click."],
+            ["Why keep blocks under 180 min?", "The brain focuses best for 90–120 min. If a task exceeds 3 hours, split it into 2 blocks with a rest break to prevent cognitive burnout and keep Auto-Reflow flexible."]]
         },
         {
           t: "Setting up recurring routines (daily / every other day)", i: "🔁", s: [
