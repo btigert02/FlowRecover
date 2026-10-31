@@ -8,9 +8,14 @@
     },
     {
       "site": "flowrecover-app",
-      "public": ".",
-      "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "functions/**", "**/.*", "**/node_modules/**"],
-      "rewrites": [{ "source": "/api/stripe-webhook", "function": { "functionId": "stripeWebhook", "region": "asia-southeast1" } }]
+      "public": ".redirect_stub",
+      "redirects": [
+        {
+          "source": "/**",
+          "destination": "https://flowrecover.web.app",
+          "type": 301
+        }
+      ]
     }
   ],
   "firestore": { "rules": "firestore.rules" },
