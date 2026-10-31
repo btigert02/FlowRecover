@@ -810,8 +810,59 @@
                   var(--surface);
     }
 
+    .cockpit.sleeping {
+      border: 1px solid rgba(129, 140, 248, .45);
+      background: radial-gradient(700px 300px at 0 0, rgba(99, 102, 241, .25), transparent 70%),
+                  radial-gradient(600px 300px at 100% 100%, rgba(168, 85, 247, .2), transparent 70%),
+                  #0b1021;
+      color: #e0e7ff;
+      box-shadow: 0 16px 40px -12px rgba(15, 23, 42, .85);
+    }
+
+    .btn-indigo {
+      background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+      color: #fff !important;
+      box-shadow: 0 10px 24px -8px rgba(99, 102, 241, .5);
+      border: 1px solid rgba(129, 140, 248, .4) !important;
+    }
+
+    .btn-indigo:hover {
+      box-shadow: 0 14px 28px -6px rgba(99, 102, 241, .65);
+      transform: translateY(-1px);
+    }
+
+    .pill-indigo {
+      background: rgba(99, 102, 241, .2);
+      color: #c7d2fe;
+      border: 1px solid rgba(129, 140, 248, .35);
+    }
+
+    .chip-indigo {
+      background: rgba(99, 102, 241, .2);
+      color: #c7d2fe;
+      border: 1px solid rgba(129, 140, 248, .35);
+    }
+
+    .big-timer.indigo {
+      color: #a5b4fc;
+      text-shadow: 0 0 25px rgba(129, 140, 248, .45);
+    }
+
     .task.rest-task {
       border-left: 3px solid var(--emerald);
+    }
+
+    .task.sleep-task {
+      border-left: 3px solid #818cf8;
+      background: rgba(99, 102, 241, .06);
+    }
+
+    .night-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, .14), rgba(168, 85, 247, .1));
+      border: 1px solid rgba(129, 140, 248, .35);
+      padding: 14px;
+      border-radius: 16px;
+      margin-bottom: 12px;
     }
 
     .bookmark-note {
@@ -2222,16 +2273,16 @@
       user: null, lang: null,
       sub: { subscription_status: "trial", trial_start_at: Date.now() },
       theme: "dark", tab: "focus", plannerSec: "cg", projSub: "list", guideTopic: 0,
-      queueDate: null, plannerDate: null, openProject: null,
+      queueDate: null, plannerDate: null, openProject: null, restTab: "break",
       ideas: [], tasks: [], routines: [], projects: [],
-      focus: { interrupt: null, log: [], lastReflow: null, rest: null },
+      focus: { interrupt: null, log: [], lastReflow: null, rest: null, sleep: null },
       alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {} },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
         mood: {}, booster: "",
         finance: { income: 0, goal: 50000, saved: 0 },
-        expenses: [], workouts: [], meals: [], trips: [], media: []
+        expenses: [], workouts: [], meals: [], trips: [], media: [], sleeps: []
       }
     });
     function hydrate(o) {
@@ -2240,7 +2291,7 @@
       return {
         ...d, ...o,
         sub: { ...d.sub, ...o.sub }, focus: { ...d.focus, ...o.focus }, alerts: { ...d.alerts, ...o.alerts },
-        planner: { ...d.planner, ...P, tiny: { ...d.planner.tiny, ...P.tiny }, finance: { ...d.planner.finance, ...P.finance } }
+        planner: { ...d.planner, ...P, tiny: { ...d.planner.tiny, ...P.tiny }, finance: { ...d.planner.finance, ...P.finance }, sleeps: P.sleeps || [] }
       };
     }
     let state;
@@ -2409,7 +2460,8 @@
       let h = 0; Object.values(P().habitLog).forEach(m => h += Object.values(m).filter(Boolean).length);
       let r = 0; state.routines.forEach(x => r += Object.values(x.log || {}).filter(Boolean).length);
       const t = state.tasks.filter(x => x.done).length;
-      return { habit: h * 5, routine: r * 5, task: t * 10, total: h * 5 + r * 5 + t * 10 };
+      const s = (P().sleeps || []).length;
+      return { habit: h * 5, routine: r * 5, task: t * 10, sleep: s * 15, total: h * 5 + r * 5 + t * 10 + s * 15 };
     }
     function weekDates() { const d = new Date(); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return [...Array(7)].map((_, i) => { const x = new Date(d); x.setDate(d.getDate() + i); return dkey(x); }); }
     const prioChip = t => t.priority === "secondary" ? `<span class="chip">${L("งานรอง", "Secondary")}</span>` : `<span class="chip chip-amber">${L("งานหลัก", "Main")}</span>`;
@@ -2469,7 +2521,7 @@
       toast(`${title} — ${body}`);
     }
     function checkAlerts() {
-      if (!state.user) return;
+      if (!state.user || state.focus.sleep) return;
       const n = nowMin(), today = dkey(), F = state.alerts.fired, lead = Number(state.alerts.lead) || 0;
       Object.keys(F).forEach(k => { if (!k.startsWith(today)) delete F[k]; });
       let changed = false;
@@ -2569,8 +2621,8 @@
 
     /* ---------- ⚡ Focus ---------- */
     function renderFocus() {
-      const I = state.focus.interrupt, Rst = state.focus.rest, cur = currentTask(), nxt = nextTask(), today = dkey();
-      lastCockpitKey = I ? "int" : Rst ? "rest" : cur ? cur.id : "none:" + (nxt?.id || "");
+      const I = state.focus.interrupt, Rst = state.focus.rest, Slp = state.focus.sleep, cur = currentTask(), nxt = nextTask(), today = dkey();
+      lastCockpitKey = I ? "int" : Slp ? "sleep" : Rst ? "rest" : cur ? cur.id : "none:" + (nxt?.id || "");
       let cockpit;
       if (I) {
         const t = state.tasks.find(x => x.id === I.taskId);
@@ -2584,6 +2636,28 @@
       <label class="field"><span>⚡ ${L("งานแทรกคืออะไร? (ไม่บังคับ)", "What's the interruption? (optional)")}</span>
         <input id="interrupt-reason" class="input" data-bind="focus.interrupt.reason" value="${esc(I.reason)}" placeholder="${L("เช่น หัวหน้าเรียกประชุมด่วน", "e.g. Boss called an urgent meeting")}"></label>
       <button class="btn btn-emerald btn-xl" data-act="resume" id="btn-resume">▶️ ${L("กลับมาทำงานเดิมต่อ", "Resume my task")}</button>
+    </article>`;
+      } else if (Slp) {
+        const elapsedSec = Math.max(0, (Date.now() - Slp.startedAt) / 1000);
+        const totalSec = Math.max(1, (Slp.targetEndMs - Slp.startedAt) / 1000);
+        const remainSec = Math.max(0, (Slp.targetEndMs - Date.now()) / 1000);
+        cockpit = `<article class="card cockpit sleeping" id="cockpit">
+      <div class="cockpit-top">
+        <span class="pill pill-indigo pulse-dot">🌙 ${L("กำลังนอนหลับพักผ่อน", "Deep Sleep & Recovery")}</span>
+        <span class="muted mono sm" style="color:#c7d2fe">⏰ ${L("เวลาตื่นเป้าหมาย", "Wake target")} <b style="color:#fff">${esc(Slp.wakeTimeStr || Slp.wakeTime || "--:--")} น.</b></span>
+      </div>
+      <div class="big-timer indigo" id="sleep-timer">${fmtDur(remainSec)}</div>
+      <p class="muted center sm" id="sleep-info" style="margin:4px 0 8px">${L(`เป้าหมายการนอน ${Slp.targetHours} ชม. • หลับไปแล้ว `, `Target ${Slp.targetHours}h • Asleep for `)}<b id="sleep-elapsed" style="color:#c7d2fe">${minLabel(Math.round(elapsedSec / 60))}</b></p>
+      <div class="bar" style="margin:6px 0 14px"><i id="sleep-bar" style="width:${Math.min(100, (elapsedSec / totalSec) * 100)}%;background:linear-gradient(90deg, #6366f1, #a855f7)"></i></div>
+      <div style="background:var(--surface-2);padding:13px 15px;border-radius:14px;border-left:3px solid #818cf8;margin-bottom:12px;font-size:.88rem;line-height:1.6">
+        💤 <b>${L("นอนหลับให้สนิทและเต็มอิ่มครับ:", "Deep Restful Sleep:")}</b> ${L("“การนอนหลับไม่ใช่การหยุดนิ่ง แต่คือการซ่อมแซมเซลล์และรีเซ็ตสมองที่จำเป็นที่สุดของมนุษย์” ปิดไฟ ปล่อยวางเรื่องงาน และเตรียมพร้อมตื่นมารับวันใหม่อย่างสดใส", "“Sleep is the ultimate biological recharge.” Let go of work, quiet your mind, and restore your peak energy for tomorrow.")}
+      </div>
+      ${Slp.deferredCount ? `<div class="bookmark-note sm" style="margin-bottom:12px">📦 ${L(`ย้ายงานที่ค้างคืนนี้ ${Slp.deferredCount} งานไปวันพรุ่งนี้ให้แล้ว — ไม่ต้องกังวลเรื่องงานค้าง`, `Moved ${Slp.deferredCount} remaining tasks to tomorrow — sleep worry-free`)}</div>` : ""}
+      <div class="row" style="gap:8px;margin-bottom:12px">
+        <button class="btn btn-sm grow" data-act="adjustSleep" data-v="30">＋ 30 ${L("นาที", "min")}</button>
+        <button class="btn btn-sm grow" data-act="adjustSleep" data-v="60">＋ 1 ${L("ชม.", "hour")}</button>
+      </div>
+      <button class="btn btn-amber btn-xl" data-act="wakeUp" id="btn-wake-up" style="width:100%;background:linear-gradient(135deg, #f59e0b, #ec4899);border:none;color:#fff">🌅 ${L("ตื่นนอนแล้ว (เริ่มต้นวันใหม่อย่างสดชื่น)", "I'm Awake! (Start a fresh new day)")}</button>
     </article>`;
       } else if (Rst) {
         const t = state.tasks.find(x => x.id === Rst.taskId);
@@ -2617,9 +2691,10 @@
       <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(p.title)}</span>` : `<span class="chip">📌 ${L("งานทั่วไป", "General task")}</span>`}${prioChip(cur)}</div>
       ${cur.bookmark ? `<div class="bookmark-note">📌 ${L("ทำค้างไว้ล่าสุด", "Last bookmark")}: ${esc(cur.bookmark)}</div>` : ""}
       <div><div class="big-timer" id="cd">--:--</div><p class="muted center sm" style="margin:6px 0 10px">${L("เวลาคงเหลือของบล็อกนี้", "Time left in this block")}</p><div class="bar"><i id="cd-bar"></i></div></div>
-      <div class="row" style="gap:10px;margin-bottom:8px">
-        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1;min-width:160px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
-        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" id="btn-rest" style="flex:1;min-width:160px">☕ ${L("พักผ่อน / ชาร์จพลัง", "Take a Break")}</button>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1.2;min-width:130px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest" style="flex:1;min-width:110px">☕ ${L("พักผ่อน", "Break")}</button>
+        <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep" style="flex:1;min-width:110px">🌙 ${L("เข้านอน", "Sleep")}</button>
       </div>
       <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
     </article>`;
@@ -2628,9 +2703,10 @@
       <div class="cockpit-top"><span class="pill">☕ ${L("ช่วงว่าง", "Free time")}</span><span class="muted sm">${fmtDate(today)}</span></div>
       <h2 class="cockpit-title">${nxt ? L("งานถัดไป: ", "Up next: ") + esc(nxt.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
       ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
-      <div class="row" style="gap:10px;margin-bottom:8px">
-        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1;min-width:160px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
-        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" id="btn-rest" style="flex:1;min-width:160px">☕ ${L("พักผ่อน / ชาร์จพลัง", "Take a Break")}</button>
+      <div class="row" style="gap:8px;margin-bottom:8px">
+        <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1.2;min-width:130px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest" style="flex:1;min-width:110px">☕ ${L("พักผ่อน", "Break")}</button>
+        <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep" style="flex:1;min-width:110px">🌙 ${L("เข้านอน", "Sleep")}</button>
       </div>
       <button class="btn" data-act="tab" data-tab="queue" id="btn-go-queue">＋ ${L("เพิ่มงานในคิว", "Add to queue")}</button>
     </article>`;
@@ -2640,6 +2716,19 @@
       const over = remaining.filter(t => t.start + t.dur > DAY_END);
       const secLeft = remaining.filter(t => t.priority === "secondary" && t !== cur);
       const showR = R && R.date === today;
+      const isLateNight = (nowMin() >= 22 * 60 || nowMin() < 6 * 60) && remaining.length > 0;
+      const lateNightBanner = isLateNight && !Slp ? `<article class="card night-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;color:#c7d2fe;display:flex;align-items:center;gap:6px">🌙 <span>${L("ดึกแล้ว — ถึงเวลาพักผ่อนนอนหลับ", "It's late — time for restful sleep")}</span></div>
+          <p class="muted sm" style="margin:4px 0 0;line-height:1.5">${L("สมองมนุษย์ต้องนอนหลับ 7–8 ชม. เพื่อฟื้นฟูพลังและซ่อมแซมเซลล์ ย้ายงานที่เหลือไปพรุ่งนี้แล้วเข้านอนได้เลยครับ", "Your brain needs deep sleep to recharge. Defer remaining tasks to tomorrow and rest peacefully.")}</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-indigo btn-sm" data-act="openRestDlg" data-tab="sleep" id="btn-quick-sleep">🌙 ${L("เข้าสู่โหมดเข้านอน", "Start Sleep Mode")}</button>
+          <button class="btn btn-sm" data-act="moveAllRemainingTomorrow" data-date="${today}" id="btn-move-all-tomorrow">📦 ${L("ย้ายงานคืนนี้ไปพรุ่งนี้", "Defer tonight's tasks")}</button>
+        </div>
+      </div>
+    </article>` : "";
       const reflow = showR || over.length ? `<article class="card reflow">
       <div class="card-head"><h3>🔁 Auto-Reflow</h3>${showR ? `<button class="icon-btn" data-act="dismissReflow" id="btn-dismiss-reflow" aria-label="${L("ปิด", "Close")}">✕</button>` : ""}</div>
       ${showR ? `<p>${L(`เลื่อนคิว <b>${R.count}</b> งาน ออกไป <b class="amber">${R.lost} นาที</b> ตามเวลาที่ถูกแทรก (${fmtClock(R.at)})`, `Shifted <b>${R.count}</b> tasks by <b class="amber">${R.lost} min</b> to absorb the interruption (${fmtClock(R.at)})`)}</p>` : ""}
@@ -2653,7 +2742,7 @@
       $("#view-focus").innerHTML = `
     <div class="view-head"><div><h1>⚡ Focus Cockpit</h1><p>${fmtDate(today)} • ${L("โฟกัสงานชั่วโมงนี้ ถูกแทรกก็กลับมาได้ทันที", "Focus on this hour — bounce back instantly after interruptions")}</p></div></div>
     <div class="grid grid-2">
-      <div class="grid">${cockpit}${reflow}
+      <div class="grid">${cockpit}${lateNightBanner}${reflow}
         <article class="card"><div class="stats">
           <div class="stat"><b class="emerald">${done}/${all.length}</b><span>${L("งานเสร็จวันนี้", "Done today")}</span></div>
           <div class="stat"><b class="rose">${logs.length}</b><span>${L("ครั้งที่ถูกแทรก", "Interruptions")}</span></div>
@@ -2685,8 +2774,25 @@
   </article>`;
     }
     function tickCockpit() {
-      const I = state.focus.interrupt, Rst = state.focus.rest;
+      const I = state.focus.interrupt, Rst = state.focus.rest, Slp = state.focus.sleep;
       if (I) { const el = document.getElementById("int-timer"); if (el) el.textContent = fmtDur((Date.now() - I.startedAt) / 1000); return; }
+      if (Slp) {
+        const el = document.getElementById("sleep-timer");
+        const remainSec = Math.max(0, (Slp.targetEndMs - Date.now()) / 1000);
+        if (el) el.textContent = fmtDur(remainSec);
+        const bar = document.getElementById("sleep-bar");
+        const elapsedSec = (Date.now() - Slp.startedAt) / 1000;
+        const totalSec = Math.max(1, (Slp.targetEndMs - Slp.startedAt) / 1000);
+        if (bar) bar.style.width = Math.min(100, (elapsedSec / totalSec) * 100) + "%";
+        const elElapsed = document.getElementById("sleep-elapsed");
+        if (elElapsed) elElapsed.textContent = minLabel(Math.round(elapsedSec / 60));
+        if (remainSec <= 0 && !Slp.alarmed) {
+          Slp.alarmed = true;
+          beep(); vibrate([400, 150, 400, 150, 800]);
+          toast(L("🌅 อรุณสวัสดิ์ครับ! ถึงเวลาตื่นนอนแล้ว พักผ่อนเต็มอิ่มพร้อมลุยวันใหม่ ☀️", "🌅 Good morning! Wake-up time is here. Hope you feel well-rested ☀️"));
+        }
+        return;
+      }
       if (Rst) {
         const el = document.getElementById("rest-timer");
         const remainSec = Math.max(0, (Rst.targetEndMs - Date.now()) / 1000);
@@ -2716,12 +2822,13 @@
       const live = isToday && !t.done && t.start <= n && n < t.start + t.dur;
       const overdue = isToday && !t.done && t.start + t.dur <= n;
       const over = !t.done && t.start + t.dur > DAY_END;
-      const isRest = t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title);
-      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isRest ? "rest-task" : ""}">
+      const isSleep = t.isSleep || /นอน|sleep|bedtime|เข้านอน/i.test(t.title);
+      const isRest = !isSleep && (t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title));
+      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}">
     <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
     <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span></div>
-      <div class="task-title">${isRest ? "☕ " : ""}${esc(t.title.replace(/^☕\s*/, ""))}</div>
-      <div class="chips">${isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
+      <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
+      <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
     <div class="task-actions"><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
   </li>`;
@@ -2749,11 +2856,11 @@
         </div>
         <article class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-            <h3 style="margin:0">＋ ${L("เพิ่มบล็อกงาน / เวลาพัก", "Add a block / rest")} • ${fmtDate(date)}</h3>
+            <h3 style="margin:0">＋ ${L("เพิ่มบล็อกงาน / เวลาพัก / เวลานอน", "Add task / break / sleep")} • ${fmtDate(date)}</h3>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="15" title="${L("แทรกพัก 15 นาที", "Insert 15 min break")}">☕ ${L("+ พัก 15น.", "+ 15m Break")}</button>
-              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="30" title="${L("แทรกพักเที่ยง 30 นาที", "Insert 30 min break")}">🥪 ${L("+ พัก 30น.", "+ 30m Break")}</button>
-              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="60" title="${L("แทรกพัก 60 นาที", "Insert 60 min rest")}">🌿 ${L("+ พัก 60น.", "+ 60m Rest")}</button>
+              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="15" title="${L("แทรกพัก 15 นาที", "Insert 15 min break")}">☕ ${L("+ พัก 15น.", "+ 15m")}</button>
+              <button type="button" class="btn btn-sm" data-act="quickBreak" data-dur="30" title="${L("แทรกพักเที่ยง 30 นาที", "Insert 30 min break")}">🥪 ${L("+ พัก 30น.", "+ 30m")}</button>
+              <button type="button" class="btn btn-sm btn-indigo" data-act="quickSleepBlock" title="${L("ล็อกบล็อกเวลานอนหลับ 8 ชม.", "Lock 8h sleep block")}">🌙 ${L("+ บล็อกนอน 8 ชม.", "+ 8h Sleep")}</button>
             </div>
           </div>
           <form class="form-grid" data-form="addTask" id="form-add-task" autocomplete="off">
@@ -2940,6 +3047,15 @@
       media: {
         fields: [["kind", ["ประเภท", "Type"], "select", [["book", "📚 หนังสือ", "📚 Book"], ["movie", "🎬 หนัง", "🎬 Movie"]]], ["title", ["ชื่อเรื่อง", "Title"], "text", ["ชื่อหนังสือ/หนัง", "Book/movie title"]], ["rating", ["คะแนน", "Rating"], "select", [["5", "5 ⭐", "5 ⭐"], ["4", "4 ⭐", "4 ⭐"], ["3", "3 ⭐", "3 ⭐"], ["2", "2 ⭐", "2 ⭐"], ["1", "1 ⭐", "1 ⭐"]]]],
         row: r => `${esc(optLabel("media", "kind", r.kind))} <b>${esc(r.title || "-")}</b> · ${"⭐".repeat(Number(r.rating) || 0)}`
+      },
+      sleeps: {
+        fields: [
+          ["date", ["วันที่", "Date"], "date"],
+          ["hours", ["ชั่วโมงนอน (ชม.)", "Hours slept"], "number", ["เช่น 7.5", "e.g. 7.5"]],
+          ["quality", ["คุณภาพการนอน", "Sleep quality"], "select", [["5", "⭐⭐⭐⭐⭐ หลับสนิท สดชื่นมาก", "⭐⭐⭐⭐⭐ Deep & refreshed"], ["4", "⭐⭐⭐⭐ หลับดี", "⭐⭐⭐⭐ Good"], ["3", "⭐⭐⭐ ปานกลาง", "⭐⭐⭐ Average"], ["2", "⭐⭐ หลับๆ ตื่นๆ", "⭐⭐ Restless"], ["1", "⭐ นอนไม่ค่อยหลับ", "⭐ Poor"]]],
+          ["note", ["บันทึกความฝัน/ความสดชื่น", "Dream/notes"], "text", ["เช่น นอนเร็ว ตื่นมาสดชื่น", "e.g. Slept early, energetic"]]
+        ],
+        row: r => `<b>${fmtDate(r.date)}</b> · 🌙 <span class="sum">${r.hours} ${L("ชม.", "h")}</span> · ${esc(optLabel("sleeps", "quality", r.quality))}${r.note ? ` <span class="muted">· ${esc(r.note)}</span>` : ""}`
       }
     };
     function optLabel(name, key, val) { const f = CRUD[name].fields.find(x => x[0] === key); const o = f?.[3]?.find?.(x => x[0] === val); return o ? L(o[1], o[2]) : val; }
@@ -2988,7 +3104,8 @@
       <article class="card"><div class="card-head"><h3>📆 Daily 24h Plan</h3><input type="date" class="input" style="width:auto;min-height:38px" value="${date}" data-act-change="plannerDate" id="planner-date" aria-label="${L("เลือกวันที่", "Pick a date")}"></div>
         <div class="row" style="justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface-2)"><b>Rate your day</b>${stars(`planner.daily.${date}.rate`, D.rate, "Rate your day")}</div>
         <h4 style="margin:14px 0 8px">🌅 Morning Plan (06:00–11:00)</h4><div class="hours">${[6, 7, 8, 9, 10, 11].map(hour).join("")}</div>
-        <h4 style="margin:14px 0 8px">🌇 Noon & Night Plan (12:00–22:00)</h4><div class="hours">${[12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(hour).join("")}</div></article>
+        <h4 style="margin:14px 0 8px">🌇 Noon & Evening Plan (12:00–21:00)</h4><div class="hours">${[12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(hour).join("")}</div>
+        <h4 style="margin:14px 0 8px">🌙 Night & Sleep (22:00–05:00) • ${L("เวลานอนหลับ & ฟื้นฟูสมอง", "Sleep & Recovery Hours")}</h4><div class="hours">${[22, 23, 0, 1, 2, 3, 4, 5].map(hour).join("")}</div></article>
     </div>
     <article class="card"><h3>✨ Dream Board</h3><div class="dream">${DREAM.map(d => `<div class="dream-tile" style="background:${d.g}"><div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div><textarea id="dream-${d.k}" data-bind="planner.dream.${d.k}" placeholder="${L("เขียนความฝันของคุณ…", "Write your dream…")}">${esc(P().dream[d.k])}</textarea></div>`).join("")}</div></article>
   </div>`;
@@ -3054,13 +3171,18 @@
       const ws = P().workouts.filter(w => Number(w.weight)).sort((a, b) => a.date.localeCompare(b.date));
       const wDiff = ws.length > 1 ? (ws.at(-1).weight - ws[0].weight).toFixed(1) : null;
       const tb = P().trips.reduce((a, t) => a + (Number(t.budget) || 0), 0);
+      const slps = P().sleeps || [];
+      const avgSleep = slps.length ? (slps.reduce((a, s) => a + (Number(s.hours) || 0), 0) / slps.length).toFixed(1) : null;
       return `<div class="grid grid-2b">
+    <article class="card"><h3>🛌 Sleep & Recovery Tracker (${L("บันทึกการนอนหลับ & การฟื้นฟู", "Sleep & Recovery")})</h3>
+      ${slps.length ? `<p class="muted sm" style="margin-bottom:10px">${L("นอนเฉลี่ย", "Average sleep")} <b class="emerald">${avgSleep} ${L("ชม./คืน", "hours/night")}</b> • ${L("บันทึกแล้ว", "Logged")} <b>${slps.length}</b> ${L("คืน", "nights")}</p>` : `<p class="muted sm" style="margin-bottom:10px">${L("บันทึกชั่วโมงนอนและคุณภาพการหลับ เพื่อสมดุลชีวิตและสุขภาพสมอง", "Log your sleep hours and quality to track your health and cognitive balance.")}</p>`}
+      ${crudForm("sleeps")}${crudList("sleeps")}</article>
     <article class="card"><h3>💪 Workout & Fitness Journey</h3>
       ${ws.length ? `<p class="muted sm" style="margin-bottom:10px">${L("น้ำหนักล่าสุด", "Latest weight")} <b class="amber">${ws.at(-1).weight} ${L("กก.", "kg")}</b>${wDiff !== null ? ` • ${L("เปลี่ยนแปลง", "change")} <b class="${wDiff <= 0 ? "emerald" : "rose"}">${wDiff > 0 ? "+" : ""}${wDiff} ${L("กก.", "kg")}</b>` : ""}</p>` : ""}
       ${crudForm("workouts")}${crudList("workouts")}</article>
     <article class="card"><h3>🥗 Meal Plan & Calories</h3><p class="muted sm" style="margin-bottom:10px">${L("วันนี้รวม", "Today's total")} <b class="amber">${money(kcal)} kcal</b></p>${crudForm("meals")}${crudList("meals")}</article>
     <article class="card"><h3>✈️ Travel Planner</h3><p class="muted sm" style="margin-bottom:10px">${L("งบรวมทุกทริป", "Total trip budget")} <b class="amber">${money(tb)} ฿</b></p>${crudForm("trips")}${crudList("trips")}</article>
-    <article class="card"><h3>📚 Book Shelf & 🎬 Movie Collection</h3>${crudForm("media")}${crudList("media")}</article>
+    <article class="card full"><h3>📚 Book Shelf & 🎬 Movie Collection</h3>${crudForm("media")}${crudList("media")}</article>
   </div>`;
     }
 
@@ -3077,9 +3199,10 @@
             ["วงจรไม่ให้งานหลุด", "วางคิว → โฟกัส → ถูกแทรก → กลับมาทำต่อ → ระบบเลื่อนตารางที่เหลือให้อัตโนมัติ"]]
         },
         {
-          t: "วิธีใช้ปุ่ม “งานแทรก” & ปุ่ม “พักผ่อน” & เลื่อนตารางอัตโนมัติ", i: "⏸️", s: [
+          t: "วิธีใช้ปุ่ม “งานแทรก” & ปุ่ม “พักผ่อน” & “เข้านอน” & เลื่อนตารางอัตโนมัติ", i: "⏸️", s: [
             ["เปิดหน้า ⚡ โฟกัส/แทรก", "จะเห็นงานของชั่วโมงนี้ พร้อมตัวนับเวลาถอยหลังและหลอดความคืบหน้า"],
             ["ปุ่ม ☕ พักผ่อน / ชาร์จพลัง", "เราไม่ได้ทำงานตลอดเวลา! แตะปุ่มพักผ่อนเพื่อเลือกพัก 5, 15, 30 หรือ 60 นาที ระบบจะสลับเป็นโหมด Zen ผ่อนคลายพร้อมนับเวลาถอยหลัง และปรับเลื่อนตารางที่เหลือให้อัตโนมัติเมื่อพักเสร็จ"],
+            ["ปุ่ม 🌙 เข้านอน & บล็อกเวลานอน 8 ชม.", "เมื่อถึงเวลาพักผ่อนยาวกลางคืน แตะปุ่ม 🌙 เข้านอน หรือกด '+ บล็อกนอน 8 ชม.' ในคิวงาน เพื่อเปิดโหมดเข้านอน ระบบมีตัวเลือกย้ายงานที่ค้างคืนนี้ไปพรุ่งนี้ทั้งหมด ปิดเสียงเตือนเวลางาน และนับรอบการนอน 5 Cycles (7.5 ชม.) ตื่นแล้วกด 🌅 เพื่อรับ +15 แต้มและบันทึกประวัติลง Life Planner"],
             ["มีคนมาแทรก กด ⏸️ มีงานด่วนแทรก! ทันที", "ระบบเริ่มจับเวลาที่เสียไปกับงานแทรกโดยอัตโนมัติ"],
             ["พิมพ์ Context Bookmark", "จดสั้นๆ ว่าทำค้างถึงไหน ขั้นต่อไปคืออะไร กลับมาแล้วจะต่องานได้ทันทีไม่ต้องนึก"],
             ["กด ▶️ กลับมาทำงานเดิมต่อ", "ระบบ Auto-Reflow จะเลื่อนคิวงานที่เหลือของวันนี้ออกไปตามจำนวนนาทีที่ถูกแทรก"],
@@ -3143,9 +3266,10 @@
             ["The no-drop loop", "Plan → focus → get interrupted → resume → the rest of your day reflows automatically."]]
         },
         {
-          t: "Using the “Interruption” & “Take a Break” buttons & auto-reflow", i: "⏸️", s: [
+          t: "Using the “Interruption”, “Take a Break” & “Sleep Mode” buttons & auto-reflow", i: "⏸️", s: [
             ["Open ⚡ Focus", "You'll see this hour's task with a countdown and progress bar."],
             ["☕ Rest & Recharge button", "We don't work all the time! Tap the break button to pick 5, 15, 30, or 60 min. The cockpit switches to calming Zen mode with a live timer and shifts remaining tasks automatically when done."],
+            ["🌙 Sleep Mode & Bedtime Routine", "When heading to bed, tap 🌙 Sleep or add an 8h sleep block in the queue. You can automatically move tonight's unfinished tasks to tomorrow so you sleep guilt-free with muted daytime alarms. Upon waking, tap 🌅 to log your sleep session into Life Planner and earn +15 Level Up points."],
             ["Someone interrupts? Tap ⏸️ Urgent interruption!", "The app starts timing how long the interruption takes."],
             ["Write a Context Bookmark", "Note where you stopped and what's next, so you can pick up instantly."],
             ["Tap ▶️ Resume my task", "Auto-Reflow pushes the rest of today's queue back by the minutes you lost."],
@@ -3411,10 +3535,20 @@
       <button class="btn" type="button" data-act="closeDlg" data-id="admin-dlg">${L("ยกเลิก", "Cancel")}</button>
     </div>`;
     }
-    function renderRestDlg() {
+    function renderRestDlg(defaultTab) {
       const b = $("#rest-dlg-body"); if (!b) return;
+      if (defaultTab) state.restTab = defaultTab;
+      const curTab = state.restTab || "break";
+      const isNight = nowMin() >= 21 * 60 || nowMin() < 6 * 60;
+      const wakeDate = new Date(Date.now() + 7.5 * 3600000);
+      const defWake = pad(wakeDate.getHours()) + ":" + pad(wakeDate.getMinutes());
       b.innerHTML = `
-    <div class="dlg-head"><h2 id="rest-dlg-title">☕ ${L("พักผ่อน & ชาร์จพลัง", "Rest & Recharge Break")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="rest-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <div class="dlg-head"><h2 id="rest-dlg-title">${curTab === "sleep" ? `🌙 ${L("โหมดเข้านอน & นอนหลับยาว", "Nighttime Sleep Mode")}` : `☕ ${L("พักผ่อนระหว่างวัน & ชาร์จพลัง", "Daytime Break & Recharge")}`}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="rest-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <div class="seg" role="tablist" style="margin:10px 0 14px">
+      <button class="${curTab === "break" ? "on" : ""}" data-act="switchRestTab" data-v="break" id="rtab-break">☕ ${L("พักระหว่างวัน (Breaks)", "Daytime Break")}</button>
+      <button class="${curTab === "sleep" ? "on" : ""}" data-act="switchRestTab" data-v="sleep" id="rtab-sleep">🌙 ${L("เข้านอนตอนกลางคืน (Sleep)", "Nighttime Sleep")}${isNight ? ' <span class="chip chip-amber" style="padding:1px 6px;font-size:.7rem">แนะนำ</span>' : ""}</button>
+    </div>
+    ${curTab === "break" ? `
     <p class="muted sm" style="line-height:1.6">${L("“เราไม่ได้ทำงานตลอดเวลา” — สมองมนุษย์ต้องมีช่วงผ่อนคลายเพื่อฟื้นฟูสมาธิและกักเก็บพลังงานสำหรับช่วงต่อไป", "“We don't work all the time” — give your mind space to recharge so you can return with clarity.")}</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px;margin:16px 0">
       <button class="btn" data-act="startRest" data-mins="5" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
@@ -3432,7 +3566,40 @@
     </form>
     <div style="background:var(--surface-2);padding:10px 12px;border-radius:12px;font-size:.85rem;line-height:1.5;border-left:3px solid var(--emerald)">
       💡 <b>Auto-Reflow:</b> ${L("เมื่อกดเริ่มพักผ่อน ระบบจะบันทึกสถานะงานปัจจุบันไว้ และปรับเลื่อนตารางงานที่เหลือให้อัตโนมัติ เพื่อให้คุณได้พักผ่อนอย่างสบายใจโดยไม่ต้องกังวลเรื่องงาน", "FlowRecover will bookmark your current work and reflow remaining tasks automatically so you can truly unwind.")}
-    </div>`;
+    </div>
+    ` : `
+    <p class="muted sm" style="line-height:1.6">${L("💤 <b>การนอนหลับลึก (Deep Sleep)</b> คือการฟื้นฟูชีวภาพที่ดีที่สุดของมนุษย์ สมองจะจัดระเบียบความทรงจำ ซ่อมแซมเซลล์ และชาร์จแบตเตอรี่ชีวิตให้พร้อมสำหรับวันพรุ่งนี้", "💤 <b>Deep Sleep</b> is the supreme human biological recharge. Your brain organizes memories, repairs cells, and restores peak mental energy for tomorrow.")}</p>
+    
+    <div style="margin:14px 0 10px;font-weight:700;font-size:.9rem">🌙 ${L("เลือกระยะเวลานอน (Sleep Cycles)", "Select sleep duration (Sleep Cycles)")}:</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(130px, 1fr));gap:10px;margin-bottom:14px">
+      <button class="btn btn-indigo" data-act="startSleep" data-hours="7.5" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">😴</span><b>7.5 ${L("ชม.", "hours")}</b><small style="color:#e0e7ff">${L("5 รอบการนอน (แนะนำที่สุด)", "5 Sleep Cycles (Best)")}</small></button>
+      <button class="btn btn-indigo" data-act="startSleep" data-hours="8" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">🛌</span><b>8 ${L("ชม.", "hours")}</b><small class="muted">${L("ฟื้นฟูร่างกาย 100%", "Full body recovery")}</small></button>
+      <button class="btn btn-indigo" data-act="startSleep" data-hours="7" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">⚡</span><b>7 ${L("ชม.", "hours")}</b><small class="muted">${L("กำลังดี สมดุลชีวิต", "Well-balanced")}</small></button>
+      <button class="btn btn-indigo" data-act="startSleep" data-hours="6" style="padding:14px 10px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:1.6rem">⏰</span><b>6 ${L("ชม.", "hours")}</b><small class="muted">${L("4 รอบ (วันเร่งรีบ)", "4 Cycles (Busy day)")}</small></button>
+    </div>
+
+    <form data-form="customSleep" style="margin-bottom:14px">
+      <label class="field" style="margin-bottom:10px">
+        <span>⏰ ${L("หรือระบุเวลาตื่นนอนที่ต้องการ (Wake-up Time)", "Or specify target wake-up time")}</span>
+        <div class="row"><input class="input grow" type="time" name="wakeTime" id="custom-wake-input" value="${defWake}"><button class="btn btn-indigo" type="submit" id="btn-submit-wake">🌙 ${L("ตั้งเวลาตื่นนี้", "Set wake-up")}</button></div>
+      </label>
+    </form>
+
+    <label class="switch" style="padding:12px;border-radius:12px;background:var(--surface-2);margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <b>📦 ${L("ย้ายงานที่ค้างคืนนี้ไปวันพรุ่งนี้ทั้งหมด", "Defer tonight's remaining tasks to tomorrow")}</b>
+        <div class="muted sm" style="line-height:1.4">${L("ปิดจ็อบคืนนี้ เพื่อให้คุณเข้านอนอย่างสบายใจ ไม่ต้องพะวงงานค้างและไม่มีเสียงเตือนงานกวนใจ", "Clear tonight's tasks so you sleep peacefully with no guilt or daytime alarms")}</div>
+      </div>
+      <input type="checkbox" id="chk-defer-sleep" checked>
+    </label>
+
+    <button class="btn btn-indigo btn-xl" data-act="startSleep" data-hours="7.5" id="btn-main-sleep" style="width:100%;font-size:1.05rem">🌙 ${L("เริ่มโหมดเข้านอน (Goodnight & Sleep)", "Start Sleep Mode (Goodnight & Sleep)")}</button>
+    `}
+    `;
     }
     function renderPayDlg() {
       $("#pay-body").innerHTML = `
@@ -3522,7 +3689,12 @@
         state.focus.interrupt = null; rerender();
         toast(lost ? L(`🔁 Auto-Reflow: เลื่อน ${count} งาน ออกไป ${lost} นาที`, `🔁 Auto-Reflow: shifted ${count} tasks by ${lost} min`) : L("▶️ กลับมาโฟกัสต่อ (เสียเวลาไม่ถึง 1 นาที)", "▶️ Back to focus (less than 1 min lost)"));
       },
-      openRestDlg: () => { renderRestDlg(); $("#rest-dlg").showModal(); },
+      openRestDlg: d => {
+        renderRestDlg(d?.tab);
+        const dlg = $("#rest-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      },
+      switchRestTab: d => { state.restTab = d.v; renderRestDlg(); },
       startRest: d => {
         const mins = Number(d.mins) || 15;
         const cur = currentTask();
@@ -3570,6 +3742,135 @@
         state.focus.rest = null;
         rerender();
         toast(L(`✨ ชาร์จพลังเสร็จสิ้น (${actualMins} นาที) • ปรับเลื่อนคิวงานให้เรียบร้อย พร้อมลุยต่อ!`, `✨ Break complete (${actualMins} min) • Queue reflowed, ready to focus!`));
+      },
+      startSleep: d => {
+        let targetEndMs;
+        let wakeTimeStr = "";
+        let targetHours = 7.5;
+        if (d && d.wakeTime) {
+          const parts = String(d.wakeTime).split(":").map(Number);
+          const now = new Date();
+          const target = new Date();
+          target.setHours(parts[0] || 0, parts[1] || 0, 0, 0);
+          if (target.getTime() <= now.getTime()) {
+            target.setDate(target.getDate() + 1);
+          }
+          targetEndMs = target.getTime();
+          wakeTimeStr = String(d.wakeTime);
+          targetHours = Math.round(((targetEndMs - now.getTime()) / 3600000) * 10) / 10;
+        } else {
+          targetHours = Number(d?.hours) || 7.5;
+          targetEndMs = Date.now() + Math.round(targetHours * 3600000);
+          const wDate = new Date(targetEndMs);
+          wakeTimeStr = pad(wDate.getHours()) + ":" + pad(wDate.getMinutes());
+        }
+
+        const chk = $("#chk-defer-sleep");
+        const defer = chk ? chk.checked : true;
+        const today = dkey();
+        let deferredCount = 0;
+        if (defer) {
+          state.tasks.forEach(t => {
+            if (t.date === today && !t.done && !t.isSleep) {
+              t.date = addDays(today, 1);
+              deferredCount++;
+            }
+          });
+        }
+
+        state.focus.sleep = {
+          startedAt: Date.now(),
+          targetEndMs,
+          wakeTime: wakeTimeStr,
+          wakeTimeStr,
+          targetHours,
+          deferredCount,
+          alarmed: false
+        };
+        state.focus.rest = null;
+        state.focus.interrupt = null;
+        $("#rest-dlg")?.close();
+        vibrate([100, 100, 150]);
+        rerender();
+        const msg = deferredCount > 0
+          ? L(`🌙 เข้าสู่โหมดนอนหลับ (เป้าหมายตื่น ${wakeTimeStr} น.) • เลื่อนงานที่ค้าง ${deferredCount} งานไปพรุ่งนี้แล้ว หลับฝันดีครับ 😴`, `🌙 Sleep mode started (Wake target ${wakeTimeStr}) • Moved ${deferredCount} pending tasks to tomorrow. Sleep well! 😴`)
+          : L(`🌙 เข้าสู่โหมดนอนหลับ (เป้าหมายตื่น ${wakeTimeStr} น.) — หลับฝันดี ชาร์จพลังให้เต็มที่ครับ 😴`, `🌙 Sleep mode started (Wake target ${wakeTimeStr}) — Sleep well & recharge! 😴`);
+        toast(msg);
+      },
+      adjustSleep: d => {
+        const Slp = state.focus.sleep; if (!Slp) return;
+        const addMins = Number(d.v) || Number(d.mins) || 30;
+        Slp.targetEndMs += addMins * 60000;
+        const wDate = new Date(Slp.targetEndMs);
+        Slp.wakeTimeStr = pad(wDate.getHours()) + ":" + pad(wDate.getMinutes());
+        Slp.targetHours = Math.round(((Slp.targetEndMs - Slp.startedAt) / 3600000) * 10) / 10;
+        Slp.alarmed = false;
+        rerender();
+        toast(L(`⏰ เลื่อนเวลาตื่นเป็น ${Slp.wakeTimeStr} น. (+${addMins} นาที)`, `⏰ Adjusted wake time to ${Slp.wakeTimeStr} (+${addMins}m)`));
+      },
+      wakeUp: () => {
+        const Slp = state.focus.sleep; if (!Slp) return;
+        const actualMins = Math.max(1, Math.round((Date.now() - Slp.startedAt) / 60000));
+        const actualHours = Math.round((actualMins / 60) * 10) / 10;
+        const today = dkey();
+        P().sleeps ||= [];
+        P().sleeps.unshift({
+          id: uid(),
+          ts: Date.now(),
+          date: today,
+          hours: actualHours,
+          quality: actualHours >= 7 ? "ดีมาก (Good)" : actualHours >= 5 ? "ปานกลาง (Fair)" : "นอนน้อย (Low)",
+          note: L(`ตื่นเวลา ${pad(new Date().getHours())}:${pad(new Date().getMinutes())} น.`, `Woke up at ${pad(new Date().getHours())}:${pad(new Date().getMinutes())}`)
+        });
+        P().habits?.forEach(h => {
+          if (/นอน|sleep|rest/i.test(h.name)) {
+            P().habitLog ||= {};
+            P().habitLog[h.id] ||= {};
+            P().habitLog[h.id][today] = true;
+          }
+        });
+        state.focus.sleep = null;
+        rerender();
+        vibrate([80, 50, 80, 50, 120]);
+        toast(L(`🌅 อรุณสวัสดิ์ครับ! บันทึกเวลานอน ${actualHours} ชม. (+15 แต้ม Level Up 🎉) พร้อมเริ่มวันใหม่อย่างสดชื่น!`, `🌅 Good morning! Logged ${actualHours} hrs sleep (+15 Level Up pts 🎉) Have a great day!`));
+      },
+      quickSleepBlock: () => {
+        const date = state.queueDate || dkey();
+        const exist = state.tasks.find(x => x.date === date && x.isSleep);
+        if (exist) {
+          toast(L("มีบล็อกเวลานอนในวันนี้อยู่แล้ว 🌙", "Already have a sleep block for today 🌙"));
+          return;
+        }
+        state.tasks.push({
+          id: uid(),
+          title: L("🌙 เวลานอนหลับ & ฟื้นฟูพลังสมอง (Sleep 8 hrs)", "🌙 Sleep & Brain Recovery (8 hrs)"),
+          date,
+          start: 23 * 60,
+          dur: 8 * 60,
+          projectId: null,
+          priority: "main",
+          done: false,
+          bookmark: "",
+          isSleep: true
+        });
+        rerender();
+        toast(L("🌙 บล็อกเวลานอน 8 ชม. (23:00–07:00) เรียบร้อย! พักผ่อนให้เต็มที่นะครับ", "🌙 Blocked 8 hrs sleep (23:00–07:00) into queue!"));
+      },
+      moveAllRemainingTomorrow: () => {
+        const today = dkey();
+        let count = 0;
+        state.tasks.forEach(t => {
+          if (t.date === today && !t.done && !t.isSleep) {
+            t.date = addDays(today, 1);
+            count++;
+          }
+        });
+        rerender();
+        if (count > 0) {
+          toast(L(`📦 เลื่อนงานที่ค้าง ${count} งานไปพรุ่งนี้ (${fmtDate(addDays(today, 1))}) เรียบร้อย คืนนี้นอนหลับให้สบายใจนะครับ!`, `📦 Moved ${count} pending tasks to tomorrow (${fmtDate(addDays(today, 1))}). Sleep peacefully tonight!`));
+        } else {
+          toast(L("ไม่มีงานที่ค้างในวันนี้แล้วครับ", "No pending tasks left today"));
+        }
       },
       quickBreak: d => {
         const dur = Number(d.dur) || 15;
@@ -3655,6 +3956,9 @@
       customRest: fd => {
         const mins = Math.max(1, Math.min(240, Number(fd.mins) || 15));
         A.startRest({ mins });
+      },
+      customSleep: fd => {
+        if (fd.wakeTime) A.startSleep({ wakeTime: fd.wakeTime });
       },
       idea: (fd, f) => { const text = (fd.idea || "").trim(); if (!text) return; state.ideas.push({ id: uid(), text, at: Date.now() }); f.reset(); f.querySelector("input").blur(); save(); renderTopbar(); toast(L("💡 เก็บไอเดียแล้ว — กลับไปโฟกัสต่อ!", "💡 Idea saved — back to focus!")); },
       addTask: fd => {
@@ -3795,7 +4099,7 @@
       if (!state.user || $("#app").hidden) return;
       tick++;
       if (state.tab === "focus") {
-        const cur = currentTask(), key = state.focus.interrupt ? "int" : state.focus.rest ? "rest" : cur ? cur.id : "none:" + (nextTask()?.id || "");
+        const cur = currentTask(), key = state.focus.interrupt ? "int" : state.focus.sleep ? "sleep" : state.focus.rest ? "rest" : cur ? cur.id : "none:" + (nextTask()?.id || "");
         if (key !== lastCockpitKey && !document.activeElement?.closest?.("#view-focus input, #view-focus textarea, #view-focus select")) renderView();
         else tickCockpit();
       }
