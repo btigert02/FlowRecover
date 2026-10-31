@@ -9,6 +9,13 @@
     content="FlowRecover x Life Planner: จัดตารางงานยืดหยุ่น กู้คืนงานเมื่อถูกขัดจังหวะ เลื่อนคิวอัตโนมัติ บริหารโปรเจค และสมุดวางแผนชีวิตครบวงจร ใช้งานง่ายด้วยมือเดียวบนมือถือ">
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="FlowRecover">
+  <meta name="application-name" content="FlowRecover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2978,7 +2985,7 @@
     }
 
     /* ---------- 📖 Guide ---------- */
-    const GUIDE_GO = [{ tab: "focus" }, { tab: "focus" }, { tab: "queue" }, { tab: "projects" }, { tab: "planner", sec: "cg" }, { tab: "focus", scroll: "alerts-card" }, { act: "payChoose" }];
+    const GUIDE_GO = [{ tab: "focus" }, { tab: "focus" }, { tab: "queue" }, { tab: "projects" }, { tab: "planner", sec: "cg" }, { tab: "focus", scroll: "alerts-card" }, { act: "payChoose" }, { act: "copyAppUrl" }];
     const GUIDE = {
       th: [
         {
@@ -3036,6 +3043,13 @@
             ["กด สมัคร PRO 99฿/เดือน แล้วเลือกวิธีชำระ", "💳 บัตรเครดิต/เดบิต — ต่ออายุอัตโนมัติทุกเดือน • 📱 QR PromptPay — สแกนจ่ายผ่านแอปธนาคาร ได้สิทธิ์ 30 วัน"],
             ["ชำระผ่าน Stripe อย่างปลอดภัย", "อีเมลของคุณถูกกรอกให้อัตโนมัติ ชำระเสร็จระบบจะเปลี่ยนสถานะเป็น 👑 PRO ให้เอง"],
             ["หมด 7 วันแต่ยังไม่สมัคร?", "จะเห็นหน้า Paywall แต่ข้อมูลทั้งหมดยังเก็บอย่างปลอดภัยในบัญชี Google ของคุณ สมัครแล้วใช้ต่อได้ทันที"]]
+        },
+        {
+          t: "ทริคติดตั้งแอปบนหน้าจอมือถือ (iPhone & Android)", i: "📱", s: [
+            ["📱 สำหรับ iPhone (Safari)", "เปิดเว็บ flowrecover.web.app ใน Safari → กดที่ปุ่มแชร์ ⬆️ (ไอคอนสี่เหลี่ยมลูกศรชี้ขึ้น ด้านล่างของ Safari) → เลื่อนลงมาเลือก 'Add to Home Screen' (เพิ่มไปยังหน้าจอโฮม) → กด Add (เพิ่ม) ที่มุมขวาบน"],
+            ["🤖 สำหรับ Android (Google Chrome)", "เปิดเว็บ flowrecover.web.app ใน Chrome → กดปุ่มเมนู 3 จุด (⋮) ที่มุมขวาบน → เลือก 'ติดตั้งแอป' (Install app) หรือ 'เพิ่มลงในหน้าจอหลัก' (Add to Home screen) → กด ติดตั้ง (Install) ยืนยัน"],
+            ["⚡ ใช้งานได้เหมือนแอปจริงเต็มจอ 100%", "จะได้ไอคอน ⚡ FlowRecover อยู่บนหน้าจอมือถือของคุณ เปิดใช้งานได้เต็มจอทันทีแบบไม่ต้องมีแถบ URL ของ Safari/Chrome มากวนใจ เหมือนแอปโหลดจาก App Store หรือ Play Store เลยครับ!"],
+            ["☁️ ข้อมูลซิงก์กันทุกเครื่องอัตโนมัติ", "ไม่ว่าจะเปิดจากหน้าจอโฮมบนมือถือ หรือเปิดในคอมพิวเตอร์ ข้อมูลทั้งหมดเชื่อมต่อกับคลาวด์ผ่านบัญชี Google เดียวกันเสมอ"]]
         }
       ],
       en: [
@@ -3094,6 +3108,13 @@
             ["Tap Go PRO 99฿/mo and choose a method", "💳 Credit/debit card — auto-renews monthly • 📱 QR PromptPay — scan with any Thai banking app for 30 days of access."],
             ["Pay securely with Stripe", "Your email is pre-filled. After payment your status switches to 👑 PRO automatically."],
             ["Trial over but not subscribed?", "You'll see the paywall, but all your data stays safe in your Google account. Subscribe and continue right away."]]
+        },
+        {
+          t: "Mobile App Trick: Add to Home Screen (iPhone & Android)", i: "📱", s: [
+            ["📱 For iPhone (Safari)", "Open flowrecover.web.app in Safari → Tap the Share button ⬆️ (square with arrow up at the bottom) → Scroll down and select 'Add to Home Screen' → Tap Add at top-right."],
+            ["🤖 For Android (Google Chrome)", "Open flowrecover.web.app in Chrome → Tap the 3-dots menu (⋮) at top-right → Select 'Install app' or 'Add to Home screen' → Tap Install to confirm."],
+            ["⚡ 100% Full-screen standalone app experience", "You'll get the ⚡ FlowRecover icon right on your phone's home screen. Opens full-screen with no browser address bar, ultra-fast and smooth just like an App Store / Google Play app!"],
+            ["☁️ Real-time cloud sync on all devices", "Whether opening from your phone's home screen or laptop browser, all tasks and planner entries stay in sync via Google Cloud."]]
         }
       ]
     };
@@ -3201,11 +3222,65 @@
       </div>
     </article>
 
+    <article class="card" style="margin-bottom:16px;border:1px solid rgba(167,139,250,.35);background:radial-gradient(700px 300px at 0 0,rgba(167,139,250,.12),transparent 70%),radial-gradient(600px 300px at 100% 100%,rgba(56,189,248,.1),transparent 70%),var(--surface)">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="pill pill-violet" style="font-size:.82rem">📱 Mobile App Trick</span>
+          <span class="muted sm">• ${L("ทริคแนะนำ: ใช้งานเหมือนแอปจริงแบบไม่ต้องมีแถบ URL", "Pro tip: Run as a full-screen native app without browser bars")}</span>
+        </div>
+        <button class="btn btn-sm" data-act="copyAppUrl" id="btn-guide-copy-top">📋 ${L("คัดลอกลิงก์เว็บ", "Copy Web URL")}</button>
+      </div>
+
+      <h2 style="font-size:1.35rem;line-height:1.35;margin-bottom:10px">
+        ${L(
+          "📱 เพิ่ม ⚡ FlowRecover ไปยังหน้าจอโฮมมือถือ — เต็มจอ 100% เหมือนโหลดจาก App Store!",
+          "📱 Add ⚡ FlowRecover to Your Phone's Home Screen — Full-Screen App Experience!"
+        )}
+      </h2>
+      <p style="color:var(--text);font-size:.92rem;line-height:1.65;margin-bottom:16px">
+        ${L(
+          "เพื่อให้การใช้งานลื่นไหลและมีสมาธิสูงสุด ไม่ต้องมีแถบ URL หรือปุ่มควบคุมของเบราว์เซอร์มากวนสายตา คุณสามารถเพิ่มเป็นไอคอนแอปบนหน้าจอมือถือได้ง่ายๆ ทั้ง <b>iPhone (iOS)</b> และ <b>Android</b> ตามขั้นตอนนี้ครับ:",
+          "For the smoothest and distraction-free experience without browser navigation bars, you can easily install FlowRecover as a native home screen app on both <b>iPhone (iOS)</b> and <b>Android</b>:"
+        )}
+      </p>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:12px;margin-bottom:14px">
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--sky)">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span style="font-size:1.2rem">🍎</span> <span>${L("สำหรับ iPhone (Safari)", "For iPhone (Apple Safari)")}</span>
+          </div>
+          <ol class="gsteps" style="padding-left:4px;margin:0">
+            <li style="margin-bottom:8px"><div><b>1. ${L("เปิดเว็บใน Safari", "Open in Safari")}</b><p>${L("เปิด https://flowrecover.web.app ในเบราว์เซอร์ Safari", "Open https://flowrecover.web.app in Safari")}</p></div></li>
+            <li style="margin-bottom:8px"><div><b>2. ${L("กดปุ่มแชร์ ⬆️", "Tap Share button ⬆️")}</b><p>${L("ไอคอนสี่เหลี่ยมลูกศรชี้ขึ้น ที่แถบด้านล่างของ Safari", "Square icon with arrow pointing up at the bottom of Safari")}</p></div></li>
+            <li style="margin-bottom:8px"><div><b>3. ${L("เลือก 'Add to Home Screen'", "Select 'Add to Home Screen'")}</b><p>${L("เลื่อนหน้าต่างแชร์ลงมา แล้วแตะ “เพิ่มไปยังหน้าจอโฮม”", "Scroll down and tap “Add to Home Screen”")}</p></div></li>
+            <li><div><b>4. ${L("แตะ 'Add' (เพิ่ม) ที่มุมขวาบน", "Tap 'Add' at top-right")}</b><p>${L("จะได้ไอคอน ⚡ FlowRecover อยู่บนหน้าจอโฮม เปิดใช้งานได้เต็มจอทันที!", "⚡ FlowRecover icon appears on your home screen, opens full-screen!")}</p></div></li>
+          </ol>
+        </div>
+
+        <div style="padding:14px;border-radius:16px;background:var(--surface-2);border-left:4px solid var(--emerald)">
+          <div style="font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px">
+            <span style="font-size:1.2rem">🤖</span> <span>${L("สำหรับ Android (Google Chrome)", "For Android (Google Chrome)")}</span>
+          </div>
+          <ol class="gsteps" style="padding-left:4px;margin:0">
+            <li style="margin-bottom:8px"><div><b>1. ${L("เปิดเว็บใน Chrome", "Open in Chrome")}</b><p>${L("เปิด https://flowrecover.web.app ใน Google Chrome บนมือถือ", "Open https://flowrecover.web.app in mobile Chrome")}</p></div></li>
+            <li style="margin-bottom:8px"><div><b>2. ${L("กดปุ่มเมนู 3 จุด (⋮)", "Tap 3 dots menu (⋮)")}</b><p>${L("แตะที่ไอคอน 3 จุดที่มุมขวาบนของเบราว์เซอร์ Chrome", "Tap the 3 dots at the top-right corner of Chrome")}</p></div></li>
+            <li style="margin-bottom:8px"><div><b>3. ${L("เลือก 'ติดตั้งแอป' / 'เพิ่มลงในหน้าจอหลัก'", "Select 'Install app' or 'Add to Home screen'")}</b><p>${L("แตะเลือก “ติดตั้งแอป” (Install app) หรือ “เพิ่มลงในหน้าจอหลัก”", "Tap “Install app” or “Add to Home screen”")}</p></div></li>
+            <li><div><b>4. ${L("กดยืนยัน 'ติดตั้ง' (Install)", "Confirm 'Install'")}</b><p>${L("ระบบจะสร้างไอคอน ⚡ FlowRecover บนหน้าจอโฮมและ App Drawer เปิดเต็มจอ 100%!", "Creates ⚡ FlowRecover app icon on home screen & app drawer, 100% full-screen!")}</p></div></li>
+          </ol>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:12px;background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);flex-wrap:wrap;gap:8px">
+        <span class="sm">⚡ <b>${L("จุดเด่น:", "Key Benefit:")}</b> ${L("“เปิดใช้งานเต็มจอ ไม่มีแถบ URL มาบังสายตา ตอบสนองรวดเร็ว เบาเครื่อง และข้อมูลเชื่อมต่อคลาวด์อัตโนมัติ”", "“Full-screen experience with no URL bars, fast responsiveness, and seamless real-time cloud sync.”")}</span>
+        <button class="btn btn-sm btn-amber" data-act="copyAppUrl">📋 ${L("คัดลอก https://flowrecover.web.app", "Copy https://flowrecover.web.app")}</button>
+      </div>
+    </article>
+
     <div class="grid guide-layout">
       <nav class="card" aria-label="${L("สารบัญ", "Contents")}"><ul class="toc">${G.map((x, j) => `<li><button class="${i === j ? "on" : ""}" data-act="guide" data-v="${j}" id="guide-${j}"><span class="n">${j + 1}</span><span>${x.i} ${esc(x.t)}</span></button></li>`).join("")}</ul></nav>
       <article class="card" id="guide-detail"><h2 style="font-size:1.25rem;margin-bottom:16px">${g.i} ${esc(g.t)}</h2>
         <ol class="gsteps">${g.s.map(([b, p]) => `<li><div><b>${esc(b)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol>
-        <button class="btn btn-amber btn-xl" style="margin-top:20px" data-act="guideGo" data-v="${i}" id="btn-guide-go">🚀 ${L("กดไปหน้าฟังก์ชันนี้ทันที", "Take me there")}</button></article>
+        <button class="btn btn-amber btn-xl" style="margin-top:20px" data-act="guideGo" data-v="${i}" id="btn-guide-go">${i === 7 ? `📋 ${L("คัดลอกลิงก์ https://flowrecover.web.app", "Copy link https://flowrecover.web.app")}` : `🚀 ${L("กดไปหน้าฟังก์ชันนี้ทันที", "Take me there")}`}</button></article>
     </div>`;
     }
 
@@ -3377,6 +3452,15 @@
         state.tab = g.tab; if (g.sec) state.plannerSec = g.sec; rerender();
         if (g.scroll) setTimeout(() => document.getElementById(g.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
         else scrollTo({ top: 0, behavior: "smooth" });
+      },
+      copyAppUrl: async () => {
+        const url = "https://flowrecover.web.app";
+        try {
+          await navigator.clipboard.writeText(url);
+          toast(L("📋 คัดลอกลิงก์ https://flowrecover.web.app แล้ว", "📋 Copied link https://flowrecover.web.app"));
+        } catch {
+          toast(L("ลิงก์แอป: https://flowrecover.web.app", "App link: https://flowrecover.web.app"));
+        }
       },
       ideaToTask: d => {
         const x = state.ideas.find(i => i.id === d.id); if (!x) return;
