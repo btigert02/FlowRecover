@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      // First Google sign-in: client may only create a 'trial' record stamped with server time
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at'])
+        && request.resource.data.subscription_status == 'trial'
+        && request.resource.data.trial_start_at == request.time
+        && request.resource.data.created_at == request.time;
+
+      // Profile edits allowed, but billing fields are writable ONLY by the Stripe webhook (Admin SDK)
+      allow update: if request.auth != null && request.auth.uid == uid
+        && !request.resource.data.diff(resource.data).affectedKeys()
+             .hasAny(['subscription_status', 'trial_start_at', 'stripe_customer_id', 'stripe_subscription_id', 'pro_since', 'pro_until', 'plan', 'canceled_at', 'created_at']);
+
+      allow delete: if false;
+
+      // App data (tasks, projects, Life Planner)
+      match /data/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+    }
+
+    match /pending_subscriptions/{email} {
+      allow read, write: if false;
+    }
+  }
+}

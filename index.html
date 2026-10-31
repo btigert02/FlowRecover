@@ -1,0 +1,3368 @@
+<!doctype html>
+<html lang="th" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS</title>
+  <meta name="description"
+    content="FlowRecover x Life Planner: จัดตารางงานยืดหยุ่น กู้คืนงานเมื่อถูกขัดจังหวะ เลื่อนคิวอัตโนมัติ บริหารโปรเจค และสมุดวางแผนชีวิตครบวงจร ใช้งานง่ายด้วยมือเดียวบนมือถือ">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e222d;
+      --surface-2: #262c3a;
+      --surface-3: #303748;
+      --border: rgba(148, 163, 184, .14);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --amber: #f59e0b;
+      --amber-2: #fbbf24;
+      --emerald: #10b981;
+      --emerald-2: #34d399;
+      --rose: #f43f5e;
+      --sky: #38bdf8;
+      --violet: #a78bfa;
+      --pink: #f472b6;
+      --shadow: 0 14px 34px -16px rgba(0, 0, 0, .65);
+      --radius: 20px;
+      --nav-h: 70px;
+      --glass: rgba(15, 23, 42, .74);
+      --side-w: 236px;
+    }
+
+    [data-theme=light] {
+      --bg: #f3f5fa;
+      --surface: #ffffff;
+      --surface-2: #f1f4f9;
+      --surface-3: #e5eaf2;
+      --border: rgba(15, 23, 42, .09);
+      --text: #0f172a;
+      --muted: #5b6b82;
+      --shadow: 0 12px 30px -16px rgba(15, 23, 42, .25);
+      --glass: rgba(255, 255, 255, .8);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    html {
+      -webkit-text-size-adjust: 100%;
+      color-scheme: dark
+    }
+
+    [data-theme=light] {
+      color-scheme: light
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Thai', 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      line-height: 1.55;
+      -webkit-tap-highlight-color: transparent;
+      background-image: radial-gradient(900px 520px at 105% -10%, rgba(245, 158, 11, .11), transparent 60%), radial-gradient(800px 520px at -10% 110%, rgba(16, 185, 129, .11), transparent 60%);
+      background-attachment: fixed
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer
+    }
+
+    input,
+    textarea,
+    select {
+      font: inherit;
+      color: inherit
+    }
+
+    a {
+      color: var(--amber)
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      line-height: 1.25;
+      letter-spacing: -.01em
+    }
+
+    .mono {
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums
+    }
+
+    .muted {
+      color: var(--muted)
+    }
+
+    .center {
+      text-align: center
+    }
+
+    .sm {
+      font-size: .86rem
+    }
+
+    .grow {
+      flex: 1
+    }
+
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px
+    }
+
+    .amber {
+      color: var(--amber)
+    }
+
+    .emerald {
+      color: var(--emerald)
+    }
+
+    .rose {
+      color: var(--rose)
+    }
+
+    /* ---------- Buttons & inputs ---------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-weight: 600;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      transition: transform .15s, box-shadow .2s, background .2s, filter .2s;
+      white-space: nowrap
+    }
+
+    .btn:hover {
+      filter: brightness(1.08)
+    }
+
+    .btn:active {
+      transform: scale(.97)
+    }
+
+    .btn-amber {
+      background: linear-gradient(135deg, var(--amber-2), var(--amber) 55%, #d97706);
+      color: #1b1205;
+      border: 0;
+      box-shadow: 0 10px 24px -10px rgba(245, 158, 11, .75)
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, var(--emerald-2), var(--emerald) 55%, #059669);
+      color: #04150f;
+      border: 0;
+      box-shadow: 0 10px 24px -10px rgba(16, 185, 129, .75)
+    }
+
+    .btn-rose {
+      background: linear-gradient(135deg, #fb7185, var(--rose));
+      color: #fff;
+      border: 0
+    }
+
+    .btn-ghost {
+      background: transparent
+    }
+
+    .btn-sm {
+      min-height: 34px;
+      padding: 6px 12px;
+      font-size: .85rem;
+      border-radius: 10px
+    }
+
+    .btn-xl {
+      width: 100%;
+      min-height: 68px;
+      font-size: 1.25rem;
+      border-radius: 18px;
+      font-weight: 700
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: inline-grid;
+      place-items: center;
+      font-size: 1.05rem;
+      transition: background .2s
+    }
+
+    .icon-btn:hover {
+      background: var(--surface-3)
+    }
+
+    .link {
+      color: var(--amber);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px
+    }
+
+    .input {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      outline: none;
+      transition: border .2s, box-shadow .2s
+    }
+
+    .input:focus {
+      border-color: var(--amber);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, .15)
+    }
+
+    textarea.input {
+      resize: vertical;
+      min-height: 72px
+    }
+
+    .field {
+      display: grid;
+      gap: 6px
+    }
+
+    .field>span {
+      font-size: .85rem;
+      color: var(--muted);
+      font-weight: 500
+    }
+
+    .field.sm>span {
+      font-size: .78rem
+    }
+
+    .switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--border)
+    }
+
+    .switch input {
+      appearance: none;
+      width: 48px;
+      height: 28px;
+      border-radius: 99px;
+      background: var(--surface-3);
+      position: relative;
+      cursor: pointer;
+      transition: background .2s;
+      flex: none
+    }
+
+    .switch input::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .2s;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .3)
+    }
+
+    .switch input:checked {
+      background: var(--emerald)
+    }
+
+    .switch input:checked::after {
+      transform: translateX(20px)
+    }
+
+    /* ---------- Chips & pills ---------- */
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: .76rem;
+      font-weight: 600;
+      background: var(--surface-3);
+      color: var(--muted)
+    }
+
+    .chip-amber {
+      background: rgba(245, 158, 11, .16);
+      color: var(--amber)
+    }
+
+    .chip-emerald {
+      background: rgba(16, 185, 129, .16);
+      color: var(--emerald)
+    }
+
+    .chip-rose {
+      background: rgba(244, 63, 94, .16);
+      color: var(--rose)
+    }
+
+    .chip-sky {
+      background: rgba(56, 189, 248, .16);
+      color: var(--sky)
+    }
+
+    .chip-violet {
+      background: rgba(167, 139, 250, .16);
+      color: var(--violet)
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: .82rem;
+      font-weight: 700;
+      background: var(--surface-3)
+    }
+
+    .pill-amber {
+      background: rgba(245, 158, 11, .15);
+      color: var(--amber)
+    }
+
+    .pill-rose {
+      background: rgba(244, 63, 94, .15);
+      color: var(--rose)
+    }
+
+    .pill-emerald {
+      background: rgba(16, 185, 129, .15);
+      color: var(--emerald)
+    }
+
+    .seg {
+      display: flex;
+      gap: 6px;
+      padding: 5px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow-x: auto;
+      scrollbar-width: none
+    }
+
+    .seg::-webkit-scrollbar {
+      display: none
+    }
+
+    .seg button {
+      flex: 1;
+      min-height: 40px;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: all .2s
+    }
+
+    .seg button.on {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: var(--shadow)
+    }
+
+    /* ---------- Layout ---------- */
+    .app-shell {
+      min-height: 100dvh;
+      padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 20px)
+    }
+
+    .topwrap {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
+      backdrop-filter: blur(16px) saturate(1.4);
+      -webkit-backdrop-filter: blur(16px) saturate(1.4);
+      border-bottom: 1px solid var(--border);
+      padding-top: env(safe-area-inset-top)
+    }
+
+    .banner {
+      display: block;
+      padding: 8px 14px 6px;
+      font-size: .84rem
+    }
+
+    .banner-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px
+    }
+
+    .banner.pro {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(90deg, rgba(16, 185, 129, .18), transparent);
+      color: var(--emerald)
+    }
+
+    .banner.expired {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(244, 63, 94, .14);
+      color: var(--rose)
+    }
+
+    .banner.trial.urgent .banner-text b {
+      color: var(--rose)
+    }
+
+    .trial-bar {
+      height: 5px;
+      border-radius: 9px;
+      background: var(--surface-3);
+      margin-top: 6px;
+      overflow: hidden
+    }
+
+    .trial-bar i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--emerald), var(--amber));
+      border-radius: 9px;
+      transition: width .6s
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px 10px
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-family: 'Inter';
+      white-space: nowrap
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--amber), var(--emerald));
+      color: #0b1220;
+      font-size: 1.05rem;
+      box-shadow: 0 6px 18px -6px rgba(245, 158, 11, .6)
+    }
+
+    .brand-text {
+      display: none
+    }
+
+    .idea-box {
+      flex: 1;
+      position: relative
+    }
+
+    .idea-box .input {
+      min-height: 40px;
+      padding-left: 38px;
+      border-radius: 99px;
+      font-size: .92rem
+    }
+
+    .idea-box::before {
+      content: "💡";
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .95rem
+    }
+
+    .badge-btn {
+      position: relative
+    }
+
+    .badge-btn b {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      min-width: 18px;
+      height: 18px;
+      border-radius: 9px;
+      background: var(--amber);
+      color: #111;
+      font-size: .68rem;
+      display: grid;
+      place-items: center;
+      padding: 0 4px
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--violet), var(--sky));
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      color: #fff;
+      overflow: hidden;
+      flex: none
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 16px 14px
+    }
+
+    .view {
+      animation: fadeUp .35s ease both
+    }
+
+    .view-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .view-head h1 {
+      font-size: 1.45rem
+    }
+
+    .view-head p {
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow)
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px
+    }
+
+    .card-head h3 {
+      margin: 0
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 18px;
+      font-size: .9rem;
+      border: 1px dashed var(--border);
+      border-radius: 14px
+    }
+
+    /* ---------- Bottom nav ---------- */
+    .bottom-nav {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      height: calc(var(--nav-h) + env(safe-area-inset-bottom));
+      padding: 6px 6px env(safe-area-inset-bottom);
+      display: flex;
+      background: var(--glass);
+      backdrop-filter: blur(18px) saturate(1.4);
+      -webkit-backdrop-filter: blur(18px) saturate(1.4);
+      border-top: 1px solid var(--border)
+    }
+
+    .nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border-radius: 16px;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted);
+      position: relative;
+      transition: color .2s
+    }
+
+    .nav-btn .ico {
+      font-size: 1.35rem;
+      line-height: 1;
+      transition: transform .25s
+    }
+
+    .nav-btn.on {
+      color: var(--amber)
+    }
+
+    .nav-btn.on .ico {
+      transform: translateY(-2px) scale(1.12)
+    }
+
+    .nav-btn.on::before {
+      content: "";
+      position: absolute;
+      inset: 4px 10%;
+      border-radius: 14px;
+      background: rgba(245, 158, 11, .12);
+      z-index: -1
+    }
+
+    .side-brand {
+      display: none
+    }
+
+    /* ---------- Focus cockpit ---------- */
+    .cockpit {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      gap: 14px;
+      border: 1px solid rgba(245, 158, 11, .35);
+      background: radial-gradient(500px 220px at 100% 0, rgba(245, 158, 11, .14), transparent 70%), var(--surface)
+    }
+
+    .cockpit.interrupting {
+      border-color: rgba(244, 63, 94, .5);
+      background: radial-gradient(500px 240px at 100% 0, rgba(244, 63, 94, .18), transparent 70%), var(--surface)
+    }
+
+    .cockpit.idle {
+      border-color: var(--border)
+    }
+
+    .cockpit-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px
+    }
+
+    .cockpit-title {
+      font-size: 1.5rem
+    }
+
+    .big-timer {
+      font-family: 'Inter';
+      font-weight: 800;
+      font-size: clamp(3rem, 13vw, 4.6rem);
+      letter-spacing: -.03em;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      background: linear-gradient(180deg, var(--text), var(--muted));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent
+    }
+
+    .big-timer.warn {
+      background: linear-gradient(180deg, var(--amber-2), var(--rose));
+      -webkit-background-clip: text;
+      background-clip: text
+    }
+
+    .interrupting .big-timer {
+      background: linear-gradient(180deg, #fda4af, var(--rose));
+      -webkit-background-clip: text;
+      background-clip: text
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 9px;
+      background: var(--surface-3);
+      overflow: hidden
+    }
+
+    .bar i {
+      display: block;
+      height: 100%;
+      width: 0;
+      border-radius: 9px;
+      background: linear-gradient(90deg, var(--emerald), var(--amber));
+      transition: width .8s
+    }
+
+    .interrupt-btn {
+      animation: glow 2.6s ease-in-out infinite
+    }
+
+    .bookmark-note {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(56, 189, 248, .1);
+      border: 1px solid rgba(56, 189, 248, .25);
+      font-size: .9rem
+    }
+
+    .bookmark-note.sm {
+      font-size: .8rem;
+      padding: 6px 10px;
+      margin-top: 6px
+    }
+
+    .paused-task {
+      padding: 12px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      font-size: .92rem
+    }
+
+    .pulse-dot::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.2s infinite
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px
+    }
+
+    .stat {
+      padding: 14px 10px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      text-align: center
+    }
+
+    .stat b {
+      display: block;
+      font-family: 'Inter';
+      font-size: 1.5rem;
+      font-weight: 800
+    }
+
+    .stat span {
+      font-size: .75rem;
+      color: var(--muted)
+    }
+
+    .reflow {
+      border-color: rgba(16, 185, 129, .4);
+      background: linear-gradient(135deg, rgba(16, 185, 129, .12), transparent 60%), var(--surface)
+    }
+
+    .warn-box {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(244, 63, 94, .12);
+      color: var(--rose);
+      font-size: .88rem;
+      margin: 8px 0
+    }
+
+    /* ---------- Tasks ---------- */
+    .tasks {
+      list-style: none;
+      display: grid;
+      gap: 8px
+    }
+
+    .task {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1px solid transparent;
+      transition: border .2s, opacity .2s
+    }
+
+    .task.live {
+      border-color: rgba(245, 158, 11, .55);
+      background: linear-gradient(90deg, rgba(245, 158, 11, .1), var(--surface-2))
+    }
+
+    .task.done {
+      opacity: .55
+    }
+
+    .task.done .task-title {
+      text-decoration: line-through
+    }
+
+    .check {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      border: 2px solid var(--muted);
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      color: #04150f;
+      transition: all .2s;
+      margin-top: 2px
+    }
+
+    .task.done .check,
+    .check.on {
+      background: var(--emerald);
+      border-color: var(--emerald)
+    }
+
+    .task-main {
+      flex: 1;
+      min-width: 0
+    }
+
+    .task-time {
+      font-size: .8rem;
+      color: var(--amber);
+      font-weight: 600
+    }
+
+    .task-title {
+      font-weight: 600;
+      margin: 2px 0 6px;
+      word-break: break-word
+    }
+
+    .task-actions {
+      display: flex;
+      gap: 2px
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: 1fr 1fr
+    }
+
+    .form-grid .full {
+      grid-column: 1/-1
+    }
+
+    .streak {
+      font-family: 'Inter';
+      font-weight: 800;
+      color: var(--amber)
+    }
+
+    /* ---------- Projects ---------- */
+    .proj {
+      padding: 0;
+      overflow: hidden
+    }
+
+    .proj-head {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 16px;
+      cursor: pointer;
+      width: 100%;
+      text-align: left
+    }
+
+    .proj-head:hover {
+      background: var(--surface-2)
+    }
+
+    .ring {
+      --p: 0;
+      width: 54px;
+      height: 54px;
+      flex: none;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--emerald) calc(var(--p)*1%), var(--surface-3) 0);
+      font-family: 'Inter';
+      font-weight: 800;
+      font-size: .8rem
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute
+    }
+
+    .ring span {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--surface);
+      display: grid;
+      place-items: center
+    }
+
+    .proj-body {
+      padding: 0 16px 16px;
+      display: grid;
+      gap: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px
+    }
+
+    .steps {
+      list-style: none;
+      position: relative;
+      display: grid;
+      gap: 8px;
+      padding-left: 18px
+    }
+
+    .steps::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--surface-3)
+    }
+
+    .step {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: var(--surface-2)
+    }
+
+    .step::before {
+      content: "";
+      position: absolute;
+      left: -17px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--sc, var(--muted));
+      box-shadow: 0 0 0 3px var(--surface)
+    }
+
+    .step .grow {
+      word-break: break-word
+    }
+
+    .st-btn {
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: .74rem;
+      font-weight: 700;
+      background: color-mix(in srgb, var(--sc) 18%, transparent);
+      color: var(--sc);
+      min-width: 72px
+    }
+
+    .links {
+      list-style: none;
+      display: grid;
+      gap: 6px
+    }
+
+    .links li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: var(--surface-2)
+    }
+
+    .links a {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-decoration: none;
+      font-weight: 600
+    }
+
+    .map-wrap {
+      overflow-x: auto;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border)
+    }
+
+    .map-wrap svg {
+      display: block;
+      min-width: 820px;
+      width: 100%;
+      height: auto
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: 10px
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: middle
+    }
+
+    /* ---------- Planner ---------- */
+    .planner-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px
+    }
+
+    .shortcuts {
+      display: flex;
+      gap: 6px
+    }
+
+    .shortcuts button {
+      width: 52px;
+      height: 44px;
+      border-radius: 14px;
+      font-family: 'Inter';
+      font-weight: 800;
+      font-size: .85rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      transition: all .2s
+    }
+
+    .shortcuts button.on {
+      background: linear-gradient(135deg, var(--amber), #d97706);
+      color: #160f02;
+      border-color: transparent;
+      box-shadow: 0 8px 20px -10px rgba(245, 158, 11, .8)
+    }
+
+    .sec-title {
+      font-size: 1.15rem;
+      margin: 4px 0 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .dims {
+      display: grid;
+      gap: 10px
+    }
+
+    .dim {
+      padding: 14px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border-left: 4px solid var(--dc);
+      display: grid;
+      gap: 8px
+    }
+
+    .dim-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px
+    }
+
+    .dim-head b {
+      font-size: .95rem
+    }
+
+    .dim-head small {
+      color: var(--muted);
+      display: block;
+      font-size: .75rem
+    }
+
+    .stars {
+      display: inline-flex;
+      gap: 2px
+    }
+
+    .stars button {
+      font-size: 1.3rem;
+      line-height: 1;
+      padding: 2px;
+      filter: grayscale(1) opacity(.35);
+      transition: transform .15s, filter .15s
+    }
+
+    .stars button.on {
+      filter: none
+    }
+
+    .stars button:hover {
+      transform: scale(1.2)
+    }
+
+    .hours {
+      display: grid;
+      gap: 6px
+    }
+
+    .hour {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      align-items: center;
+      gap: 8px
+    }
+
+    .hour b {
+      font-family: 'Inter';
+      font-size: .82rem;
+      color: var(--amber);
+      text-align: center;
+      padding: 10px 0;
+      border-radius: 10px;
+      background: var(--surface-2)
+    }
+
+    .hour .input {
+      min-height: 40px
+    }
+
+    .dream {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    .dream-tile {
+      border-radius: 18px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+      color: #fff;
+      min-height: 150px
+    }
+
+    .dream-tile b {
+      font-family: 'Inter';
+      font-size: 1rem
+    }
+
+    .dream-tile small {
+      opacity: .85
+    }
+
+    .dream-tile textarea {
+      background: rgba(255, 255, 255, .14);
+      border: 1px solid rgba(255, 255, 255, .22);
+      color: #fff;
+      border-radius: 12px;
+      padding: 8px 10px;
+      min-height: 70px;
+      resize: vertical;
+      outline: none
+    }
+
+    .dream-tile textarea::placeholder {
+      color: rgba(255, 255, 255, .7)
+    }
+
+    .mountain {
+      display: grid;
+      justify-items: center;
+      gap: 4px;
+      padding: 10px 0 4px
+    }
+
+    .mt-row {
+      width: var(--w);
+      min-width: 120px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      font-family: 'Inter';
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      position: relative;
+      transition: all .3s
+    }
+
+    .mt-row.on {
+      background: linear-gradient(90deg, rgba(16, 185, 129, .35), rgba(16, 185, 129, .18));
+      color: var(--text)
+    }
+
+    .mt-row.cur {
+      background: linear-gradient(90deg, var(--amber), #d97706);
+      color: #140d02;
+      box-shadow: 0 8px 22px -10px rgba(245, 158, 11, .9)
+    }
+
+    .mt-row em {
+      position: absolute;
+      right: -30px;
+      font-style: normal;
+      font-size: 1.3rem;
+      animation: bob 1.6s ease-in-out infinite
+    }
+
+    .habit-grid {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 4px;
+      font-size: .82rem
+    }
+
+    .habit-grid th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: .74rem
+    }
+
+    .habit-grid td:first-child {
+      text-align: left;
+      font-weight: 600;
+      padding-right: 6px;
+      word-break: break-word
+    }
+
+    .hcell {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 40px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      font-size: .9rem;
+      transition: all .2s;
+      margin: auto
+    }
+
+    .hcell.on {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #04150f;
+      transform: scale(1.04)
+    }
+
+    .hcell.today {
+      outline: 2px solid var(--amber);
+      outline-offset: 1px
+    }
+
+    .moods {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .mood-btn {
+      display: grid;
+      justify-items: center;
+      gap: 2px;
+      padding: 8px 10px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      min-width: 62px;
+      font-size: .72rem;
+      color: var(--muted);
+      transition: all .2s
+    }
+
+    .mood-btn span {
+      font-size: 1.6rem
+    }
+
+    .mood-btn.on {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, .14);
+      color: var(--text);
+      transform: translateY(-2px)
+    }
+
+    .mood-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      margin-top: 10px
+    }
+
+    .mood-strip div {
+      text-align: center;
+      padding: 8px 0;
+      border-radius: 12px;
+      background: var(--surface-2);
+      font-size: 1.3rem
+    }
+
+    .mood-strip small {
+      display: block;
+      font-size: .68rem;
+      color: var(--muted)
+    }
+
+    .money {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px
+    }
+
+    .money .stat b {
+      font-size: 1.15rem
+    }
+
+    .crud-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 12px
+    }
+
+    .rows {
+      list-style: none;
+      display: grid;
+      gap: 6px
+    }
+
+    .row-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      font-size: .88rem
+    }
+
+    .row-item>div {
+      flex: 1;
+      min-width: 0;
+      word-break: break-word
+    }
+
+    .sum {
+      font-family: 'Inter';
+      font-weight: 800;
+      color: var(--amber)
+    }
+
+    .tiny-formula {
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(167, 139, 250, .16), rgba(56, 189, 248, .1));
+      font-size: .95rem
+    }
+
+    /* ---------- Guide ---------- */
+    .toc {
+      list-style: none;
+      display: grid;
+      gap: 8px
+    }
+
+    .toc button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      text-align: left;
+      font-weight: 600;
+      transition: all .2s
+    }
+
+    .toc button .n {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--surface-3);
+      font-family: 'Inter';
+      font-size: .85rem
+    }
+
+    .toc button.on {
+      border-color: var(--amber);
+      background: rgba(245, 158, 11, .1)
+    }
+
+    .toc button.on .n {
+      background: var(--amber);
+      color: #160f02
+    }
+
+    .gsteps {
+      list-style: none;
+      display: grid;
+      gap: 12px;
+      counter-reset: s
+    }
+
+    .gsteps li {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      align-items: start
+    }
+
+    .gsteps li::before {
+      counter-increment: s;
+      content: counter(s);
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, var(--amber), var(--emerald));
+      color: #0b1220;
+      font-family: 'Inter';
+      font-weight: 800
+    }
+
+    .gsteps b {
+      display: block;
+      margin-bottom: 2px
+    }
+
+    .gsteps p {
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    /* ---------- Auth screen ---------- */
+    .auth {
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: 24px 18px
+    }
+
+    .auth-card {
+      width: min(480px, 100%);
+      display: grid;
+      gap: 20px;
+      text-align: center
+    }
+
+    .auth-logo {
+      width: 84px;
+      height: 84px;
+      margin: 0 auto;
+      border-radius: 26px;
+      display: grid;
+      place-items: center;
+      font-size: 2.6rem;
+      background: linear-gradient(135deg, var(--amber), var(--emerald));
+      box-shadow: 0 20px 50px -14px rgba(245, 158, 11, .7);
+      animation: float 4s ease-in-out infinite
+    }
+
+    .auth h1 {
+      font-size: clamp(1.7rem, 6vw, 2.3rem);
+      font-family: 'Inter', 'IBM Plex Sans Thai';
+      font-weight: 800
+    }
+
+    .auth h1 span {
+      background: linear-gradient(90deg, var(--amber), var(--emerald));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent
+    }
+
+    .feat {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      text-align: left
+    }
+
+    .feat div {
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      font-size: .82rem
+    }
+
+    .feat b {
+      display: block;
+      font-size: .9rem;
+      margin-bottom: 2px
+    }
+
+    .gbtn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 58px;
+      border-radius: 16px;
+      background: #fff;
+      color: #1f2937;
+      font-weight: 700;
+      font-size: 1.02rem;
+      box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .6);
+      transition: transform .15s
+    }
+
+    .gbtn:active {
+      transform: scale(.98)
+    }
+
+    .gbtn svg {
+      width: 22px;
+      height: 22px
+    }
+
+    /* ---------- Dialogs ---------- */
+    dialog {
+      margin: auto;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 24px;
+      padding: 0;
+      width: min(560px, calc(100vw - 24px));
+      max-height: calc(100dvh - 32px);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .75)
+    }
+
+    dialog:modal {
+      overscroll-behavior: contain
+    }
+
+    dialog::backdrop {
+      background: rgba(2, 6, 23, .72);
+      backdrop-filter: blur(6px);
+      overflow: hidden;
+      overscroll-behavior: contain
+    }
+
+    dialog[open] {
+      animation: pop .28s ease both
+    }
+
+    .dlg-body {
+      padding: 22px;
+      display: grid;
+      gap: 14px
+    }
+
+    .dlg-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px
+    }
+
+    .paywall-hero {
+      text-align: center;
+      display: grid;
+      gap: 10px
+    }
+
+    .lock {
+      width: 76px;
+      height: 76px;
+      margin: 0 auto;
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      font-size: 2.2rem;
+      background: linear-gradient(135deg, rgba(245, 158, 11, .25), rgba(244, 63, 94, .2));
+      border: 1px solid rgba(245, 158, 11, .4)
+    }
+
+    .price {
+      padding: 18px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, .16), rgba(16, 185, 129, .12));
+      border: 1px solid rgba(245, 158, 11, .35);
+      display: grid;
+      gap: 10px
+    }
+
+    .price-num {
+      font-family: 'Inter';
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .price-num small {
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 600
+    }
+
+    .checks {
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      text-align: left;
+      font-size: .9rem
+    }
+
+    .checks li::before {
+      content: "✓ ";
+      color: var(--emerald);
+      font-weight: 800
+    }
+
+    .safe {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(16, 185, 129, .1);
+      border: 1px solid rgba(16, 185, 129, .3);
+      font-size: .86rem;
+      text-align: left
+    }
+
+    .sim {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px
+    }
+
+    .sim button {
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      font-size: .8rem;
+      font-weight: 600;
+      text-align: left;
+      line-height: 1.35
+    }
+
+    .sim button:hover {
+      border-color: var(--amber)
+    }
+
+    .owner {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px dashed rgba(167, 139, 250, .5);
+      background: rgba(167, 139, 250, .06);
+      display: grid;
+      gap: 10px
+    }
+
+    /* ---------- Share view ---------- */
+    .share-page {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+      display: grid;
+      gap: 14px
+    }
+
+    /* ---------- Toast ---------- */
+    #toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
+      transform: translateX(-50%) translateY(20px);
+      z-index: 100;
+      padding: 12px 18px;
+      border-radius: 14px;
+      background: var(--text);
+      color: var(--bg);
+      font-weight: 600;
+      font-size: .9rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: all .3s;
+      max-width: calc(100vw - 32px);
+      text-align: center;
+      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .5)
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0)
+    }
+
+    /* ---------- Animations ---------- */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: scale(.95) translateY(10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes glow {
+
+      0%,
+      100% {
+        box-shadow: 0 10px 24px -10px rgba(245, 158, 11, .7)
+      }
+
+      50% {
+        box-shadow: 0 10px 36px -4px rgba(245, 158, 11, .95)
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .25
+      }
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-8px)
+      }
+    }
+
+    @keyframes bob {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-4px)
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      * {
+        animation: none !important;
+        transition: none !important
+      }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (min-width:560px) {
+      .brand-text {
+        display: inline
+      }
+
+      .dims {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .dream {
+        grid-template-columns: repeat(4, 1fr)
+      }
+    }
+
+    @media (max-width:420px) {
+      .form-grid {
+        grid-template-columns: 1fr
+      }
+
+      .feat {
+        grid-template-columns: 1fr
+      }
+
+      .money .stat b {
+        font-size: .98rem
+      }
+    }
+
+    @media (min-width:860px) {
+      .grid-2 {
+        grid-template-columns: 1.35fr 1fr;
+        align-items: start
+      }
+
+      .grid-2b {
+        grid-template-columns: 1fr 1fr;
+        align-items: start
+      }
+
+      .dims {
+        grid-template-columns: repeat(3, 1fr)
+      }
+
+      .guide-layout {
+        grid-template-columns: 320px 1fr;
+        align-items: start
+      }
+    }
+
+    @media (min-width:1024px) {
+      .bottom-nav {
+        top: 0;
+        bottom: 0;
+        right: auto;
+        width: var(--side-w);
+        height: auto;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 20px 14px;
+        border-top: 0;
+        border-right: 1px solid var(--border)
+      }
+
+      .side-brand {
+        display: flex;
+        margin: 0 6px 22px
+      }
+
+      .nav-btn {
+        flex: none;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 12px;
+        padding: 13px 16px;
+        font-size: .95rem
+      }
+
+      .nav-btn.on::before {
+        inset: 0
+      }
+
+      .app-shell {
+        padding-left: var(--side-w);
+        padding-bottom: 30px
+      }
+
+      .topbar .brand {
+        display: none
+      }
+
+      #toast {
+        bottom: 28px;
+        left: calc(50% + var(--side-w)/2)
+      }
+
+      main {
+        padding: 22px 26px
+      }
+    }
+
+    /* ---------- i18n + payment additions ---------- */
+    .lang-btn {
+      min-width: 44px;
+      height: 36px;
+      padding: 0 10px;
+      border-radius: 12px;
+      font-family: 'Inter';
+      font-weight: 800;
+      font-size: .78rem;
+      background: var(--surface-2);
+      border: 1px solid var(--border)
+    }
+
+    .auth-lang {
+      display: flex;
+      justify-content: flex-end
+    }
+
+    .pay-opts {
+      display: grid;
+      gap: 10px
+    }
+
+    .pay-opt {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      text-align: left;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      transition: border .2s, transform .15s
+    }
+
+    .pay-opt:hover {
+      border-color: var(--amber)
+    }
+
+    .pay-opt:active {
+      transform: scale(.98)
+    }
+
+    .pay-opt .pay-ico {
+      flex: none;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, rgba(245, 158, 11, .22), rgba(16, 185, 129, .18))
+    }
+
+    .pay-opt span:nth-child(2) {
+      flex: 1;
+      min-width: 0
+    }
+
+    .pay-opt b {
+      display: block
+    }
+
+    .pay-opt small {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.35
+    }
+
+    .pay-opt em {
+      font-style: normal;
+      font-family: 'Inter';
+      font-weight: 800;
+      color: var(--amber)
+    }
+
+    .pay-badges {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="share-view" hidden></div>
+  <section id="auth-screen" class="auth" hidden></section>
+
+  <div id="app" hidden>
+    <nav class="bottom-nav" id="bottom-nav"></nav>
+    <div class="app-shell">
+      <div class="topwrap">
+        <div id="trial-banner" class="banner"></div>
+        <header class="topbar">
+          <div class="brand"><span class="brand-logo">⚡</span><span class="brand-text">FlowRecover</span></div>
+          <form class="idea-box" data-form="idea" id="idea-form" autocomplete="off">
+            <input class="input" name="idea" id="idea-input" enterkeyhint="done">
+          </form>
+          <button class="icon-btn badge-btn" data-act="ideas" id="btn-ideas">🗒️<b id="idea-count" hidden>0</b></button>
+          <button class="lang-btn" data-act="lang" id="btn-lang"></button>
+          <button class="icon-btn" data-act="theme" id="btn-theme">🌙</button>
+          <button class="avatar" data-act="account" id="btn-account"></button>
+        </header>
+      </div>
+      <main>
+        <section class="view" id="view-focus" hidden></section>
+        <section class="view" id="view-queue" hidden></section>
+        <section class="view" id="view-projects" hidden></section>
+        <section class="view" id="view-planner" hidden></section>
+        <section class="view" id="view-guide" hidden></section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="paywall" aria-labelledby="paywall-title">
+    <div class="dlg-body" id="paywall-body"></div>
+  </dialog>
+  <dialog id="pay-dlg" closedby="any" aria-labelledby="pay-title">
+    <div class="dlg-body" id="pay-body"></div>
+  </dialog>
+  <dialog id="account-dlg" closedby="any" aria-labelledby="account-title">
+    <div class="dlg-body" id="account-body"></div>
+  </dialog>
+  <dialog id="ideas-dlg" closedby="any" aria-labelledby="ideas-title">
+    <div class="dlg-body" id="ideas-body"></div>
+  </dialog>
+  <dialog id="share-dlg" closedby="any" aria-labelledby="share-title">
+    <div class="dlg-body" id="share-body"></div>
+  </dialog>
+  <dialog id="demo-dlg" closedby="any" aria-labelledby="demo-title">
+    <form class="dlg-body" data-form="demoLogin" id="demo-login-form"></form>
+  </dialog>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script type="module">
+    /* =====================================================================
+       CONFIG — แก้ไขค่าเหล่านี้ก่อนขึ้นระบบจริง (ดู SETUP.md)
+       ===================================================================== */
+    const FIREBASE_CONFIG = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    // 💳 Card subscription (auto-renews monthly)
+    const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/8x2dR9fVC8CCb1d3PS00001";
+    // 📱 PromptPay QR (one-time 99฿ = 30 days). Stripe PromptPay does not support subscriptions,
+    //    so create a second one-time Payment Link with PromptPay enabled and paste it here.
+    //    Leave empty to fall back to STRIPE_PAYMENT_LINK.
+    const STRIPE_QR_LINK = "https://buy.stripe.com/dRmaEXbFm4mm3yL72400002";
+    const META_PIXEL_ID = "";            // e.g. "123456789012345" — enables ad conversion tracking
+    const SHOW_OWNER_SIMULATOR = true;   // ตั้งเป็น false เมื่อเปิดให้ลูกค้าใช้งานจริง
+    const FIREBASE_SDK = "https://www.gstatic.com/firebasejs/10.12.2";
+    const FIREBASE_READY = !FIREBASE_CONFIG.apiKey.startsWith("YOUR_");
+    const TRIAL_MS = 7 * 24 * 3600 * 1000;
+    const PASS_MS = 30 * 24 * 3600 * 1000;
+    const DAY_END = 22 * 60;
+    const LS_KEY = "flowrecover.lifeplanner.v1";
+    const LV = [15, 30, 50, 75, 100, 130, 165, 205, 250, 300];
+
+    /* ===================== Helpers ===================== */
+    const $ = s => document.querySelector(s);
+    const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-5);
+    const pad = n => String(n).padStart(2, "0");
+    const dkey = (d = new Date()) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    const parseD = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+    const addDays = (k, n) => { const d = parseD(k); d.setDate(d.getDate() + n); return dkey(d); };
+    const toMin = t => { const [h, m] = String(t || "0:0").split(":").map(Number); return (h || 0) * 60 + (m || 0); };
+    const fmt = m => { m = Math.max(0, Math.round(m)); return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; };
+    const nowMin = () => { const d = new Date(); return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60; };
+    const fmtDur = sec => { sec = Math.max(0, Math.floor(sec)); const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60; return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`; };
+    const fmtClock = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const trunc = (s, n) => (s = String(s || "")).length > n ? s.slice(0, n - 1) + "…" : s;
+    const getPath = (o, p) => p.split(".").reduce((a, k) => (a == null ? a : a[k]), o);
+    const setPath = (o, p, v) => { const ks = p.split("."); let a = o; ks.slice(0, -1).forEach(k => { if (a[k] == null || typeof a[k] !== "object") a[k] = {}; a = a[k]; }); a[ks.at(-1)] = v; };
+    const b64e = s => { const b = new TextEncoder().encode(s); let bin = ""; b.forEach(x => bin += String.fromCharCode(x)); return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); };
+    const b64d = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); };
+
+    /* ===================== i18n ===================== */
+    let LANG = "th";
+    const L = (th, en) => LANG === "en" ? en : th;
+    const locale = () => LANG === "en" ? "en-US" : "th-TH";
+    const money = n => (Number(n) || 0).toLocaleString(locale(), { maximumFractionDigits: 2 });
+    const DAYS = { th: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"], en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] };
+    const MONTHS = { th: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."], en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] };
+    const dayName = d => DAYS[LANG][d.getDay()];
+    const fmtDate = k => { if (!k) return ""; const d = parseD(k); return LANG === "en" ? `${dayName(d)}, ${MONTHS.en[d.getMonth()]} ${d.getDate()}` : `${dayName(d)} ${d.getDate()} ${MONTHS.th[d.getMonth()]}`; };
+    const monthLabel = () => { const d = new Date(); return LANG === "en" ? `${MONTHS.en[d.getMonth()]} ${d.getFullYear()}` : `${MONTHS.th[d.getMonth()]} ${d.getFullYear() + 543}`; };
+    const fmtDT = ms => new Date(ms).toLocaleString(locale(), { dateStyle: "medium", timeStyle: "short" });
+
+    /* ===================== State ===================== */
+    const defaults = () => ({
+      user: null, lang: null,
+      sub: { subscription_status: "trial", trial_start_at: Date.now() },
+      theme: "dark", tab: "focus", plannerSec: "cg", projSub: "list", guideTopic: 0,
+      queueDate: null, plannerDate: null, openProject: null,
+      ideas: [], tasks: [], routines: [], projects: [],
+      focus: { interrupt: null, log: [], lastReflow: null },
+      alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {} },
+      planner: {
+        goals: {}, monthly: {}, daily: {}, dream: {},
+        habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
+        mood: {}, booster: "",
+        finance: { income: 0, goal: 50000, saved: 0 },
+        expenses: [], workouts: [], meals: [], trips: [], media: []
+      }
+    });
+    function hydrate(o) {
+      const d = defaults(); o = o || {};
+      const P = o.planner || {};
+      return {
+        ...d, ...o,
+        sub: { ...d.sub, ...o.sub }, focus: { ...d.focus, ...o.focus }, alerts: { ...d.alerts, ...o.alerts },
+        planner: { ...d.planner, ...P, tiny: { ...d.planner.tiny, ...P.tiny }, finance: { ...d.planner.finance, ...P.finance } }
+      };
+    }
+    let state;
+    try { state = hydrate(JSON.parse(localStorage.getItem(LS_KEY) || "null")); } catch { state = hydrate(null); }
+    const urlLang = new URLSearchParams(location.search).get("lang");
+    state.lang = ["th", "en"].includes(urlLang) ? urlLang : state.lang || ((navigator.language || "th").toLowerCase().startsWith("th") ? "th" : "en");
+    LANG = state.lang;
+    state.queueDate = dkey(); state.plannerDate = dkey();
+    const P = () => state.planner;
+
+    let fb = null, cloudTimer = null;
+    function save() {
+      try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { console.warn(e); }
+      if (fb && state.user && !state.user.demo) { clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudSave, 1200); }
+    }
+    async function cloudSave() {
+      try {
+        const { user, sub, queueDate, plannerDate, openProject, ...rest } = state;
+        await fb.setDoc(fb.doc(fb.db, "users", state.user.uid, "data", "main"), { payload: JSON.stringify(rest), updated_at: fb.serverTimestamp() });
+      } catch (e) { console.warn("cloud save failed", e); }
+    }
+
+    /* ===================== Meta Pixel (ad conversion tracking) ===================== */
+    function loadPixel() {
+      if (!META_PIXEL_ID) return;
+      !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = "2.0"; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+      fbq("init", META_PIXEL_ID); fbq("track", "PageView");
+    }
+    const track = (ev, params = {}) => { try { window.fbq?.("track", ev, params); } catch { } };
+
+    /* ===================== Subscription ===================== */
+    function subInfo() {
+      const s = state.sub;
+      if (s.subscription_status === "pro") {
+        if (s.pro_until && Date.now() > s.pro_until) return { pro: false, rem: 0, pct: 0, expired: true, lapsed: true };
+        return { pro: true, until: s.pro_until || null };
+      }
+      const rem = (s.trial_start_at || Date.now()) + TRIAL_MS - Date.now();
+      return { pro: false, rem, pct: Math.max(0, Math.min(1, rem / TRIAL_MS)), expired: rem <= 0 || s.subscription_status === "canceled" };
+    }
+    function pay(method) {
+      const link = method === "qr" ? (STRIPE_QR_LINK || STRIPE_PAYMENT_LINK) : STRIPE_PAYMENT_LINK;
+      const q = new URLSearchParams({ prefilled_email: state.user?.email || "", locale: LANG });
+      if (state.user && !state.user.demo) q.set("client_reference_id", state.user.uid);
+      track("InitiateCheckout", { value: 99, currency: "THB", content_name: method === "qr" ? "PromptPay 30 days" : "Card monthly" });
+      try { (window.top || window).location.href = `${link}?${q}`; } catch (_) { location.href = `${link}?${q}`; }
+    }
+    function handleStripeReturn() {
+      const q = new URLSearchParams(location.search);
+      const ok = q.get("stripe_status") === "success" || q.get("payment") === "success";
+      const cancel = q.get("stripe_status") === "cancel" || q.get("payment") === "cancel";
+      if (ok) {
+        const isQr = q.get("plan") === "qr";
+        const base = Math.max(Date.now(), state.sub.pro_until || 0);
+        state.sub = { ...state.sub, subscription_status: "pro", pro_pending_at: Date.now(), simulated: false, pro_until: isQr ? base + PASS_MS : null };
+        save(); track("Purchase", { value: 99, currency: "THB" });
+        setTimeout(() => toast(L("🎉 ชำระเงินสำเร็จ! ยินดีต้อนรับสู่ FlowRecover PRO", "🎉 Payment successful! Welcome to FlowRecover PRO")), 700);
+      } else if (cancel) setTimeout(() => toast(L("ยกเลิกการชำระเงินแล้ว — ข้อมูลของคุณยังอยู่ครบ", "Payment cancelled — your data is safe")), 700);
+      if (ok || cancel) {
+        ["stripe_status", "payment", "plan"].forEach(k => q.delete(k));
+        history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
+      }
+    }
+    function applyServerSub(d) {
+      if (state.sub.simulated) return;
+      const start = d.trial_start_at?.toMillis?.() ?? state.sub.trial_start_at ?? Date.now();
+      let status = d.subscription_status || "trial";
+      let until = d.pro_until?.toMillis?.() ?? null;
+      // Optimistic PRO after Stripe redirect while waiting for the webhook (max 30 min)
+      if (status !== "pro" && state.sub.pro_pending_at && Date.now() - state.sub.pro_pending_at < 30 * 60e3) { status = "pro"; until = state.sub.pro_until || null; }
+      state.sub = { ...state.sub, subscription_status: status, trial_start_at: start, pro_until: until };
+      save(); renderBanner(); checkPaywall();
+    }
+    function simulate(mode) {
+      const now = Date.now(), base = { simulated: true };
+      if (mode === 1) state.sub = { ...base, subscription_status: "trial", trial_start_at: now };
+      if (mode === 2) state.sub = { ...base, subscription_status: "trial", trial_start_at: now - 6 * 864e5 };
+      if (mode === 3) state.sub = { ...base, subscription_status: "trial", trial_start_at: now - TRIAL_MS - 60e3 };
+      if (mode === 4) state.sub = { ...base, subscription_status: "pro", trial_start_at: now - 3 * 864e5 };
+      save(); renderBanner(); checkPaywall();
+      if ($("#account-dlg").open) renderAccount();
+      if ($("#paywall").open) renderPaywall();
+      toast(["",
+        L("🎁 จำลอง: เริ่มทดลองใช้ เหลือ 7 วัน", "🎁 Simulated: trial started, 7 days left"),
+        L("⏳ จำลอง: เหลือ 1 วัน", "⏳ Simulated: 1 day left"),
+        L("🔒 จำลอง: หมดเวลาทดลองใช้", "🔒 Simulated: trial expired"),
+        L("👑 จำลอง: ชำระ PRO สำเร็จ", "👑 Simulated: PRO payment successful")][mode]);
+    }
+
+    /* ===================== Seed data ===================== */
+    function seed() {
+      if (state.tasks.length || state.projects.length || state.routines.length) return;
+      const today = dkey(), n = Math.max(0, Math.floor(nowMin() / 15) * 15);
+      const st = arr => arr.map(([title, status]) => ({ id: uid(), title, status }));
+      const p1 = {
+        id: uid(), title: L("เปิดตัวเว็บไซต์ลูกค้า A", "Client A website launch"), monthlyGoal: L("ปิดงานลูกค้า 2 รายในเดือนนี้", "Close 2 client projects this month"), manual: 0,
+        coordinator: { name: L("คุณมิ้นท์ (PM)", "Mint (PM)"), contact: "mint@example.com • 081-234-5678" },
+        links: [{ id: uid(), label: "Brief & Sitemap (Google Drive)", url: "https://drive.google.com/" }],
+        steps: st([[L("เก็บ Requirement", "Gather requirements"), "done"], [L("ออกแบบ Wireframe", "Wireframes"), "done"], [L("พัฒนาหน้า Landing", "Build landing page"), "doing"], [L("รอ Feedback ลูกค้า", "Waiting for client feedback"), "waiting"], [L("ขึ้นระบบจริง", "Go live"), "todo"]])
+      };
+      const p2 = {
+        id: uid(), title: L("คอร์สออนไลน์ Excel", "Excel online course"), monthlyGoal: L("สร้างรายได้เสริม 10,000 ฿", "Earn 10,000 ฿ side income"), manual: 0,
+        coordinator: { name: L("พี่บอส (ตัดต่อ)", "Boss (editor)"), contact: "Line: boss.edit" }, links: [],
+        steps: st([[L("เขียนสคริปต์ 5 บท", "Write 5 scripts"), "done"], [L("อัดวิดีโอ", "Record videos"), "doing"], [L("ตัดต่อ", "Edit"), "todo"], [L("เปิดขาย", "Launch sales"), "todo"]])
+      };
+      state.projects = [p1, p2];
+      const T = (title, start, dur, projectId, priority) => ({ id: uid(), title, date: today, start: Math.max(0, start), dur, projectId, priority, done: false, bookmark: "" });
+      state.tasks = [
+        T(L("พัฒนาหน้า Landing (Hero + Pricing)", "Build landing page (Hero + Pricing)"), n - 15, 60, p1.id, "main"),
+        T(L("ตอบอีเมลลูกค้า & นัดประชุม", "Reply to client emails & schedule meeting"), n + 60, 30, null, "secondary"),
+        T(L("อัดวิดีโอคอร์ส บทที่ 3", "Record course video, lesson 3"), n + 105, 60, p2.id, "main"),
+        T(L("จัดเอกสารบัญชีประจำเดือน", "Organize monthly accounting docs"), n + 180, 45, null, "secondary")
+      ];
+      state.routines = [
+        { id: uid(), title: L("ออกกำลังกาย 20 นาที", "Exercise 20 minutes"), freq: "daily", time: "06:30", created: addDays(today, -6), log: { [addDays(today, -1)]: true, [addDays(today, -2)]: true, [addDays(today, -3)]: true } },
+        { id: uid(), title: L("อ่านหนังสือ 15 หน้า", "Read 15 pages"), freq: "eod", time: "21:00", created: today, log: {} },
+        { id: uid(), title: L("เช็กยอดขายประจำวัน", "Check daily sales"), freq: "weekday", time: "09:00", created: addDays(today, -10), log: {} }
+      ];
+      if (!P().habits.length) P().habits = [L("ดื่มน้ำ 8 แก้ว", "Drink 8 glasses of water"), L("นอนก่อน 5 ทุ่ม", "Sleep before 11 PM"), L("ไม่เล่นมือถือก่อนนอน", "No phone before bed")].map(name => ({ id: uid(), name }));
+      save();
+    }
+
+    /* ===================== Domain helpers ===================== */
+    const proj = id => state.projects.find(p => p.id === id);
+    const tasksOn = date => state.tasks.filter(t => t.date === date).sort((a, b) => a.start - b.start);
+    function currentTask() { const n = nowMin(); return tasksOn(dkey()).find(t => !t.done && t.start <= n && n < t.start + t.dur) || null; }
+    function nextTask() { const n = nowMin(); return tasksOn(dkey()).find(t => !t.done && t.start > n) || null; }
+    const prog = p => p.steps?.length ? Math.round(p.steps.filter(s => s.status === "done").length / p.steps.length * 100) : (Number(p.manual) || 0);
+    const STEP = { todo: ["Todo", "var(--muted)"], doing: ["Doing", "var(--amber)"], waiting: ["Waiting", "var(--sky)"], done: ["Done", "var(--emerald)"] };
+    const STEP_ORDER = ["todo", "doing", "waiting", "done"];
+    const freqLabel = f => ({ daily: L("ทุกวัน", "Daily"), eod: L("วันเว้นวัน", "Every other day"), weekday: L("จ.-ศ.", "Mon–Fri") }[f]);
+    function isDue(r, date) {
+      if (r.freq === "weekday") { const g = parseD(date).getDay(); return g >= 1 && g <= 5; }
+      if (r.freq === "eod") { const diff = Math.round((parseD(date) - parseD(r.created)) / 864e5); return diff >= 0 && diff % 2 === 0; }
+      return true;
+    }
+    function prevDue(r, d) { for (let i = 0; i < 8; i++) { d = addDays(d, -1); if (parseD(d) < parseD(r.created)) return null; if (isDue(r, d)) return d; } return null; }
+    function streak(r) {
+      let d = dkey(); if (!r.log?.[d]) d = prevDue(r, d);
+      let s = 0; for (let i = 0; i < 500 && d; i++) { if (r.log?.[d]) { s++; d = prevDue(r, d); } else break; }
+      return s;
+    }
+    function consistency(r) {
+      let due = 0, done = 0, d = dkey();
+      for (let i = 0; i < 30; i++) { if (parseD(d) < parseD(r.created)) break; if (isDue(r, d)) { due++; if (r.log?.[d]) done++; } d = addDays(d, -1); }
+      return due ? Math.round(done / due * 100) : 0;
+    }
+    function points() {
+      let h = 0; Object.values(P().habitLog).forEach(m => h += Object.values(m).filter(Boolean).length);
+      let r = 0; state.routines.forEach(x => r += Object.values(x.log || {}).filter(Boolean).length);
+      const t = state.tasks.filter(x => x.done).length;
+      return { habit: h * 5, routine: r * 5, task: t * 10, total: h * 5 + r * 5 + t * 10 };
+    }
+    function weekDates() { const d = new Date(); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return [...Array(7)].map((_, i) => { const x = new Date(d); x.setDate(d.getDate() + i); return dkey(x); }); }
+    const prioChip = t => t.priority === "secondary" ? `<span class="chip">${L("งานรอง", "Secondary")}</span>` : `<span class="chip chip-amber">${L("งานหลัก", "Main")}</span>`;
+    function stars(path, val, label = "") {
+      val = Number(val) || 0;
+      return `<span class="stars" role="group" aria-label="${esc(label || L("ให้คะแนน", "Rating"))}">${[1, 2, 3, 4, 5].map(i => `<button type="button" class="${i <= val ? "on" : ""}" data-act="rate" data-path="${path}" data-v="${i}" aria-label="${i} ${L("ดาว", "stars")}">⭐</button>`).join("")}</span>`;
+    }
+    function suggestStart(date) {
+      const list = tasksOn(date); const base = date === dkey() ? Math.ceil(nowMin() / 15) * 15 : 9 * 60;
+      const lastEnd = list.length ? Math.max(...list.map(t => t.start + t.dur)) : 0;
+      return fmt(Math.min(23 * 60 + 45, Math.max(base, lastEnd)));
+    }
+    const minLabel = m => L(`${m} นาที`, `${m} min`);
+
+    /* ===================== Alerts ===================== */
+    let audioCtx = null;
+    function ensureAudio() { try { audioCtx ||= new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); } catch { } }
+    function beep() {
+      ensureAudio(); if (!audioCtx) return;
+      const t0 = audioCtx.currentTime;
+      [0, .28, .56, 1.0, 1.28, 1.56].forEach((o, i) => {
+        const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+        osc.type = "square"; osc.frequency.value = i < 3 ? 880 : 1046;
+        g.gain.setValueAtTime(0.0001, t0 + o); g.gain.exponentialRampToValueAtTime(0.18, t0 + o + .02); g.gain.exponentialRampToValueAtTime(0.0001, t0 + o + .2);
+        osc.connect(g).connect(audioCtx.destination); osc.start(t0 + o); osc.stop(t0 + o + .22);
+      });
+    }
+    const vibrate = p => { try { navigator.vibrate?.(p); } catch { } };
+    async function sendNtfy(title, message) {
+      const topic = (state.alerts.topic || "").trim();
+      if (!topic) return false;
+      try { const r = await fetch("https://ntfy.sh/", { method: "POST", body: JSON.stringify({ topic, title, message, tags: ["watch", "alarm_clock"], priority: 5 }) }); return r.ok; }
+      catch { return false; }
+    }
+    function fireAlert(title, body) {
+      const A = state.alerts;
+      if (A.sound) beep();
+      if (A.vibrate) vibrate([300, 120, 300, 120, 700]);
+      if (A.notify && "Notification" in window && Notification.permission === "granted") { try { new Notification(title, { body, tag: "flowrecover" }); } catch { } }
+      sendNtfy(title, body);
+      toast(`${title} — ${body}`);
+    }
+    function checkAlerts() {
+      if (!state.user) return;
+      const n = nowMin(), today = dkey(), F = state.alerts.fired, lead = Number(state.alerts.lead) || 0;
+      Object.keys(F).forEach(k => { if (!k.startsWith(today)) delete F[k]; });
+      let changed = false;
+      for (const t of tasksOn(today)) {
+        if (t.done) continue;
+        const ks = `${today}:${t.id}:${t.start}:s`, ke = `${today}:${t.id}:${t.start + t.dur}:e`;
+        if (n >= t.start - lead && n < t.start + 2 && !F[ks]) { F[ks] = 1; changed = true; fireAlert(lead ? L(`⏰ อีก ${lead} นาที เริ่มงาน`, `⏰ Starting in ${lead} min`) : L("⚡ ถึงเวลาเริ่มงาน", "⚡ Time to start"), `${fmt(t.start)} ${t.title}`); }
+        if (n >= t.start + t.dur && n < t.start + t.dur + 2 && !F[ke]) { F[ke] = 1; changed = true; fireAlert(L("⌛ หมดเวลาบล็อกงาน", "⌛ Time block ended"), `${t.title} — ${L("ทำเสร็จหรือยัง?", "done yet?")}`); }
+      }
+      for (const r of state.routines) {
+        if (!r.time || !isDue(r, today) || r.log?.[today]) continue;
+        const m = toMin(r.time), k = `${today}:r:${r.id}`;
+        if (n >= m && n < m + 2 && !F[k]) { F[k] = 1; changed = true; fireAlert(L("🔁 ถึงเวลากิจวัตร", "🔁 Routine time"), r.title); }
+      }
+      if (changed) save();
+    }
+
+    /* ===================== Static UI (i18n) ===================== */
+    const GOOGLE_SVG = `<svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+    function renderStatic() {
+      document.documentElement.lang = LANG;
+      document.title = L("FlowRecover x Life Planner — จัดตารางงานยืดหยุ่น & สมุดวางแผนชีวิต", "FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS");
+      document.querySelector('meta[name="description"]').content = L(
+        "FlowRecover x Life Planner: จัดตารางงานยืดหยุ่น กู้คืนงานเมื่อถูกขัดจังหวะ เลื่อนคิวอัตโนมัติ บริหารโปรเจค และสมุดวางแผนชีวิตครบวงจร ใช้งานง่ายด้วยมือเดียวบนมือถือ",
+        "FlowRecover x Life Planner: flexible time-blocking, interrupt recovery with automatic schedule reflow, project tracking and an all-in-one life planner — built for one-thumb mobile use.");
+      $("#auth-screen").innerHTML = `<div class="auth-card">
+    <div class="auth-lang"><button class="btn btn-sm" data-act="lang" id="btn-auth-lang">🌐 ${L("English", "ภาษาไทย")}</button></div>
+    <div class="auth-logo">⚡</div>
+    <div><h1><span>FlowRecover</span> x Life Planner</h1>
+      <p class="muted" style="margin-top:8px">${L("จัดตารางงานยืดหยุ่น • ถูกแทรกก็ไม่หลุด • สมุดวางแผนชีวิตครบวงจร", "Adaptive Time-Blocking • Interrupt Recovery • All-in-One Life Planner OS")}</p></div>
+    <div class="feat">
+      <div><b>${L("⏸️ งานแทรกไม่ทำให้หลุด", "⏸️ Interruptions won't derail you")}</b>${L("บันทึกจุดค้าง + เลื่อนคิวอัตโนมัติ", "Context bookmark + auto-reflow")}</div>
+      <div><b>${L("🔁 กิจวัตรอัตโนมัติ", "🔁 Recurring routines")}</b>${L("ทุกวัน / วันเว้นวัน / จ.-ศ.", "Daily / every other day / Mon–Fri")}</div>
+      <div><b>${L("🗂️ โปรเจค & แชร์ทีม", "🗂️ Projects & team sharing")}</b>${L("ความคืบหน้า + ผังเชื่อมโยง", "Progress + relationship map")}</div>
+      <div><b>📔 Life Planner</b>${L("เป้าหมาย นิสัย การเงิน สุขภาพ", "Goals, habits, money, health")}</div>
+    </div>
+    <button class="gbtn" data-act="login" id="btn-google-login">${GOOGLE_SVG}${L("เข้าสู่ระบบด้วย Google", "Continue with Google")}</button>
+    <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้น 99฿/เดือน", "🎁 Free for 7 days, no card required • then 99฿/month")}</p>
+    <div class="pay-badges"><span class="chip">💳 ${L("บัตรเครดิต/เดบิต", "Credit/Debit card")}</span><span class="chip">📱 QR PromptPay</span><span class="chip">🔒 Stripe</span></div>
+    ${FIREBASE_READY ? "" : `<p class="muted sm">${L("⚙️ โหมดสาธิต: ยังไม่ได้ตั้งค่า Firebase (ดู SETUP.md)", "⚙️ Demo mode: Firebase not configured (see SETUP.md)")}</p>`}
+  </div>`;
+      const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["guide", "📖", L("วิธีใช้", "Guide")]];
+      $("#bottom-nav").setAttribute("aria-label", L("เมนูหลัก", "Main menu"));
+      $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo">⚡</span><span>FlowRecover</span></div>` +
+        tabs.map(([k, i, l]) => `<button class="nav-btn ${state.tab === k ? "on" : ""}" data-act="tab" data-tab="${k}" id="nav-${k}"><span class="ico">${i}</span>${l}</button>`).join("");
+      $("#idea-input").placeholder = L("จดไอเดียด่วน แล้วกด Enter…", "Quick idea, press Enter…");
+      $("#idea-input").setAttribute("aria-label", "Quick Idea Capture");
+      $("#btn-ideas").setAttribute("aria-label", L("คลังไอเดีย", "Idea inbox"));
+      $("#btn-theme").setAttribute("aria-label", L("สลับโหมดสว่าง/มืด", "Toggle light/dark mode"));
+      $("#btn-account").setAttribute("aria-label", L("บัญชีผู้ใช้", "Account"));
+      $("#btn-lang").textContent = LANG === "th" ? "EN" : "TH";
+      $("#btn-lang").setAttribute("aria-label", L("Switch to English", "เปลี่ยนเป็นภาษาไทย"));
+      $("#demo-login-form").innerHTML = `
+    <div class="dlg-head"><h2 id="demo-title">${L("เข้าสู่ระบบ (โหมดสาธิต)", "Sign in (demo mode)")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="demo-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <p class="muted sm">${L("ยังไม่ได้ใส่ค่า Firebase Config จึงจำลองการล็อกอิน Google ข้อมูลจะถูกเก็บในเบราว์เซอร์นี้ (ดูวิธีเชื่อมต่อจริงใน SETUP.md)", "Firebase isn't configured yet, so Google sign-in is simulated and data is stored in this browser (see SETUP.md to connect).")}</p>
+    <label class="field"><span>${L("ชื่อที่แสดง", "Display name")}</span><input class="input" name="name" id="demo-name" required autocomplete="name"></label>
+    <label class="field"><span>${L("อีเมล Google", "Google email")}</span><input class="input" name="email" id="demo-email" type="email" required placeholder="you@gmail.com" autocomplete="email"></label>
+    <button class="btn btn-amber btn-xl" type="submit" id="btn-demo-login">${L("เริ่มทดลองใช้ฟรี 7 วัน", "Start 7-day free trial")}</button>`;
+    }
+
+    /* ===================== Rendering ===================== */
+    let lastCockpitKey = "";
+    function applyTheme() {
+      document.documentElement.dataset.theme = state.theme;
+      document.querySelector('meta[name="theme-color"]').content = state.theme === "light" ? "#f3f5fa" : "#0f172a";
+      const b = $("#btn-theme"); if (b) b.textContent = state.theme === "light" ? "☀️" : "🌙";
+    }
+    function renderAll() { applyTheme(); renderBanner(); renderTopbar(); renderView(); checkPaywall(); }
+    function renderTopbar() {
+      const u = state.user || {};
+      $("#btn-account").innerHTML = u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || u.email || "?").trim().charAt(0).toUpperCase());
+      const c = $("#idea-count"); c.textContent = state.ideas.length; c.hidden = !state.ideas.length;
+    }
+    const proBtn = id => `<button class="btn btn-amber btn-sm" data-act="payChoose" id="${id}">${L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/mo")}</button>`;
+    function renderBanner() {
+      const el = $("#trial-banner"); if (!state.user) { el.innerHTML = ""; return; }
+      const s = subInfo();
+      if (s.pro) {
+        el.className = "banner pro";
+        const until = s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
+        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><button class="link sm" data-act="${s.until ? "payChoose" : "account"}" id="banner-manage">${s.until ? L("ต่ออายุ", "Renew") : L("จัดการ", "Manage")}</button>`;
+        return;
+      }
+      if (s.expired) { el.className = "banner expired"; el.innerHTML = `<span>🔒 ${s.lapsed ? L("แพ็กเกจ PRO หมดอายุ", "PRO pass expired") : L("หมดเวลาทดลองใช้ฟรี 7 วัน", "7-day free trial ended")}</span>${proBtn("banner-pay")}`; return; }
+      const d = Math.floor(s.rem / 864e5), h = Math.floor(s.rem % 864e5 / 36e5), m = Math.floor(s.rem % 36e5 / 6e4);
+      el.className = "banner trial" + (s.rem < 864e5 ? " urgent" : "");
+      el.innerHTML = `<div class="banner-row"><span class="banner-text">🎁 ${L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span>${proBtn("banner-pay")}</div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
+    }
+    function renderView() {
+      ["focus", "queue", "projects", "planner", "guide"].forEach(t => {
+        const v = $(`#view-${t}`), on = state.tab === t, nb = $(`#nav-${t}`);
+        v.hidden = !on; nb.classList.toggle("on", on);
+        if (on) nb.setAttribute("aria-current", "page"); else nb.removeAttribute("aria-current");
+      });
+      ({ focus: renderFocus, queue: renderQueue, projects: renderProjects, planner: renderPlanner, guide: renderGuide })[state.tab]();
+    }
+
+    /* ---------- ⚡ Focus ---------- */
+    function renderFocus() {
+      const I = state.focus.interrupt, cur = currentTask(), nxt = nextTask(), today = dkey();
+      lastCockpitKey = I ? "int" : cur ? cur.id : "none:" + (nxt?.id || "");
+      let cockpit;
+      if (I) {
+        const t = state.tasks.find(x => x.id === I.taskId);
+        cockpit = `<article class="card cockpit interrupting" id="cockpit">
+      <div class="cockpit-top"><span class="pill pill-rose pulse-dot">${L("กำลังรับมืองานแทรก", "Handling an interruption")}</span><span class="muted mono sm">${L("เริ่ม", "Since")} ${fmtClock(I.startedAt)}</span></div>
+      <div class="big-timer" id="int-timer">00:00</div>
+      <p class="muted center sm">${L("เวลาที่เสียไปกับงานแทรก — ระบบจะนำไปเลื่อนคิวที่เหลือให้อัตโนมัติ", "Time lost to the interruption — the rest of your queue will shift automatically")}</p>
+      <div class="paused-task">⏸️ ${L("งานที่พักไว้", "Paused task")}: <b>${t ? esc(t.title) : L("(ไม่มีงานในชั่วโมงนั้น)", "(no task in this slot)")}</b></div>
+      <label class="field"><span>📌 ${L("Context Bookmark — ทำค้างถึงไหน / ขั้นต่อไปคืออะไร?", "Context Bookmark — where did you stop / what's next?")}</span>
+        <textarea id="bookmark-input" class="input" rows="3" data-bind="focus.interrupt.bookmark" placeholder="${L("เช่น เขียนถึงหัวข้อ 3.2 เหลือใส่กราฟยอดขาย", "e.g. Finished section 3.2, next: add the sales chart")}">${esc(I.bookmark)}</textarea></label>
+      <label class="field"><span>⚡ ${L("งานแทรกคืออะไร? (ไม่บังคับ)", "What's the interruption? (optional)")}</span>
+        <input id="interrupt-reason" class="input" data-bind="focus.interrupt.reason" value="${esc(I.reason)}" placeholder="${L("เช่น หัวหน้าเรียกประชุมด่วน", "e.g. Boss called an urgent meeting")}"></label>
+      <button class="btn btn-emerald btn-xl" data-act="resume" id="btn-resume">▶️ ${L("กลับมาทำงานเดิมต่อ", "Resume my task")}</button>
+    </article>`;
+      } else if (cur) {
+        const p = proj(cur.projectId);
+        cockpit = `<article class="card cockpit" id="cockpit">
+      <div class="cockpit-top"><span class="pill pill-amber">⚡ ${L("กำลังโฟกัส", "Focusing")}</span><span class="muted mono sm">${fmt(cur.start)}–${fmt(cur.start + cur.dur)}</span></div>
+      <h2 class="cockpit-title">${esc(cur.title)}</h2>
+      <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(p.title)}</span>` : `<span class="chip">📌 ${L("งานทั่วไป", "General task")}</span>`}${prioChip(cur)}</div>
+      ${cur.bookmark ? `<div class="bookmark-note">📌 ${L("ทำค้างไว้ล่าสุด", "Last bookmark")}: ${esc(cur.bookmark)}</div>` : ""}
+      <div><div class="big-timer" id="cd">--:--</div><p class="muted center sm" style="margin:6px 0 10px">${L("เวลาคงเหลือของบล็อกนี้", "Time left in this block")}</p><div class="bar"><i id="cd-bar"></i></div></div>
+      <button class="btn btn-amber btn-xl interrupt-btn" data-act="interrupt" id="btn-interrupt">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+      <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
+    </article>`;
+      } else {
+        cockpit = `<article class="card cockpit idle" id="cockpit">
+      <div class="cockpit-top"><span class="pill">☕ ${L("ช่วงว่าง", "Free time")}</span><span class="muted sm">${fmtDate(today)}</span></div>
+      <h2 class="cockpit-title">${nxt ? L("งานถัดไป: ", "Up next: ") + esc(nxt.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
+      ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
+      <button class="btn btn-amber btn-xl interrupt-btn" data-act="interrupt" id="btn-interrupt">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
+      <button class="btn" data-act="tab" data-tab="queue" id="btn-go-queue">＋ ${L("เพิ่มงานในคิว", "Add to queue")}</button>
+    </article>`;
+      }
+      const R = state.focus.lastReflow;
+      const remaining = tasksOn(today).filter(t => !t.done);
+      const over = remaining.filter(t => t.start + t.dur > DAY_END);
+      const secLeft = remaining.filter(t => t.priority === "secondary" && t !== cur);
+      const showR = R && R.date === today;
+      const reflow = showR || over.length ? `<article class="card reflow">
+      <div class="card-head"><h3>🔁 Auto-Reflow</h3>${showR ? `<button class="icon-btn" data-act="dismissReflow" id="btn-dismiss-reflow" aria-label="${L("ปิด", "Close")}">✕</button>` : ""}</div>
+      ${showR ? `<p>${L(`เลื่อนคิว <b>${R.count}</b> งาน ออกไป <b class="amber">${R.lost} นาที</b> ตามเวลาที่ถูกแทรก (${fmtClock(R.at)})`, `Shifted <b>${R.count}</b> tasks by <b class="amber">${R.lost} min</b> to absorb the interruption (${fmtClock(R.at)})`)}</p>` : ""}
+      ${over.length ? `<div class="warn-box">⚠️ ${L(`มี ${over.length} งานล้นเกิน 22:00 — แนะนำย้ายงานรองไปพรุ่งนี้`, `${over.length} tasks run past 22:00 — consider moving secondary tasks to tomorrow`)}</div>` : ""}
+      ${secLeft.length ? `<button class="btn btn-emerald" style="width:100%" data-act="moveSecondary" data-date="${today}" id="btn-move-secondary">📦 ${L(`ย้ายงานรอง ${secLeft.length} งานไปพรุ่งนี้ (คลิกเดียว)`, `Move ${secLeft.length} secondary tasks to tomorrow (one click)`)}</button>` : ""}
+    </article>` : "";
+      const logs = state.focus.log.filter(l => l.date === today);
+      const lost = logs.reduce((a, l) => a + l.mins, 0);
+      const all = tasksOn(today), done = all.filter(t => t.done).length;
+      const dueR = state.routines.filter(r => isDue(r, today));
+      $("#view-focus").innerHTML = `
+    <div class="view-head"><div><h1>⚡ Focus Cockpit</h1><p>${fmtDate(today)} • ${L("โฟกัสงานชั่วโมงนี้ ถูกแทรกก็กลับมาได้ทันที", "Focus on this hour — bounce back instantly after interruptions")}</p></div></div>
+    <div class="grid grid-2">
+      <div class="grid">${cockpit}${reflow}
+        <article class="card"><div class="stats">
+          <div class="stat"><b class="emerald">${done}/${all.length}</b><span>${L("งานเสร็จวันนี้", "Done today")}</span></div>
+          <div class="stat"><b class="rose">${logs.length}</b><span>${L("ครั้งที่ถูกแทรก", "Interruptions")}</span></div>
+          <div class="stat"><b class="amber">${lost}</b><span>${L("นาทีที่เสียไป", "Minutes lost")}</span></div>
+        </div></article>
+      </div>
+      <div class="grid">
+        <article class="card"><div class="card-head"><h3>📋 ${L("คิวที่เหลือวันนี้", "Remaining today")}</h3><button class="btn btn-sm" data-act="tab" data-tab="queue" id="btn-focus-queue">${L("ดูทั้งหมด", "View all")}</button></div>
+          ${remaining.length ? `<ul class="tasks">${remaining.slice(0, 5).map(taskRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานค้าง 🎉", "All clear 🎉")}</p>`}</article>
+        <article class="card"><h3>🔁 ${L("กิจวัตรวันนี้", "Today's routines")}</h3>
+          ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีกิจวัตรที่ถึงรอบวันนี้", "No routines due today")}</p>`}</article>
+        ${alertsCard()}
+      </div>
+    </div>`;
+      tickCockpit();
+    }
+    function alertsCard() {
+      const A = state.alerts;
+      return `<article class="card" id="alerts-card"><h3>⌚ Smartwatch & Mobile Alert</h3>
+    <label class="switch"><span>🔊 ${L("เสียงปลุกดิจิทัล", "Digital alarm sound")}</span><input type="checkbox" id="sw-sound" data-bind="alerts.sound" ${A.sound ? "checked" : ""}></label>
+    <label class="switch"><span>📳 ${L("สั่นมือถือ", "Phone vibration")}</span><input type="checkbox" id="sw-vibrate" data-bind="alerts.vibrate" ${A.vibrate ? "checked" : ""}></label>
+    <label class="switch"><span>🔔 ${L("แจ้งเตือนเบราว์เซอร์", "Browser notifications")}</span><input type="checkbox" id="sw-notify" data-bind="alerts.notify" ${A.notify ? "checked" : ""}></label>
+    <label class="field" style="margin-top:12px"><span>${L("เตือนล่วงหน้าก่อนเริ่มงาน", "Remind me before a task starts")}</span>
+      <select class="input" id="sel-lead" data-bind="alerts.lead" data-num="1">${[0, 5, 10, 15].map(v => `<option value="${v}" ${Number(A.lead) === v ? "selected" : ""}>${v ? minLabel(v) : L("ตรงเวลา", "On time")}</option>`).join("")}</select></label>
+    <label class="field" style="margin-top:12px"><span>📲 ${L("ntfy.sh Topic ส่วนตัว (ส่งเข้าสมาร์ทวอทช์)", "Private ntfy.sh topic (pushes to your smartwatch)")}</span>
+      <div class="row"><input class="input grow" id="ntfy-topic" data-bind="alerts.topic" value="${esc(A.topic)}" placeholder="flowrecover-ab12x" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"><button class="btn" data-act="randTopic" id="btn-rand-topic" title="${L("สุ่มชื่อ", "Random name")}">🎲</button></div></label>
+    <div class="row" style="margin-top:12px"><button class="btn btn-emerald grow" data-act="testNtfy" id="btn-test-ntfy">📲 ${L("ทดสอบสั่นเข้าข้อมือ", "Test wrist buzz")}</button><button class="btn grow" data-act="testAlert" id="btn-test-alert">🔔 ${L("ทดสอบบนเครื่องนี้", "Test on this device")}</button></div>
+    <p class="muted sm" style="margin-top:10px">${L("ติดตั้งแอป", "Install the")} <a href="https://ntfy.sh/" target="_blank" rel="noopener">ntfy</a> ${L("บนมือถือ → Subscribe ชื่อ Topic เดียวกัน → เปิดการแจ้งเตือนของแอป ntfy บน Apple Watch / Garmin / Galaxy Watch", "app → subscribe to the same topic → allow ntfy notifications on your Apple Watch / Garmin / Galaxy Watch")}</p>
+  </article>`;
+    }
+    function tickCockpit() {
+      const I = state.focus.interrupt;
+      if (I) { const el = document.getElementById("int-timer"); if (el) el.textContent = fmtDur((Date.now() - I.startedAt) / 1000); return; }
+      const el = document.getElementById("cd"); if (!el) return;
+      const n = nowMin(), cur = currentTask();
+      if (cur) {
+        const rem = (cur.start + cur.dur - n) * 60; el.textContent = fmtDur(rem); el.classList.toggle("warn", rem < 300);
+        const bar = document.getElementById("cd-bar"); if (bar) bar.style.width = Math.min(100, (n - cur.start) / cur.dur * 100) + "%";
+      } else { const nx = nextTask(); if (nx) el.textContent = fmtDur((nx.start - n) * 60); }
+    }
+
+    /* ---------- 📅 Queue ---------- */
+    function taskRow(t) {
+      const p = proj(t.projectId), n = nowMin(), isToday = t.date === dkey();
+      const live = isToday && !t.done && t.start <= n && n < t.start + t.dur;
+      const overdue = isToday && !t.done && t.start + t.dur <= n;
+      const over = !t.done && t.start + t.dur > DAY_END;
+      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""}">
+    <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
+    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span></div>
+      <div class="task-title">${esc(t.title)}</div>
+      <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
+      ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
+    <div class="task-actions"><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
+  </li>`;
+    }
+    function routineRow(r) {
+      const today = dkey(), on = !!r.log?.[today];
+      return `<li class="task ${on ? "done" : ""}"><button class="check ${on ? "on" : ""}" data-act="routineCheck" data-id="${r.id}" id="rchk-${r.id}" aria-label="${L("เช็กอินกิจวัตร", "Check in routine")}">${on ? "✓" : ""}</button>
+    <div class="task-main"><div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r.freq)}</span></div><div class="task-title">${esc(r.title)}</div>
+    <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div></div></li>`;
+    }
+    function renderQueue() {
+      const today = dkey(), date = state.queueDate || today, list = tasksOn(date);
+      const projOpts = `<option value="">📌 ${L("งานทั่วไป", "General task")}</option>` + state.projects.map(p => `<option value="${p.id}">🗂️ ${esc(p.title)}</option>`).join("");
+      const secLeft = list.filter(t => !t.done && t.priority === "secondary");
+      const totalMin = list.filter(t => !t.done).reduce((a, t) => a + t.dur, 0);
+      const dueR = state.routines.filter(r => isDue(r, today));
+      $("#view-queue").innerHTML = `
+    <div class="view-head"><div><h1>📅 ${L("คิวงานยืดหยุ่น", "Flexible Queue")}</h1><p>${L("วางบล็อกเวลา • ถูกแทรกแล้วระบบเลื่อนให้เอง", "Plan time blocks • the schedule reflows itself after interruptions")}</p></div></div>
+    <div class="grid grid-2">
+      <div class="grid">
+        <div class="seg" role="tablist">
+          <button class="${date === today ? "on" : ""}" data-act="qdate" data-v="${today}" id="qd-today">${L("วันนี้", "Today")}</button>
+          <button class="${date === addDays(today, 1) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 1)}" id="qd-tomorrow">${L("พรุ่งนี้", "Tomorrow")}</button>
+          <button class="${date === addDays(today, 2) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 2)}" id="qd-after">${fmtDate(addDays(today, 2))}</button>
+        </div>
+        <article class="card"><h3>＋ ${L("เพิ่มบล็อกงาน", "Add a time block")} • ${fmtDate(date)}</h3>
+          <form class="form-grid" data-form="addTask" id="form-add-task" autocomplete="off">
+            <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" id="task-title" required placeholder="${L("เช่น ทำสไลด์นำเสนอลูกค้า", "e.g. Prepare client pitch deck")}"></label>
+            <label class="field"><span>${L("เวลาเริ่ม", "Start time")}</span><input class="input" type="time" name="start" id="task-start" value="${suggestStart(date)}" required></label>
+            <label class="field"><span>${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="task-dur">${[15, 25, 30, 45, 60, 90, 120, 180].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("")}</select></label>
+            <label class="field"><span>${L("ผูกกับโปรเจค", "Link to project")}</span><select class="input" name="project" id="task-project">${projOpts}</select></label>
+            <label class="field"><span>${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="task-priority"><option value="main">⭐ ${L("งานหลัก", "Main")}</option><option value="secondary">${L("งานรอง (ย้ายได้)", "Secondary (movable)")}</option></select></label>
+            <button class="btn btn-amber full" type="submit" id="btn-add-task">＋ ${L("เพิ่มเข้าคิว", "Add to queue")}</button>
+          </form></article>
+        <article class="card"><div class="card-head"><h3>🗓️ ${fmtDate(date)}</h3><span class="chip">${L(`${list.length} งาน • เหลือ ${Math.floor(totalMin / 60)} ชม. ${totalMin % 60} น.`, `${list.length} tasks • ${Math.floor(totalMin / 60)}h ${totalMin % 60}m left`)}</span></div>
+          ${list.length ? `<ul class="tasks">${list.map(taskRow).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีงานในวันนี้", "No tasks for this day yet")}</p>`}
+          ${secLeft.length ? `<button class="btn" style="width:100%;margin-top:12px" data-act="moveSecondary" data-date="${date}" id="btn-q-move-secondary">📦 ${L(`ย้ายงานรอง ${secLeft.length} งานไปวันถัดไป`, `Move ${secLeft.length} secondary tasks to the next day`)}</button>` : ""}
+        </article>
+      </div>
+      <div class="grid">
+        <article class="card"><h3>🔁 ${L("กิจวัตรทำซ้ำ", "Recurring Routines")}</h3>
+          <form class="form-grid" data-form="addRoutine" id="form-add-routine" autocomplete="off">
+            <label class="field full"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="routine-title" required placeholder="${L("เช่น วิ่ง 3 กม. / อ่านหนังสือ", "e.g. Run 3 km / Read")}"></label>
+            <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="routine-freq"><option value="daily">${L("ทุกวัน (Daily)", "Daily")}</option><option value="eod">${L("วันเว้นวัน", "Every other day")}</option><option value="weekday">${L("เฉพาะ จ.-ศ.", "Weekdays (Mon–Fri)")}</option></select></label>
+            <label class="field"><span>${L("เวลา (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" id="routine-time"></label>
+            <button class="btn btn-emerald full" type="submit" id="btn-add-routine">＋ ${L("สร้างกิจวัตร", "Create routine")}</button>
+          </form>
+          <h4 style="margin:16px 0 8px">✅ ${L("ถึงรอบวันนี้", "Due today")} (${dueR.length})</h4>
+          ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("วันนี้ไม่มีกิจวัตรที่ถึงรอบ", "No routines due today")}</p>`}
+          <h4 style="margin:16px 0 8px">📚 ${L("กิจวัตรทั้งหมด", "All routines")}</h4>
+          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}</span> <span class="streak">🔥${streak(r)}</span></div><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
+        </article>
+      </div>
+    </div>`;
+    }
+
+    /* ---------- 🗂️ Projects ---------- */
+    function renderProjects() {
+      const sub = state.projSub;
+      $("#view-projects").innerHTML = `
+    <div class="view-head"><div><h1>🗂️ ${L("โปรเจค", "Projects")}</h1><p>${L("ความคืบหน้า • ผู้ประสานงาน • ไฟล์ Drive • แชร์ให้ทีม", "Progress • coordinators • Drive files • team sharing")}</p></div></div>
+    <div class="seg" style="margin-bottom:14px"><button class="${sub === "list" ? "on" : ""}" data-act="projSub" data-v="list" id="ps-list">🗂️ ${L("รายการโปรเจค", "Project list")}</button><button class="${sub === "map" ? "on" : ""}" data-act="projSub" data-v="map" id="ps-map">🕸️ ${L("แผนภูมิความเชื่อมโยง", "Relationship map")}</button></div>
+    ${sub === "map" ? mapView() : projectList()}`;
+    }
+    function projectList() {
+      return `<div class="grid">
+    <article class="card"><h3>＋ ${L("สร้างโปรเจคใหม่", "New project")}</h3>
+      <form class="form-grid" data-form="addProject" id="form-add-project" autocomplete="off">
+        <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" name="title" id="proj-title" required placeholder="${L("เช่น แคมเปญปีใหม่", "e.g. New Year campaign")}"></label>
+        <label class="field"><span>${L("เป้าหมายรายเดือนที่เกี่ยวข้อง", "Related monthly goal")}</span><input class="input" name="goal" id="proj-goal" placeholder="${L("เช่น เพิ่มยอดขาย 20%", "e.g. Grow sales by 20%")}"></label>
+        <button class="btn btn-amber full" type="submit" id="btn-add-project">＋ ${L("สร้างโปรเจค", "Create project")}</button>
+      </form></article>
+    ${state.projects.length ? state.projects.map(projectCard).join("") : `<p class="empty">${L("ยังไม่มีโปรเจค", "No projects yet")}</p>`}
+  </div>`;
+    }
+    function projectCard(p) {
+      const i = state.projects.indexOf(p), open = state.openProject === p.id, pct = prog(p);
+      const cnt = s => p.steps.filter(x => x.status === s).length;
+      const tasks = state.tasks.filter(t => t.projectId === p.id).sort((a, b) => (a.date + fmt(a.start)).localeCompare(b.date + fmt(b.start)));
+      return `<article class="card proj">
+    <button class="proj-head" data-act="openProject" data-id="${p.id}" id="ph-${p.id}" aria-expanded="${open}">
+      <div class="ring" style="--p:${pct}"><span>${pct}%</span></div>
+      <div class="grow" style="min-width:0"><b style="display:block">${esc(p.title)}</b>
+        <span class="muted sm">🎯 ${esc(p.monthlyGoal || L("ยังไม่ระบุเป้าหมาย", "No goal set"))}</span>
+        <div class="chips" style="margin-top:6px"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span></div></div>
+      <span class="muted">${open ? "▲" : "▼"}</span>
+    </button>
+    ${open ? `<div class="proj-body">
+      <div class="form-grid">
+        <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" id="pt-${p.id}" data-bind="projects.${i}.title" value="${esc(p.title)}"></label>
+        <label class="field"><span>🎯 ${L("เป้าหมายรายเดือน", "Monthly goal")}</span><input class="input" id="pg-${p.id}" data-bind="projects.${i}.monthlyGoal" value="${esc(p.monthlyGoal)}"></label>
+        <label class="field"><span>👤 ${L("ผู้ประสานงาน", "Coordinator")}</span><input class="input" id="pc-${p.id}" data-bind="projects.${i}.coordinator.name" value="${esc(p.coordinator?.name)}" placeholder="${L("ชื่อ / ตำแหน่ง", "Name / role")}"></label>
+        <label class="field"><span>📞 ${L("ข้อมูลติดต่อ", "Contact")}</span><input class="input" id="pcc-${p.id}" data-bind="projects.${i}.coordinator.contact" value="${esc(p.coordinator?.contact)}" placeholder="${L("อีเมล / เบอร์ / Line", "Email / phone / Line")}"></label>
+      </div>
+      <div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${L("ความคืบหน้า", "Progress")}</b><b class="mono emerald">${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
+        ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">${L("คำนวณอัตโนมัติจากขั้นตอนที่ Done", "Auto-calculated from Done steps")}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
+      <div><b>🧭 ${L("Timeline ขั้นตอนการทำงาน", "Workflow timeline")}</b><p class="muted sm">${L("แตะป้ายสถานะเพื่อเปลี่ยน Todo → Doing → Waiting → Done", "Tap a status to cycle Todo → Doing → Waiting → Done")}</p>
+        <ul class="steps" style="margin-top:10px">${p.steps.map(s => `<li class="step" style="--sc:${STEP[s.status][1]}"><span class="grow">${esc(s.title)}</span><button class="st-btn" data-act="stepCycle" data-pid="${p.id}" data-sid="${s.id}" id="st-${s.id}">${STEP[s.status][0]}</button><button class="icon-btn" data-act="delStep" data-pid="${p.id}" data-sid="${s.id}" id="sd-${s.id}" aria-label="${L("ลบขั้นตอน", "Delete step")}">✕</button></li>`).join("")}</ul>
+        <form class="row" data-form="addStep" data-pid="${p.id}" id="fs-${p.id}" style="margin-top:8px" autocomplete="off"><input class="input grow" name="title" required placeholder="${L("เพิ่มขั้นตอนใหม่…", "Add a step…")}" id="fsi-${p.id}" style="flex:1;min-width:0"><button class="btn" type="submit" id="fsb-${p.id}">＋</button></form></div>
+      <div><b>📁 ${L("ไฟล์แนบ Google Drive", "Google Drive files")}</b>
+        ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>📄<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ", "No files attached")}</p>`}
+        <form class="form-grid" data-form="addLink" data-pid="${p.id}" id="fl-${p.id}" style="margin-top:8px" autocomplete="off"><input class="input" name="label" placeholder="${L("ชื่อไฟล์", "File name")}" id="fll-${p.id}"><input class="input" name="url" type="url" required placeholder="https://drive.google.com/..." id="flu-${p.id}"><button class="btn full" type="submit" id="flb-${p.id}">📎 ${L("แนบลิงก์", "Attach link")}</button></form></div>
+      <div><b>📋 ${L("งานที่ผูกกับโปรเจคนี้", "Linked tasks")} (${tasks.length})</b>
+        ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span></div></li>`).join("")}</ul>` : `<p class="muted sm">${L("เพิ่มงานจากหน้า 📅 คิวงาน แล้วเลือกโปรเจคนี้", "Add tasks from 📅 Queue and pick this project")}</p>`}</div>
+      <div class="row"><button class="btn btn-emerald grow" data-act="share" data-id="${p.id}" id="share-${p.id}">🔗 ${L("สร้างลิงก์แชร์ความคืบหน้า", "Create progress share link")}</button><button class="btn btn-ghost" data-act="delProject" data-id="${p.id}" id="pdel-${p.id}">🗑️ ${L("ลบ", "Delete")}</button></div>
+    </div>` : ""}
+  </article>`;
+    }
+    function mapView() {
+      if (!state.projects.length) return `<p class="empty">${L("สร้างโปรเจคก่อน เพื่อดูแผนภูมิความเชื่อมโยง", "Create a project first to see the relationship map")}</p>`;
+      const goals = [], projs = [], tasks = [], coords = [], edges = [];
+      state.projects.forEach(p => {
+        const g = (p.monthlyGoal || "").trim() || L("เป้าหมายทั่วไป", "General goal");
+        let gi = goals.findIndex(x => x.label === g); if (gi < 0) { gi = goals.length; goals.push({ id: "g" + gi, label: g }); }
+        const pid = "p" + p.id; projs.push({ id: pid, label: p.title, sub: prog(p) + "%" }); edges.push(["g" + gi, pid]);
+        const c = (p.coordinator?.name || "").trim(); let cid = null;
+        if (c) { let ci = coords.findIndex(x => x.label === c); if (ci < 0) { ci = coords.length; coords.push({ id: "c" + ci, label: c, sub: trunc(p.coordinator.contact, 22) }); } cid = "c" + ci; }
+        const pt = state.tasks.filter(t => t.projectId === p.id).sort((a, b) => a.done - b.done || a.date.localeCompare(b.date)).slice(0, 4);
+        pt.forEach(t => { const tid = "t" + t.id; tasks.push({ id: tid, label: (t.done ? "✓ " : "") + t.title, sub: fmtDate(t.date) + " " + fmt(t.start) }); edges.push([pid, tid]); if (cid) edges.push([tid, cid]); });
+        if (!pt.length && cid) edges.push([pid, cid]);
+      });
+      const cols = [goals, projs, tasks, coords], colors = ["#a78bfa", "#f59e0b", "#10b981", "#38bdf8"];
+      const heads = [L("🎯 เป้าหมายรายเดือน", "🎯 Monthly goals"), L("🗂️ โปรเจค", "🗂️ Projects"), L("📋 งานรายวัน", "📋 Daily tasks"), L("👤 ผู้ประสานงาน", "👤 Coordinators")];
+      const X = [16, 268, 520, 772], NW = 212, NH = 50, GAP = 16, TOP = 56;
+      const H = Math.max(...cols.map(c => c.length), 1) * (NH + GAP) + TOP + 10;
+      const pos = {};
+      cols.forEach((c, i) => { const off = (H - TOP - c.length * (NH + GAP)) / 2; c.forEach((n, j) => pos[n.id] = { x: X[i], y: TOP + off + j * (NH + GAP), c: colors[i] }); });
+      const isLight = state.theme === "light";
+      const svg = `<svg viewBox="0 0 1000 ${H}" role="img" aria-label="${L("แผนภูมิความเชื่อมโยงของงาน", "Work relationship map")}">
+    ${heads.map((h, i) => `<text x="${X[i] + NW / 2}" y="28" text-anchor="middle" fill="${colors[i]}" font-size="15" font-weight="700">${h}</text>`).join("")}
+    ${edges.map(([a, b]) => { const A = pos[a], B = pos[b]; if (!A || !B) return ""; const x1 = A.x + NW, y1 = A.y + NH / 2, x2 = B.x, y2 = B.y + NH / 2; return `<path d="M${x1} ${y1} C${x1 + 50} ${y1},${x2 - 50} ${y2},${x2} ${y2}" fill="none" stroke="${A.c}" stroke-opacity=".55" stroke-width="2"/>`; }).join("")}
+    ${cols.flatMap((c) => c.map(n => { const p = pos[n.id]; return `<g><rect x="${p.x}" y="${p.y}" width="${NW}" height="${NH}" rx="12" fill="${isLight ? "#fff" : "#1e222d"}" stroke="${p.c}" stroke-width="1.5"/><rect x="${p.x}" y="${p.y}" width="5" height="${NH}" rx="2" fill="${p.c}"/><text x="${p.x + 14}" y="${p.y + (n.sub ? 21 : 30)}" fill="${isLight ? "#0f172a" : "#e5e7eb"}" font-size="13" font-weight="600">${esc(trunc(n.label, 24))}</text>${n.sub ? `<text x="${p.x + 14}" y="${p.y + 39}" fill="${isLight ? "#5b6b82" : "#94a3b8"}" font-size="11">${esc(n.sub)}</text>` : ""}</g>`; })).join("")}
+  </svg>`;
+      return `<article class="card"><h3>🕸️ ${L("แผนภูมิสรุปความเชื่อมโยงของงาน", "Work relationship map")}</h3>
+    <p class="muted sm" style="margin-bottom:12px">${L("เป้าหมายรายเดือน → โปรเจค → งานรายวัน → ผู้ประสานงาน (เลื่อนซ้าย-ขวาบนมือถือ)", "Monthly goals → Projects → Daily tasks → Coordinators (swipe sideways on mobile)")}</p>
+    <div class="map-wrap">${svg}</div>
+    <div class="legend">${heads.map((h, i) => `<span><i style="background:${colors[i]}"></i>${h}</span>`).join("")}</div></article>`;
+    }
+    function shareUrl(p) {
+      const snap = {
+        t: p.title, g: p.monthlyGoal, p: prog(p), s: p.steps.map(s => [s.title, s.status]), c: p.coordinator, d: p.links.map(l => [l.label, l.url]),
+        k: state.tasks.filter(t => t.projectId === p.id).map(t => [t.title, t.done ? 1 : 0, t.date]), u: Date.now(), by: state.user?.name || "", l: LANG
+      };
+      return `${location.origin}${location.pathname}#share=${b64e(JSON.stringify(snap))}`;
+    }
+    function renderShare() {
+      let d; try { d = JSON.parse(b64d(location.hash.slice(7))); } catch { d = null; }
+      const v = $("#share-view"); v.hidden = false;
+      if (!d) { v.innerHTML = `<div class="share-page"><p class="empty">${L("ลิงก์แชร์ไม่ถูกต้อง", "Invalid share link")}</p></div>`; return; }
+      if (!urlLang && d.l) { LANG = d.l; document.documentElement.lang = LANG; }
+      const cnt = s => d.s.filter(x => x[1] === s).length;
+      document.title = `${L("ความคืบหน้า", "Progress")}: ${d.t} — FlowRecover`;
+      v.innerHTML = `<div class="share-page">
+    <div class="row"><span class="brand-logo">⚡</span><b>FlowRecover • Shared Progress View</b></div>
+    <article class="card cockpit"><span class="pill pill-emerald">🔗 ${L("มุมมองแชร์ความคืบหน้า (อ่านอย่างเดียว)", "Shared progress view (read-only)")}</span>
+      <h1 style="font-size:1.6rem">${esc(d.t)}</h1><p class="muted">🎯 ${esc(d.g || "-")}</p>
+      <div class="row" style="justify-content:space-between"><b>${L("ความคืบหน้า", "Progress")}</b><b class="mono emerald" style="font-size:1.6rem">${d.p}%</b></div><div class="bar"><i style="width:${d.p}%"></i></div>
+      <div class="chips"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span></div>
+      <p class="muted sm">${L("อัปเดตล่าสุด", "Last updated")} ${fmtDT(d.u)} ${d.by ? L("โดย ", "by ") + esc(d.by) : ""}</p></article>
+    <article class="card"><h3>🧭 Timeline</h3><ul class="steps">${d.s.map(([t, s]) => `<li class="step" style="--sc:${STEP[s]?.[1]}"><span class="grow">${esc(t)}</span><span class="st-btn">${STEP[s]?.[0]}</span></li>`).join("") || '<p class="muted">-</p>'}</ul></article>
+    ${d.c?.name ? `<article class="card"><h3>👤 ${L("ผู้ประสานงาน", "Coordinator")}</h3><p><b>${esc(d.c.name)}</b><br><span class="muted">${esc(d.c.contact || "")}</span></p></article>` : ""}
+    ${d.d.length ? `<article class="card"><h3>📁 ${L("ไฟล์ที่เกี่ยวข้อง", "Related files")}</h3><ul class="links">${d.d.map(([l, u]) => /^https?:\/\//.test(u) ? `<li>📄<a href="${esc(u)}" target="_blank" rel="noopener">${esc(l || u)}</a></li>` : "").join("")}</ul></article>` : ""}
+    ${d.k.length ? `<article class="card"><h3>📋 ${L(`งาน (${d.k.filter(x => x[1]).length}/${d.k.length} เสร็จ)`, `Tasks (${d.k.filter(x => x[1]).length}/${d.k.length} done)`)}</h3><ul class="rows">${d.k.map(([t, done, dt]) => `<li class="row-item"><div>${done ? "✅" : "⬜"} ${esc(t)} <span class="muted">· ${fmtDate(dt)}</span></div></li>`).join("")}</ul></article>` : ""}
+    <a class="btn btn-amber" href="${location.pathname}" id="share-open-app">⚡ ${L("เปิดแอป FlowRecover x Life Planner", "Open FlowRecover x Life Planner")}</a>
+  </div>`;
+    }
+
+    /* ---------- 📔 Life Planner ---------- */
+    const DIMS = [
+      { k: "self", icon: "🌱", en: "Self-development", th: "พัฒนาตัวเอง", c: "#a78bfa" },
+      { k: "health", icon: "💚", en: "Health", th: "สุขภาพ", c: "#10b981" },
+      { k: "wealth", icon: "💰", en: "Wealth", th: "การเงิน/การงาน", c: "#f59e0b" },
+      { k: "relation", icon: "🤝", en: "Relationship", th: "ความสัมพันธ์", c: "#f472b6" },
+      { k: "hobby", icon: "🎨", en: "Hobby", th: "งานอดิเรก", c: "#38bdf8" }
+    ];
+    const DREAM = [
+      { k: "live", t: "Live Here", th: "บ้าน/ที่อยู่ในฝัน", en: "Your dream home", icon: "🏡", g: "linear-gradient(135deg,#7c3aed,#4f46e5)" },
+      { k: "drive", t: "Drive This", th: "รถในฝัน", en: "Your dream car", icon: "🚗", g: "linear-gradient(135deg,#f59e0b,#ea580c)" },
+      { k: "do", t: "Do That", th: "สิ่งที่อยากทำ", en: "Things to do", icon: "🎯", g: "linear-gradient(135deg,#10b981,#0d9488)" },
+      { k: "be", t: "Be There", th: "ที่ที่อยากไป", en: "Places to be", icon: "✈️", g: "linear-gradient(135deg,#0ea5e9,#2563eb)" }
+    ];
+    const MOODS = [["😄", "สดใส", "Great"], ["🙂", "ดี", "Good"], ["😐", "เฉยๆ", "Meh"], ["😔", "เศร้า", "Sad"], ["😫", "เหนื่อย", "Tired"], ["😡", "หงุดหงิด", "Angry"], ["😰", "กังวล", "Anxious"]];
+    // fields: [key, [th, en], type, options|placeholder[th,en]]
+    const CRUD = {
+      expenses: {
+        fields: [["date", ["วันที่", "Date"], "date"], ["food", ["ค่าอาหาร", "Food"], "number"], ["travel", ["ค่าเดินทาง", "Transport"], "number"], ["other", ["อื่นๆ", "Other"], "number"], ["note", ["หมายเหตุ", "Note"], "text", ["ไม่บังคับ", "optional"]]],
+        row: r => `<b>${fmtDate(r.date)}</b> · 🍜 ${money(r.food)} · 🚌 ${money(r.travel)} · 🧾 ${money(r.other)} <span class="sum">= ${money(expSum(r))} ฿</span>${r.note ? ` <span class="muted">· ${esc(r.note)}</span>` : ""}`
+      },
+      workouts: {
+        fields: [["date", ["วันที่", "Date"], "date"], ["type", ["ประเภท", "Type"], "text", ["วิ่ง / เวท / โยคะ", "Run / weights / yoga"]], ["mins", ["นาที", "Minutes"], "number"], ["weight", ["น้ำหนัก (กก.)", "Weight (kg)"], "number"]],
+        row: r => `<b>${fmtDate(r.date)}</b> · 🏃 ${esc(r.type || "-")} · ${minLabel(r.mins || 0)}${r.weight ? ` · ⚖️ <span class="sum">${r.weight} ${L("กก.", "kg")}</span>` : ""}`
+      },
+      meals: {
+        fields: [["date", ["วันที่", "Date"], "date"], ["meal", ["มื้อ", "Meal"], "select", [["b", "เช้า", "Breakfast"], ["l", "กลางวัน", "Lunch"], ["d", "เย็น", "Dinner"], ["s", "ว่าง", "Snack"]]], ["food", ["เมนู", "Food"], "text", ["เช่น สลัดอกไก่", "e.g. Chicken salad"]], ["kcal", ["แคลอรี", "Calories"], "number"]],
+        row: r => `<b>${fmtDate(r.date)}</b> · ${esc(optLabel("meals", "meal", r.meal))} · 🥗 ${esc(r.food || "-")} <span class="sum">${money(r.kcal)} kcal</span>`
+      },
+      trips: {
+        fields: [["place", ["สถานที่", "Destination"], "text", ["เช่น เชียงใหม่", "e.g. Chiang Mai"]], ["date", ["วันเดินทาง", "Travel date"], "date"], ["budget", ["งบ (฿)", "Budget (฿)"], "number"], ["notes", ["แผน/โน้ต", "Plan/notes"], "text", ["ที่พัก กิจกรรม", "Hotel, activities"]]],
+        row: r => `✈️ <b>${esc(r.place || "-")}</b> · ${fmtDate(r.date)} · <span class="sum">${money(r.budget)} ฿</span>${r.notes ? ` <span class="muted">· ${esc(r.notes)}</span>` : ""}`
+      },
+      media: {
+        fields: [["kind", ["ประเภท", "Type"], "select", [["book", "📚 หนังสือ", "📚 Book"], ["movie", "🎬 หนัง", "🎬 Movie"]]], ["title", ["ชื่อเรื่อง", "Title"], "text", ["ชื่อหนังสือ/หนัง", "Book/movie title"]], ["rating", ["คะแนน", "Rating"], "select", [["5", "5 ⭐", "5 ⭐"], ["4", "4 ⭐", "4 ⭐"], ["3", "3 ⭐", "3 ⭐"], ["2", "2 ⭐", "2 ⭐"], ["1", "1 ⭐", "1 ⭐"]]]],
+        row: r => `${esc(optLabel("media", "kind", r.kind))} <b>${esc(r.title || "-")}</b> · ${"⭐".repeat(Number(r.rating) || 0)}`
+      }
+    };
+    function optLabel(name, key, val) { const f = CRUD[name].fields.find(x => x[0] === key); const o = f?.[3]?.find?.(x => x[0] === val); return o ? L(o[1], o[2]) : val; }
+    const expSum = r => (Number(r.food) || 0) + (Number(r.travel) || 0) + (Number(r.other) || 0);
+    function crudForm(name) {
+      return `<form class="crud-form" data-crud="${name}" id="form-${name}" autocomplete="off">${CRUD[name].fields.map(([k, l, t, o]) => {
+        const id = `f-${name}-${k}`, lab = L(l[0], l[1]);
+        if (t === "select") return `<label class="field sm"><span>${lab}</span><select class="input" name="${k}" id="${id}">${o.map(x => `<option value="${x[0]}">${L(x[1], x[2])}</option>`).join("")}</select></label>`;
+        return `<label class="field sm"><span>${lab}</span><input class="input" name="${k}" id="${id}" type="${t}" ${t === "date" ? `value="${dkey()}"` : ""} ${t === "number" ? 'inputmode="decimal" step="any" min="0"' : ""} placeholder="${o ? esc(L(o[0], o[1])) : ""}"></label>`;
+      }).join("")}<button class="btn btn-emerald" type="submit" id="btn-add-${name}">＋ ${L("เพิ่ม", "Add")}</button></form>`;
+    }
+    function crudList(name, limit = 30) {
+      const rows = [...P()[name]].sort((a, b) => (b.date || "").localeCompare(a.date || "") || b.ts - a.ts).slice(0, limit);
+      return rows.length ? `<ul class="rows">${rows.map(r => `<li class="row-item"><div>${CRUD[name].row(r)}</div><button class="icon-btn" data-act="delCrud" data-name="${name}" data-id="${r.id}" id="cd-${r.id}" aria-label="${L("ลบ", "Delete")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีข้อมูล", "No entries yet")}</p>`;
+    }
+    function radar() {
+      const R = 70, cx = 90, cy = 90, pts = (scale) => DIMS.map((d, i) => { const a = (i * 72 - 90) * Math.PI / 180, r = scale(d) * R; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(" ");
+      const val = d => (Number(P().goals[d.k]?.rating) || 0) / 5;
+      return `<svg viewBox="0 0 180 180" width="180" height="180" aria-label="${L("กราฟความพึงพอใจ 5 มิติ", "5-dimension satisfaction chart")}" role="img">
+    ${[1, .66, .33].map(s => `<polygon points="${pts(() => s)}" fill="none" stroke="var(--border)" stroke-width="1"/>`).join("")}
+    <polygon points="${pts(val)}" fill="rgba(245,158,11,.28)" stroke="#f59e0b" stroke-width="2"/>
+    ${DIMS.map((d, i) => { const a = (i * 72 - 90) * Math.PI / 180; return `<text x="${cx + (R + 12) * Math.cos(a)}" y="${cy + (R + 12) * Math.sin(a) + 5}" text-anchor="middle" font-size="15">${d.icon}</text>`; }).join("")}
+  </svg>`;
+    }
+    function renderPlanner() {
+      const sec = state.plannerSec;
+      const tabs = [["cg", "C/G", L("เป้าหมาย 5 มิติ & ตาราง 24 ชม.", "5-dimension goals & 24h plan")], ["hm", "H/M", L("นิสัย • อารมณ์ • Level Up", "Habits • Mood • Level Up")], ["f", "F", L("รายรับ-รายจ่าย & เป้าออม", "Income, expenses & savings")], ["wl", "W/L", L("ออกกำลังกาย • อาหาร • ทริป • หนังสือ/หนัง", "Workout • Meals • Trips • Books/Movies")]];
+      const body = { cg: plannerCG, hm: plannerHM, f: plannerF, wl: plannerWL }[sec]();
+      $("#view-planner").innerHTML = `
+    <div class="planner-head"><div><h1 style="font-size:1.45rem">📔 Life Planner</h1><p class="muted sm">${tabs.find(t => t[0] === sec)[2]}</p></div>
+      <div class="shortcuts" role="tablist" aria-label="Life Planner">${tabs.map(([k, l, d]) => `<button class="${sec === k ? "on" : ""}" data-act="psec" data-v="${k}" id="psec-${k}" title="${d}" role="tab" aria-selected="${sec === k}">${l}</button>`).join("")}</div></div>
+    ${body}`;
+    }
+    function plannerCG() {
+      const mk = dkey().slice(0, 7), date = state.plannerDate || dkey(), D = P().daily[date] || {};
+      const hour = h => { const k = `h${pad(h)}`; return `<div class="hour"><b>${pad(h)}:00</b><input class="input" id="hr-${k}" data-bind="planner.daily.${date}.plan.${k}" value="${esc(D.plan?.[k])}" placeholder="…"></div>`; };
+      return `<div class="grid">
+    <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3></div>
+      <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ แล้วให้คะแนนความพึงพอใจ 1-5 ดาว เพื่อเห็นสมดุลชีวิตของคุณในกราฟ", "Set a goal for each dimension and rate your satisfaction 1–5 stars to see your life balance on the chart.")}</p></div>
+      <div class="dims" style="margin-top:12px">${DIMS.map(d => `<div class="dim" style="--dc:${d.c}"><div class="dim-head"><div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}</small></div>${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}</div>
+        <textarea class="input" rows="2" id="goal-${d.k}" data-bind="planner.goals.${d.k}.goal" placeholder="${L(`เป้าหมายด้าน${d.th}…`, `Your ${d.en.toLowerCase()} goal…`)}">${esc(P().goals[d.k]?.goal)}</textarea></div>`).join("")}</div></article>
+    <div class="grid grid-2b">
+      <article class="card"><h3>🎯 Monthly Focus • ${monthLabel()}</h3>
+        <label class="field"><span>What to focus?</span><textarea class="input" id="m-focus" data-bind="planner.monthly.${mk}.focus" placeholder="${L("เดือนนี้จะโฟกัสอะไร", "What will you focus on this month?")}">${esc(P().monthly[mk]?.focus)}</textarea></label>
+        <label class="field" style="margin-top:10px"><span>What to tell yourself?</span><textarea class="input" id="m-tell" data-bind="planner.monthly.${mk}.tell" placeholder="${L("ประโยคเตือนใจตัวเอง", "A reminder to yourself")}">${esc(P().monthly[mk]?.tell)}</textarea></label></article>
+      <article class="card"><div class="card-head"><h3>📆 Daily 24h Plan</h3><input type="date" class="input" style="width:auto;min-height:38px" value="${date}" data-act-change="plannerDate" id="planner-date" aria-label="${L("เลือกวันที่", "Pick a date")}"></div>
+        <div class="row" style="justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface-2)"><b>Rate your day</b>${stars(`planner.daily.${date}.rate`, D.rate, "Rate your day")}</div>
+        <h4 style="margin:14px 0 8px">🌅 Morning Plan (06:00–11:00)</h4><div class="hours">${[6, 7, 8, 9, 10, 11].map(hour).join("")}</div>
+        <h4 style="margin:14px 0 8px">🌇 Noon & Night Plan (12:00–22:00)</h4><div class="hours">${[12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22].map(hour).join("")}</div></article>
+    </div>
+    <article class="card"><h3>✨ Dream Board</h3><div class="dream">${DREAM.map(d => `<div class="dream-tile" style="background:${d.g}"><div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div><textarea id="dream-${d.k}" data-bind="planner.dream.${d.k}" placeholder="${L("เขียนความฝันของคุณ…", "Write your dream…")}">${esc(P().dream[d.k])}</textarea></div>`).join("")}</div></article>
+  </div>`;
+    }
+    function plannerHM() {
+      const pts = points(), lv = LV.filter(x => pts.total >= x).length, next = LV[lv];
+      const prevT = lv ? LV[lv - 1] : 0, pct = next ? Math.round((pts.total - prevT) / (next - prevT) * 100) : 100;
+      const wk = weekDates(), today = dkey();
+      const T = P().tiny;
+      return `<div class="grid">
+    <div class="grid grid-2b">
+      <article class="card"><h3>⛰️ Level Up Mountain (L1–L10)</h3>
+        <div class="row" style="justify-content:space-between"><div><b class="mono amber" style="font-size:2rem">${pts.total}</b> <span class="muted">pts</span></div><span class="pill pill-amber">${lv ? "Level " + lv : L("ตีนเขา", "Base camp")}${lv === 10 ? L(" 🏆 ยอดเขา!", " 🏆 Summit!") : ""}</span></div>
+        <div class="bar" style="margin:10px 0 4px"><i style="width:${pct}%"></i></div>
+        <p class="muted sm">${next ? L(`อีก ${next - pts.total} pts ถึง L${lv + 1}`, `${next - pts.total} pts to L${lv + 1}`) : L("พิชิตยอดเขาแล้ว!", "You reached the summit!")} • ${L("นิสัย", "Habits")} ${pts.habit} • ${L("กิจวัตร", "Routines")} ${pts.routine} • ${L("งานสำเร็จ", "Tasks")} ${pts.task}</p>
+        <div class="mountain">${LV.map((p, i) => ({ i: i + 1, p })).reverse().map(({ i, p }) => `<div class="mt-row ${pts.total >= p ? "on" : ""} ${i === lv ? "cur" : ""}" style="--w:${30 + (10 - i) * 7}%"><span>L${i}</span><span>${p} pts</span>${i === lv ? "<em>🧗</em>" : ""}</div>`).join("")}</div>
+        <p class="muted sm center">${L("เช็กอินนิสัย/กิจวัตร +5 • ทำงานสำเร็จ +10", "Habit/routine check-in +5 • task done +10")}</p></article>
+      <article class="card"><h3>😊 Daily Mood Tracker</h3>
+        <p class="muted sm" style="margin-bottom:8px">${L("วันนี้รู้สึกอย่างไร?", "How do you feel today?")}</p>
+        <div class="moods">${MOODS.map(([e, th, en]) => `<button class="mood-btn ${P().mood[today] === e ? "on" : ""}" data-act="mood" data-v="${e}" id="mood-${en}"><span>${e}</span>${L(th, en)}</button>`).join("")}</div>
+        <div class="mood-strip">${wk.map(d => `<div>${P().mood[d] || "·"}<small>${dayName(parseD(d))}</small></div>`).join("")}</div>
+        <label class="field" style="margin-top:14px"><span>⚡ Mood Booster — ${L("กิจกรรมที่ช่วยเติมพลังบวก", "activities that lift your mood")}</span><textarea class="input" id="booster" data-bind="planner.booster" placeholder="${L("เช่น ฟังเพลงโปรด เดินเล่น 10 นาที โทรหาเพื่อน", "e.g. Favorite music, 10-min walk, call a friend")}">${esc(P().booster)}</textarea></label></article>
+    </div>
+    <article class="card"><div class="card-head"><h3>🔥 Habit Tracker (${L("+5 แต้ม/ช่อง", "+5 pts/check")})</h3></div>
+      <div style="overflow-x:auto"><table class="habit-grid"><thead><tr><th style="text-align:left">${L("นิสัย", "Habit")}</th>${wk.map(d => `<th>${dayName(parseD(d))}<br>${parseD(d).getDate()}</th>`).join("")}<th></th></tr></thead>
+      <tbody>${P().habits.map(h => `<tr><td>${esc(h.name)}</td>${wk.map(d => { const on = !!P().habitLog[h.id]?.[d]; return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></td></tr>`).join("")}</tbody></table></div>
+      ${P().habits.length ? "" : `<p class="empty">${L("เพิ่มนิสัยแรกของคุณ", "Add your first habit")}</p>`}
+      <form class="row" data-form="addHabit" id="form-add-habit" style="margin-top:10px" autocomplete="off"><input class="input grow" name="name" id="habit-name" required placeholder="${L("เพิ่มนิสัยใหม่ เช่น นั่งสมาธิ 5 นาที", "New habit, e.g. Meditate 5 min")}" style="flex:1;min-width:0"><button class="btn btn-emerald" type="submit" id="btn-add-habit">＋</button></form></article>
+    <div class="grid grid-2b">
+      <article class="card"><h3>🌱 Tiny Habit</h3>
+        <div class="form-grid"><label class="field"><span>${L("หลังจาก… (นิสัยเดิม)", "After I… (existing habit)")}</span><input class="input" id="tiny-after" data-bind="planner.tiny.after" data-live="tiny" value="${esc(T.after)}" placeholder="${L("แปรงฟันเสร็จ", "brush my teeth")}"></label>
+        <label class="field"><span>${L("ฉันจะ… (นิสัยใหม่เล็กๆ)", "I will… (tiny new habit)")}</span><input class="input" id="tiny-will" data-bind="planner.tiny.will" data-live="tiny" value="${esc(T.will)}" placeholder="${L("วิดพื้น 2 ครั้ง", "do 2 push-ups")}"></label></div>
+        <div class="tiny-formula" id="tiny-formula" style="margin-top:12px">${tinyText()}</div></article>
+      <article class="card"><h3>🧱 Obstacle & Solution</h3>
+        <label class="field"><span>Obstacle${L(" (อุปสรรค)", "")}</span><textarea class="input" id="obstacle" data-bind="planner.obstacle" placeholder="${L("อะไรขวางไม่ให้ทำนิสัยนี้?", "What stops you from doing this habit?")}">${esc(P().obstacle)}</textarea></label>
+        <label class="field" style="margin-top:10px"><span>Solution${L(" (ทางแก้)", "")}</span><textarea class="input" id="solution" data-bind="planner.solution" placeholder="${L("จะแก้อย่างไร?", "How will you solve it?")}">${esc(P().solution)}</textarea></label></article>
+    </div>
+  </div>`;
+    }
+    const tinyText = () => { const T = P().tiny; return `💡 <b>${L("หลังจาก", "After I")}</b> ${esc(T.after || "……")} <b>${L("ฉันจะ", "I will")}</b> ${esc(T.will || "……")} 🎉`; };
+    function plannerF() {
+      const mk = dkey().slice(0, 7), F = P().finance;
+      const mon = P().expenses.filter(e => (e.date || "").startsWith(mk));
+      const food = mon.reduce((a, e) => a + (Number(e.food) || 0), 0), travel = mon.reduce((a, e) => a + (Number(e.travel) || 0), 0), other = mon.reduce((a, e) => a + (Number(e.other) || 0), 0);
+      const exp = food + travel + other, inc = Number(F.income) || 0, rem = inc - exp;
+      const goal = Number(F.goal) || 0, saved = Number(F.saved) || 0, sp = goal ? Math.min(100, Math.round(saved / goal * 100)) : 0;
+      return `<div class="grid">
+    <article class="card"><h3>💰 ${L("สรุปงบเดือน", "Monthly budget")} ${monthLabel()}</h3>
+      <div class="money"><div class="stat"><b class="emerald mono">${money(inc)}</b><span>Income${L(" รายรับ", "")}</span></div><div class="stat"><b class="rose mono">${money(exp)}</b><span>Expense${L(" รายจ่าย", "")}</span></div><div class="stat"><b class="mono ${rem >= 0 ? "amber" : "rose"}">${money(rem)}</b><span>Remaining${L(" คงเหลือ", "")}</span></div></div>
+      <label class="field" style="margin-top:12px"><span>${L("ตั้งรายรับเดือนนี้ (฿)", "This month's income (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-income" data-bind="planner.finance.income" data-num="1" data-rr="1" value="${inc || ""}" placeholder="30000"></label>
+      <div class="chips" style="margin-top:10px"><span class="chip">🍜 ${L("อาหาร", "Food")} ${money(food)}</span><span class="chip">🚌 ${L("เดินทาง", "Transport")} ${money(travel)}</span><span class="chip">🧾 ${L("อื่นๆ", "Other")} ${money(other)}</span></div></article>
+    <article class="card"><h3>🐷 Savings Progress Tracker</h3>
+      <div class="row" style="justify-content:space-between"><b class="mono emerald" style="font-size:1.6rem">${money(saved)} ฿</b><span class="muted">${L("เป้า", "Goal")} ${money(goal)} ฿ • ${sp}%</span></div>
+      <div class="bar" style="margin:10px 0;height:14px"><i style="width:${sp}%"></i></div>
+      <div class="row"><button class="btn btn-emerald grow" data-act="addSave" data-v="1000" id="btn-save-1000">+1,000 ฿</button><button class="btn btn-emerald grow" data-act="addSave" data-v="5000" id="btn-save-5000">+5,000 ฿</button><button class="btn" data-act="addSave" data-v="-1000" id="btn-save-minus">−1,000</button></div>
+      <label class="field" style="margin-top:12px"><span>${L("เป้าหมายเงินออม (฿)", "Savings goal (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-goal" data-bind="planner.finance.goal" data-num="1" data-rr="1" value="${goal || ""}"></label></article>
+    <article class="card"><h3>🧾 ${L("บันทึกรายจ่ายรายวัน", "Daily expenses")}</h3>${crudForm("expenses")}${crudList("expenses")}
+      ${mon.length ? `<div class="row" style="justify-content:space-between;margin-top:10px;padding:12px;border-radius:12px;background:var(--surface-2)"><b>${L("รวมเดือนนี้", "Total this month")}</b><span class="sum" style="font-size:1.2rem">${money(exp)} ฿</span></div>` : ""}</article>
+  </div>`;
+    }
+    function plannerWL() {
+      const today = dkey(), kcal = P().meals.filter(m => m.date === today).reduce((a, m) => a + (Number(m.kcal) || 0), 0);
+      const ws = P().workouts.filter(w => Number(w.weight)).sort((a, b) => a.date.localeCompare(b.date));
+      const wDiff = ws.length > 1 ? (ws.at(-1).weight - ws[0].weight).toFixed(1) : null;
+      const tb = P().trips.reduce((a, t) => a + (Number(t.budget) || 0), 0);
+      return `<div class="grid grid-2b">
+    <article class="card"><h3>💪 Workout & Fitness Journey</h3>
+      ${ws.length ? `<p class="muted sm" style="margin-bottom:10px">${L("น้ำหนักล่าสุด", "Latest weight")} <b class="amber">${ws.at(-1).weight} ${L("กก.", "kg")}</b>${wDiff !== null ? ` • ${L("เปลี่ยนแปลง", "change")} <b class="${wDiff <= 0 ? "emerald" : "rose"}">${wDiff > 0 ? "+" : ""}${wDiff} ${L("กก.", "kg")}</b>` : ""}</p>` : ""}
+      ${crudForm("workouts")}${crudList("workouts")}</article>
+    <article class="card"><h3>🥗 Meal Plan & Calories</h3><p class="muted sm" style="margin-bottom:10px">${L("วันนี้รวม", "Today's total")} <b class="amber">${money(kcal)} kcal</b></p>${crudForm("meals")}${crudList("meals")}</article>
+    <article class="card"><h3>✈️ Travel Planner</h3><p class="muted sm" style="margin-bottom:10px">${L("งบรวมทุกทริป", "Total trip budget")} <b class="amber">${money(tb)} ฿</b></p>${crudForm("trips")}${crudList("trips")}</article>
+    <article class="card"><h3>📚 Book Shelf & 🎬 Movie Collection</h3>${crudForm("media")}${crudList("media")}</article>
+  </div>`;
+    }
+
+    /* ---------- 📖 Guide ---------- */
+    const GUIDE_GO = [{ tab: "focus" }, { tab: "focus" }, { tab: "queue" }, { tab: "projects" }, { tab: "planner", sec: "cg" }, { tab: "focus", scroll: "alerts-card" }, { act: "payChoose" }];
+    const GUIDE = {
+      th: [
+        {
+          t: "ภาพรวมการแก้ปัญหางานหลุด & แถบเมนูมือถือ", i: "🧭", s: [
+            ["เข้าสู่ระบบด้วย Google", "ข้อมูลตารางงาน โปรเจค และ Life Planner ผูกกับอีเมลของคุณ เปิดเครื่องไหนก็เห็นข้อมูลเดียวกัน"],
+            ["ใช้แถบเมนูด้านล่าง 5 ปุ่ม", "⚡ โฟกัส/แทรก • 📅 คิวงาน • 🗂️ โปรเจค • 📔 Planner • 📖 วิธีใช้ — กดสลับได้ด้วยนิ้วโป้งมือเดียว (บนคอมพิวเตอร์จะย้ายไปอยู่ด้านซ้าย)"],
+            ["จดไอเดียด่วนใน 5 วินาที", "พิมพ์ในช่อง 💡 ด้านบนสุดแล้วกด Enter ไอเดียถูกเก็บในคลัง 🗒️ โดยไม่ต้องออกจากงานที่ทำอยู่"],
+            ["สลับภาษาได้ทุกเมื่อ", "กดปุ่ม EN / TH ที่แถบด้านบนเพื่อสลับภาษาไทย ↔ อังกฤษ"],
+            ["วงจรไม่ให้งานหลุด", "วางคิว → โฟกัส → ถูกแทรก → กลับมาทำต่อ → ระบบเลื่อนตารางที่เหลือให้อัตโนมัติ"]]
+        },
+        {
+          t: "วิธีใช้ปุ่ม “งานแทรก” & เลื่อนตารางอัตโนมัติ", i: "⏸️", s: [
+            ["เปิดหน้า ⚡ โฟกัส/แทรก", "จะเห็นงานของชั่วโมงนี้ พร้อมตัวนับเวลาถอยหลังและหลอดความคืบหน้า"],
+            ["มีคนมาแทรก กด ⏸️ มีงานด่วนแทรก! ทันที", "ระบบเริ่มจับเวลาที่เสียไปกับงานแทรกโดยอัตโนมัติ"],
+            ["พิมพ์ Context Bookmark", "จดสั้นๆ ว่าทำค้างถึงไหน ขั้นต่อไปคืออะไร กลับมาแล้วจะต่องานได้ทันทีไม่ต้องนึก"],
+            ["กด ▶️ กลับมาทำงานเดิมต่อ", "ระบบ Auto-Reflow จะเลื่อนคิวงานที่เหลือของวันนี้ออกไปตามจำนวนนาทีที่ถูกแทรก"],
+            ["คิวล้นเกิน 22:00?", "กด 📦 ย้ายงานรองไปพรุ่งนี้ ระบบจะย้ายงานที่ตั้งเป็น “งานรอง” ทั้งหมดในคลิกเดียว"]]
+        },
+        {
+          t: "วิธีตั้งคิวงานทำซ้ำ (ทุกวัน / วันเว้นวัน)", i: "🔁", s: [
+            ["ไปที่ 📅 คิวงาน", "ดูการ์ด 🔁 กิจวัตรทำซ้ำ (บนมือถืออยู่ด้านล่าง บนคอมพิวเตอร์อยู่ด้านขวา)"],
+            ["ตั้งชื่อและเลือกรอบ", "เลือก ทุกวัน, วันเว้นวัน หรือ เฉพาะ จ.-ศ. แล้วใส่เวลาเพื่อให้ระบบเตือน"],
+            ["ระบบกรองงานของวันนี้ให้เอง", "ส่วน ✅ ถึงรอบวันนี้ จะแสดงเฉพาะกิจวัตรที่ต้องทำในวันนี้"],
+            ["กดเช็กอินเพื่อเก็บ Streak", "ทุกครั้งที่ทำ จะได้ 🔥 Streak ต่อเนื่อง, % ความสม่ำเสมอ 30 วัน และ +5 แต้ม Level Up"]]
+        },
+        {
+          t: "วิธีบริหารโปรเจค แนบไฟล์ Drive & แชร์ลิงก์ให้ทีม", i: "🗂️", s: [
+            ["สร้างโปรเจค", "ใส่ชื่อและเป้าหมายรายเดือนที่โปรเจคนี้ช่วยให้สำเร็จ"],
+            ["เพิ่มขั้นตอนใน Timeline", "แตะป้ายสถานะเพื่อเปลี่ยน Todo → Doing → Waiting → Done หลอดความคืบหน้าคำนวณให้อัตโนมัติ"],
+            ["ใส่ผู้ประสานงาน & แนบไฟล์ Drive", "กรอกชื่อ ข้อมูลติดต่อ แล้ววางลิงก์ Google Drive เพื่อให้เปิดไฟล์ได้ในคลิกเดียว"],
+            ["ผูกงานรายวันกับโปรเจค", "ตอนเพิ่มงานในหน้า 📅 คิวงาน ให้เลือกโปรเจคในช่อง “ผูกกับโปรเจค”"],
+            ["กด 🔗 สร้างลิงก์แชร์ความคืบหน้า", "ส่งลิงก์ให้หัวหน้า/เพื่อนร่วมงานเปิดดูได้ทันทีโดยไม่ต้องล็อกอิน และดูผังรวมได้ในแท็บ 🕸️"]]
+        },
+        {
+          t: "วิธีใช้สมุดวางแผนชีวิต (Life Planner) ครบทุกมิติ", i: "📔", s: [
+            ["ใช้ปุ่มลัดมุมขวาบน", "C/G • H/M • F • W/L กดสลับหมวดได้ทันที"],
+            ["C/G: เป้าหมาย 5 มิติ & ตาราง 24 ชม.", "ตั้งเป้า + ให้ดาว 5 มิติ, เขียน Monthly Focus, ให้คะแนนวัน และวางแผนรายชั่วโมง พร้อม Dream Board"],
+            ["H/M: นิสัย • อารมณ์ • Level Up", "เช็กอินนิสัยรายวัน (+5 แต้ม) ไต่ภูเขา L1→L10, สร้าง Tiny Habit และบันทึกอารมณ์"],
+            ["F: การเงิน", "ตั้งรายรับ บันทึกรายจ่ายแยกหมวด ดูยอดคงเหลือ และกดบวกเงินออมด่วน +1,000 / +5,000 ฿"],
+            ["W/L: ไลฟ์สไตล์", "บันทึกออกกำลังกาย/น้ำหนัก แผนอาหาร/แคลอรี ทริปเที่ยว และหนังสือ/หนังพร้อมให้ดาว"]]
+        },
+        {
+          t: "วิธีตั้งค่าสั่นเตือนนาฬิกา & เสียงปลุกมือถือ", i: "⌚", s: [
+            ["เปิดหน้า ⚡ แล้วเลื่อนไปการ์ด ⌚", "เปิดสวิตช์ เสียงปลุก, สั่นมือถือ และแจ้งเตือนเบราว์เซอร์ (กด “อนุญาต” เมื่อเบราว์เซอร์ถาม)"],
+            ["ตั้งชื่อ ntfy Topic ส่วนตัว", "กด 🎲 เพื่อสุ่มชื่อที่เดายาก (ใครรู้ชื่อ Topic จะเห็นการแจ้งเตือนได้)"],
+            ["ติดตั้งแอป ntfy บนมือถือ", "Subscribe ชื่อ Topic เดียวกัน แล้วอนุญาตให้แอป ntfy แจ้งเตือน"],
+            ["เปิดการแจ้งเตือนบนนาฬิกา", "Apple Watch: เปิด Mirror iPhone Alerts ของ ntfy • Garmin: Smart Notifications • Galaxy Watch: เลือก ntfy ใน Galaxy Wearable"],
+            ["กด 📲 ทดสอบสั่นเข้าข้อมือ", "นาฬิกาจะสั่นทันที จากนั้นระบบจะเตือนทุกครั้งที่ถึงเวลาเริ่ม/จบบล็อกงานและกิจวัตร"]]
+        },
+        {
+          t: "วิธีล็อกอิน Google • ทดลองฟรี 7 วัน • ชำระเงิน 99฿/เดือน", i: "💳", s: [
+            ["กด เข้าสู่ระบบด้วย Google", "ครั้งแรกระบบจะเริ่มนับทดลองใช้ฟรี 7 วัน (168 ชั่วโมง) ทันที ไม่ต้องใส่บัตร"],
+            ["ดูเวลาคงเหลือด้านบนสุด", "แถบสถานะและหลอดนับถอยหลังบอกเวลาทดลองใช้ที่เหลือแบบเรียลไทม์"],
+            ["กด สมัคร PRO 99฿/เดือน แล้วเลือกวิธีชำระ", "💳 บัตรเครดิต/เดบิต — ต่ออายุอัตโนมัติทุกเดือน • 📱 QR PromptPay — สแกนจ่ายผ่านแอปธนาคาร ได้สิทธิ์ 30 วัน"],
+            ["ชำระผ่าน Stripe อย่างปลอดภัย", "อีเมลของคุณถูกกรอกให้อัตโนมัติ ชำระเสร็จระบบจะเปลี่ยนสถานะเป็น 👑 PRO ให้เอง"],
+            ["หมด 7 วันแต่ยังไม่สมัคร?", "จะเห็นหน้า Paywall แต่ข้อมูลทั้งหมดยังเก็บอย่างปลอดภัยในบัญชี Google ของคุณ สมัครแล้วใช้ต่อได้ทันที"]]
+        }
+      ],
+      en: [
+        {
+          t: "Overview: stop losing work & the mobile menu", i: "🧭", s: [
+            ["Sign in with Google", "Your schedule, projects and Life Planner are tied to your email — same data on every device."],
+            ["Use the 5-button bottom bar", "⚡ Focus • 📅 Queue • 🗂️ Projects • 📔 Planner • 📖 Guide — switch with one thumb (on desktop it moves to the left sidebar)."],
+            ["Capture ideas in 5 seconds", "Type in the 💡 box at the top and press Enter. Ideas land in the 🗒️ inbox without leaving your task."],
+            ["Switch language anytime", "Tap the EN / TH button in the top bar to toggle English ↔ Thai."],
+            ["The no-drop loop", "Plan → focus → get interrupted → resume → the rest of your day reflows automatically."]]
+        },
+        {
+          t: "Using the “Interruption” button & auto-reflow", i: "⏸️", s: [
+            ["Open ⚡ Focus", "You'll see this hour's task with a countdown and progress bar."],
+            ["Someone interrupts? Tap ⏸️ Urgent interruption!", "The app starts timing how long the interruption takes."],
+            ["Write a Context Bookmark", "Note where you stopped and what's next, so you can pick up instantly."],
+            ["Tap ▶️ Resume my task", "Auto-Reflow pushes the rest of today's queue back by the minutes you lost."],
+            ["Queue spills past 22:00?", "Tap 📦 Move secondary tasks to tomorrow — all “secondary” tasks move in one click."]]
+        },
+        {
+          t: "Setting up recurring routines (daily / every other day)", i: "🔁", s: [
+            ["Go to 📅 Queue", "Find the 🔁 Recurring Routines card (below on mobile, right side on desktop)."],
+            ["Name it and pick a cycle", "Daily, every other day, or weekdays — add a time to get reminders."],
+            ["Today's routines are filtered for you", "✅ Due today shows only what you need to do today."],
+            ["Check in to build a streak", "Each check-in grows your 🔥 streak, 30-day consistency % and gives +5 Level Up points."]]
+        },
+        {
+          t: "Managing projects, Drive files & sharing with your team", i: "🗂️", s: [
+            ["Create a project", "Add a name and the monthly goal it supports."],
+            ["Add timeline steps", "Tap a status to cycle Todo → Doing → Waiting → Done; progress is calculated automatically."],
+            ["Add a coordinator & Drive files", "Enter name and contact, then paste Google Drive links for one-click access."],
+            ["Link daily tasks to the project", "When adding a task in 📅 Queue, pick the project under “Link to project”."],
+            ["Tap 🔗 Create progress share link", "Your boss or teammates can open it instantly without signing in. See the big picture in the 🕸️ tab."]]
+        },
+        {
+          t: "Using the Life Planner in every dimension", i: "📔", s: [
+            ["Use the shortcuts at the top right", "C/G • H/M • F • W/L switch sections instantly."],
+            ["C/G: 5-dimension goals & 24h plan", "Set goals and star ratings for 5 life areas, write your Monthly Focus, rate your day, plan by the hour, and fill your Dream Board."],
+            ["H/M: Habits • Mood • Level Up", "Check in habits daily (+5 pts), climb the L1→L10 mountain, design a Tiny Habit and log your mood."],
+            ["F: Money", "Set income, log expenses by category, see what's left, and add savings with +1,000 / +5,000 ฿ buttons."],
+            ["W/L: Lifestyle", "Track workouts/weight, meals/calories, trips, and rate books & movies."]]
+        },
+        {
+          t: "Setting up smartwatch buzz & phone alarms", i: "⌚", s: [
+            ["Open ⚡ and scroll to the ⌚ card", "Turn on alarm sound, vibration and browser notifications (tap “Allow” when asked)."],
+            ["Choose a private ntfy topic", "Tap 🎲 for a hard-to-guess name (anyone who knows it can see your alerts)."],
+            ["Install the ntfy app on your phone", "Subscribe to the same topic and allow ntfy notifications."],
+            ["Enable notifications on your watch", "Apple Watch: mirror ntfy iPhone alerts • Garmin: Smart Notifications • Galaxy Watch: enable ntfy in Galaxy Wearable."],
+            ["Tap 📲 Test wrist buzz", "Your watch buzzes right away. From then on you'll be alerted at the start/end of every block and routine."]]
+        },
+        {
+          t: "Google sign-in • 7-day free trial • 99฿/month payment", i: "💳", s: [
+            ["Tap Continue with Google", "Your 7-day (168-hour) free trial starts immediately — no card needed."],
+            ["Watch the countdown at the top", "The status bar shows your remaining trial time in real time."],
+            ["Tap Go PRO 99฿/mo and choose a method", "💳 Credit/debit card — auto-renews monthly • 📱 QR PromptPay — scan with any Thai banking app for 30 days of access."],
+            ["Pay securely with Stripe", "Your email is pre-filled. After payment your status switches to 👑 PRO automatically."],
+            ["Trial over but not subscribed?", "You'll see the paywall, but all your data stays safe in your Google account. Subscribe and continue right away."]]
+        }
+      ]
+    };
+    function renderGuide() {
+      const G = GUIDE[LANG], i = state.guideTopic || 0, g = G[i];
+      $("#view-guide").innerHTML = `
+    <div class="view-head"><div><h1>📖 ${L("วิธีใช้งานระบบ", "How to use")}</h1><p>${L("กดเลือกหัวข้อที่ต้องการ", "Pick a topic")}</p></div></div>
+    <div class="grid guide-layout">
+      <nav class="card" aria-label="${L("สารบัญ", "Contents")}"><ul class="toc">${G.map((x, j) => `<li><button class="${i === j ? "on" : ""}" data-act="guide" data-v="${j}" id="guide-${j}"><span class="n">${j + 1}</span><span>${x.i} ${esc(x.t)}</span></button></li>`).join("")}</ul></nav>
+      <article class="card" id="guide-detail"><h2 style="font-size:1.25rem;margin-bottom:16px">${g.i} ${esc(g.t)}</h2>
+        <ol class="gsteps">${g.s.map(([b, p]) => `<li><div><b>${esc(b)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol>
+        <button class="btn btn-amber btn-xl" style="margin-top:20px" data-act="guideGo" data-v="${i}" id="btn-guide-go">🚀 ${L("กดไปหน้าฟังก์ชันนี้ทันที", "Take me there")}</button></article>
+    </div>`;
+    }
+
+    /* ---------- Dialog content ---------- */
+    function payOptionsHTML(ctx) {
+      return `<div class="pay-opts">
+    <button class="pay-opt" data-act="pay" data-m="card" id="${ctx}-pay-card"><span class="pay-ico">💳</span><span><b>${L("บัตรเครดิต / เดบิต", "Credit / debit card")}</b><small>${L("Visa • Mastercard • JCB — ต่ออายุอัตโนมัติทุกเดือน ยกเลิกได้ทุกเมื่อ", "Visa • Mastercard • JCB — auto-renews monthly, cancel anytime")}</small></span><em>99฿</em></button>
+    <button class="pay-opt" data-act="pay" data-m="qr" id="${ctx}-pay-qr"><span class="pay-ico">📱</span><span><b>QR PromptPay</b><small>${L("สแกนจ่ายผ่านแอปธนาคารไทย — ใช้งานได้ 30 วันต่อการชำระ", "Scan with any Thai banking app — 30 days of access per payment")}</small></span><em>99฿</em></button>
+  </div>
+  <p class="muted sm center">🔒 ${L("ชำระผ่าน Stripe อย่างปลอดภัย • อีเมลของคุณถูกกรอกให้อัตโนมัติ", "Secure checkout by Stripe • your email is pre-filled")}</p>`;
+    }
+    function simHTML(ctx) {
+      if (!SHOW_OWNER_SIMULATOR) return "";
+      return `<div class="owner"><b>🛠 Owner Simulator <span class="muted sm">(${L("สำหรับเจ้าของระบบ", "for the owner")})</span></b>
+    <div class="sim">
+      <button data-act="sim" data-v="1" id="${ctx}-sim-1">① ${L("เพิ่งเริ่มทดลองใช้ฟรี", "Trial just started")}<br><span class="muted">${L("เหลือ 7 วัน", "7 days left")}</span></button>
+      <button data-act="sim" data-v="2" id="${ctx}-sim-2">② ${L("ทดลองใช้ใกล้หมด", "Trial ending")}<br><span class="muted">${L("เหลือ 1 วัน", "1 day left")}</span></button>
+      <button data-act="sim" data-v="3" id="${ctx}-sim-3">③ ${L("หมดเวลาทดลองใช้", "Trial expired")}<br><span class="muted">${L("แสดงหน้า Paywall", "Shows paywall")}</span></button>
+      <button data-act="sim" data-v="4" id="${ctx}-sim-4">④ ${L("ชำระ PRO 99฿ สำเร็จ", "PRO 99฿ paid")}<br><span class="muted">${L("ปลดล็อกทั้งหมด", "Unlocks everything")}</span></button>
+    </div>${fb && state.sub.simulated ? `<button class="btn btn-sm" data-act="simReset" id="${ctx}-sim-reset">↺ ${L("กลับไปใช้สถานะจริงจากเซิร์ฟเวอร์", "Use real server status")}</button>` : ""}</div>`;
+    }
+    function renderPaywall() {
+      const s = subInfo();
+      $("#paywall-body").innerHTML = `
+    <div class="row" style="justify-content:flex-end"><button class="btn btn-sm" data-act="lang" id="btn-paywall-lang">🌐 ${L("English", "ภาษาไทย")}</button></div>
+    <div class="paywall-hero"><div class="lock">🔒</div><h2 id="paywall-title">${s.lapsed ? L("แพ็กเกจ PRO 30 วันหมดอายุแล้ว", "Your 30-day PRO pass has expired") : L("หมดเวลาทดลองใช้ฟรี 7 วันแล้ว", "Your 7-day free trial has ended")}</h2>
+      <p class="muted">${L("ต่ออายุแพ็กเกจรายเดือน 99฿ เพื่อใช้งาน FlowRecover x Life Planner ต่อ", "Continue with the 99฿/month plan to keep using FlowRecover x Life Planner")}</p></div>
+    <div class="safe">🛡️ <b>${L("ข้อมูลทั้งหมดยังอยู่ครบ", "All your data is safe")}</b> — ${L("ตารางงาน โปรเจค และ Life Planner ของคุณถูกเก็บรักษาไว้อย่างปลอดภัยในบัญชี Google", "your schedule, projects and Life Planner are securely kept in your Google account")} <b>${esc(state.user?.email || "")}</b></div>
+    <div class="price"><div class="row" style="justify-content:space-between"><b>FlowRecover PRO</b><span class="pill pill-amber">${L("รายเดือน", "Monthly")}</span></div>
+      <div class="price-num">99฿ <small>/ ${L("เดือน", "month")}</small></div>
+      <ul class="checks"><li>${L("Focus Cockpit + ปุ่มงานแทรก + Auto-Reflow ไม่จำกัด", "Unlimited Focus Cockpit, interruption button & Auto-Reflow")}</li><li>${L("กิจวัตรทำซ้ำ, โปรเจค, ลิงก์แชร์ทีม, ผังเชื่อมโยง", "Routines, projects, team share links, relationship map")}</li><li>${L("Life Planner ครบ 4 หมวด", "Full 4-section Life Planner")}</li><li>${L("แจ้งเตือนสมาร์ทวอทช์ & ซิงค์ทุกอุปกรณ์", "Smartwatch alerts & sync across devices")}</li></ul></div>
+    <b>${L("เลือกวิธีชำระเงิน", "Choose a payment method")}</b>
+    ${payOptionsHTML("pw")}
+    <div class="row" style="justify-content:center"><button class="link sm" data-act="logout" id="btn-paywall-logout">${L("ออกจากระบบ", "Sign out")}</button>${SHOW_OWNER_SIMULATOR ? '<button class="link sm" data-act="toggleSim" id="btn-paywall-sim">🛠 Owner Simulator</button>' : ""}</div>
+    <div id="paywall-sim" hidden>${simHTML("pw")}</div>`;
+    }
+    function renderPayDlg() {
+      $("#pay-body").innerHTML = `
+    <div class="dlg-head"><h2 id="pay-title">👑 FlowRecover PRO • 99฿/${L("เดือน", "mo")}</h2><button class="icon-btn" data-act="closeDlg" data-id="pay-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-pay">✕</button></div>
+    <p class="muted sm">${L("เลือกวิธีชำระเงินที่สะดวก", "Choose how you'd like to pay")}</p>
+    ${payOptionsHTML("pd")}`;
+    }
+    function renderAccount() {
+      const u = state.user || {}, s = subInfo();
+      const status = s.pro ? `<span class="pill pill-emerald">👑 PRO${s.until ? " • " + L("ถึง ", "until ") + fmtDate(dkey(new Date(s.until))) : " • 99฿/" + L("เดือน", "mo")}</span>` : s.expired ? `<span class="pill pill-rose">🔒 ${L("หมดอายุ", "Expired")}</span>` : `<span class="pill pill-amber">🎁 ${L(`ทดลองฟรี เหลือ ${Math.ceil(s.rem / 864e5)} วัน`, `Trial: ${Math.ceil(s.rem / 864e5)} days left`)}</span>`;
+      $("#account-body").innerHTML = `
+    <div class="dlg-head"><h2 id="account-title">${L("บัญชีของฉัน", "My account")}</h2><button class="icon-btn" data-act="closeDlg" data-id="account-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-account">✕</button></div>
+    <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:1.3rem">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || "?").charAt(0).toUpperCase())}</div>
+      <div class="grow"><b>${esc(u.name || "")}</b><div class="muted sm">${esc(u.email || "")}</div></div></div>
+    <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
+    ${s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("ต่ออายุล่วงหน้า", "Renew early") : L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/month")}</b>${payOptionsHTML("ac")}`}
+    ${simHTML("ac")}
+    <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
+    }
+    function renderIdeas() {
+      $("#ideas-body").innerHTML = `
+    <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
+    ${state.ideas.length ? `<ul class="rows">${[...state.ideas].reverse().map(x => `<li class="row-item"><div>${esc(x.text)}<div class="muted sm">${fmtDT(x.at)}</div></div><button class="btn btn-sm" data-act="ideaToTask" data-id="${x.id}" id="it-${x.id}">→ ${L("งาน", "Task")}</button><button class="icon-btn" data-act="delIdea" data-id="${x.id}" id="id-${x.id}" aria-label="${L("ลบไอเดีย", "Delete idea")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("พิมพ์ไอเดียในช่อง 💡 ด้านบน แล้วกด Enter", "Type an idea in the 💡 box at the top and press Enter")}</p>`}`;
+    }
+    function openShare(p) {
+      const url = shareUrl(p);
+      $("#share-body").innerHTML = `
+    <div class="dlg-head"><h2 id="share-title">🔗 ${L("ลิงก์แชร์ความคืบหน้า", "Progress share link")}</h2><button class="icon-btn" data-act="closeDlg" data-id="share-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-share">✕</button></div>
+    <p class="muted sm">${L("ส่งลิงก์นี้ให้หัวหน้าหรือเพื่อนร่วมงาน เปิดดูได้ทันทีโดยไม่ต้องล็อกอิน (เป็นภาพ ณ เวลาที่สร้างลิงก์ — อัปเดตแล้วกดสร้างใหม่ได้เสมอ)", "Send this to your boss or teammates — they can open it without signing in. It's a snapshot; create a new link after updates.")}</p>
+    <input class="input mono sm" id="share-url" readonly value="${esc(url)}">
+    <div class="row"><button class="btn btn-emerald grow" data-act="copyShare" id="btn-copy-share">📋 ${L("คัดลอกลิงก์", "Copy link")}</button>${navigator.share ? `<button class="btn grow" data-act="nativeShare" id="btn-native-share">📤 ${L("แชร์", "Share")}</button>` : ""}<a class="btn grow" href="${esc(url)}" target="_blank" rel="noopener" id="btn-preview-share">👀 ${L("ดูตัวอย่าง", "Preview")}</a></div>`;
+      $("#share-dlg").showModal();
+    }
+    function checkPaywall() {
+      const dlg = $("#paywall"), s = subInfo();
+      if (state.user && !s.pro && s.expired) { if (!dlg.open) { ["account-dlg", "pay-dlg"].forEach(id => $("#" + id).open && $("#" + id).close()); renderPaywall(); dlg.showModal(); } }
+      else if (dlg.open) dlg.close();
+    }
+
+    /* ===================== Actions ===================== */
+    let toastT;
+    function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800); }
+    const rerender = () => { save(); renderView(); };
+    const A = {
+      tab: d => { state.tab = d.tab; save(); renderView(); scrollTo({ top: 0, behavior: "smooth" }); },
+      lang: () => {
+        LANG = state.lang = LANG === "th" ? "en" : "th"; save();
+        renderStatic(); applyTheme();
+        if (state.user && !$("#app").hidden) renderAll();
+        if ($("#account-dlg").open) renderAccount();
+        if ($("#paywall").open) renderPaywall();
+        if ($("#pay-dlg").open) renderPayDlg();
+        if ($("#ideas-dlg").open) renderIdeas();
+        toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
+      },
+      theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
+      account: () => { renderAccount(); $("#account-dlg").showModal(); },
+      payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
+      ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
+      closeDlg: d => $("#" + d.id).close(),
+      pay: d => pay(d.m),
+      sim: d => simulate(Number(d.v)),
+      simReset: () => { state.sub.simulated = false; save(); toast(L("กำลังโหลดสถานะจริง…", "Loading real status…")); fb && fb.getDoc(fb.doc(fb.db, "users", state.user.uid)).then(s => s.exists() && applyServerSub(s.data())); renderAccount(); },
+      toggleSim: () => { const el = $("#paywall-sim"); el.hidden = !el.hidden; },
+      login: () => login(),
+      logout: () => logout(),
+      interrupt: () => {
+        const cur = currentTask();
+        state.focus.interrupt = { taskId: cur?.id || null, startedAt: Date.now(), startMin: nowMin(), bookmark: cur?.bookmark || "", reason: "" };
+        vibrate(60); rerender(); setTimeout(() => $("#bookmark-input")?.focus(), 60);
+        toast(L("⏸️ บันทึกจุดค้างแล้ว • เริ่มจับเวลางานแทรก", "⏸️ Bookmarked • timing the interruption"));
+      },
+      resume: () => {
+        const I = state.focus.interrupt; if (!I) return;
+        const lost = Math.round((Date.now() - I.startedAt) / 60000), today = dkey();
+        const t = state.tasks.find(x => x.id === I.taskId); let count = 0;
+        if (lost > 0) {
+          const pivot = t ? t.start : I.startMin;
+          if (t) t.dur += lost;
+          state.tasks.forEach(x => { if (x.date === today && !x.done && x !== t && x.start >= pivot) { x.start += lost; count++; } });
+        }
+        if (t) t.bookmark = I.bookmark || "";
+        state.focus.log.push({ date: today, mins: lost, reason: I.reason || "", taskId: I.taskId, at: Date.now() });
+        state.focus.lastReflow = { date: today, lost, count, at: Date.now() };
+        state.focus.interrupt = null; rerender();
+        toast(lost ? L(`🔁 Auto-Reflow: เลื่อน ${count} งาน ออกไป ${lost} นาที`, `🔁 Auto-Reflow: shifted ${count} tasks by ${lost} min`) : L("▶️ กลับมาโฟกัสต่อ (เสียเวลาไม่ถึง 1 นาที)", "▶️ Back to focus (less than 1 min lost)"));
+      },
+      dismissReflow: () => { state.focus.lastReflow = null; rerender(); },
+      toggleTask: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.done = !t.done; rerender(); if (t.done) { toast(L("✅ เยี่ยม! +10 แต้ม Level Up", "✅ Nice! +10 Level Up points")); vibrate(40); } },
+      delTask: d => { if (!confirm(L("ลบงานนี้?", "Delete this task?"))) return; state.tasks = state.tasks.filter(x => x.id !== d.id); rerender(); },
+      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = addDays(t.date, 1); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
+      moveSecondary: d => {
+        const cur = currentTask(); let n = 0;
+        state.tasks.forEach(t => { if (t.date === d.date && !t.done && t.priority === "secondary" && t !== cur) { t.date = addDays(d.date, 1); n++; } });
+        rerender(); toast(n ? L(`📦 ย้ายงานรอง ${n} งานไป ${fmtDate(addDays(d.date, 1))} แล้ว`, `📦 Moved ${n} secondary tasks to ${fmtDate(addDays(d.date, 1))}`) : L("ไม่มีงานรองให้ย้าย", "No secondary tasks to move"));
+      },
+      qdate: d => { state.queueDate = d.v; renderView(); },
+      routineCheck: d => { const r = state.routines.find(x => x.id === d.id); if (!r) return; const k = dkey(); r.log ||= {}; r.log[k] = !r.log[k]; rerender(); if (r.log[k]) toast(L(`🔥 Streak ${streak(r)} วัน! +5 แต้ม`, `🔥 ${streak(r)}-day streak! +5 pts`)); },
+      delRoutine: d => { if (!confirm(L("ลบกิจวัตรนี้?", "Delete this routine?"))) return; state.routines = state.routines.filter(x => x.id !== d.id); rerender(); },
+      projSub: d => { state.projSub = d.v; rerender(); },
+      openProject: d => { state.openProject = state.openProject === d.id ? null : d.id; renderView(); },
+      delProject: d => { if (!confirm(L("ลบโปรเจคนี้? (งานที่ผูกไว้จะกลายเป็นงานทั่วไป)", "Delete this project? (linked tasks become general tasks)"))) return; state.projects = state.projects.filter(p => p.id !== d.id); state.tasks.forEach(t => { if (t.projectId === d.id) t.projectId = null; }); rerender(); },
+      stepCycle: d => { const s = proj(d.pid)?.steps.find(x => x.id === d.sid); if (!s) return; s.status = STEP_ORDER[(STEP_ORDER.indexOf(s.status) + 1) % 4]; rerender(); },
+      delStep: d => { const p = proj(d.pid); p.steps = p.steps.filter(x => x.id !== d.sid); rerender(); },
+      delLink: d => { const p = proj(d.pid); p.links = p.links.filter(x => x.id !== d.lid); rerender(); },
+      share: d => openShare(proj(d.id)),
+      copyShare: async () => { const v = $("#share-url").value; try { await navigator.clipboard.writeText(v); toast(L("📋 คัดลอกลิงก์แล้ว", "📋 Link copied")); } catch { $("#share-url").select(); toast(L("กดค้างเพื่อคัดลอก", "Long-press to copy")); } },
+      nativeShare: () => navigator.share({ title: L("ความคืบหน้าโปรเจค — FlowRecover", "Project progress — FlowRecover"), url: $("#share-url").value }).catch(() => { }),
+      psec: d => { state.plannerSec = d.v; rerender(); scrollTo({ top: 0, behavior: "smooth" }); },
+      rate: d => { const cur = Number(getPath(state, d.path)) || 0, v = Number(d.v); setPath(state, d.path, cur === v ? 0 : v); rerender(); },
+      habit: d => { const Lg = P().habitLog; Lg[d.h] ||= {}; Lg[d.h][d.d] = !Lg[d.h][d.d]; rerender(); if (Lg[d.h][d.d]) toast(L("🔥 +5 แต้ม", "🔥 +5 pts")); },
+      delHabit: d => { if (!confirm(L("ลบนิสัยนี้?", "Delete this habit?"))) return; P().habits = P().habits.filter(h => h.id !== d.id); delete P().habitLog[d.id]; rerender(); },
+      mood: d => { const k = dkey(); P().mood[k] = P().mood[k] === d.v ? "" : d.v; rerender(); },
+      addSave: d => { const F = P().finance; F.saved = Math.max(0, (Number(F.saved) || 0) + Number(d.v)); rerender(); if (Number(d.v) > 0) toast(L(`🐷 ออมเพิ่ม ${money(d.v)} ฿`, `🐷 Saved ${money(d.v)} ฿ more`)); },
+      delCrud: d => { P()[d.name] = P()[d.name].filter(r => r.id !== d.id); rerender(); },
+      guide: d => { state.guideTopic = Number(d.v); rerender(); if (innerWidth < 860) $("#guide-detail")?.scrollIntoView({ behavior: "smooth", block: "start" }); },
+      guideGo: d => {
+        const g = GUIDE_GO[Number(d.v)];
+        if (g.act) return A[g.act]();
+        state.tab = g.tab; if (g.sec) state.plannerSec = g.sec; rerender();
+        if (g.scroll) setTimeout(() => document.getElementById(g.scroll)?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+        else scrollTo({ top: 0, behavior: "smooth" });
+      },
+      ideaToTask: d => {
+        const x = state.ideas.find(i => i.id === d.id); if (!x) return;
+        const date = dkey();
+        state.tasks.push({ id: uid(), title: x.text, date, start: toMin(suggestStart(date)), dur: 30, projectId: null, priority: "secondary", done: false, bookmark: "" });
+        state.ideas = state.ideas.filter(i => i.id !== d.id); save(); renderIdeas(); renderTopbar(); renderView(); toast(L("📅 เพิ่มไอเดียเข้าคิววันนี้แล้ว", "📅 Idea added to today's queue"));
+      },
+      delIdea: d => { state.ideas = state.ideas.filter(i => i.id !== d.id); save(); renderIdeas(); renderTopbar(); },
+      randTopic: () => { state.alerts.topic = "flowrecover-" + uid(); save(); $("#ntfy-topic").value = state.alerts.topic; toast(L("🎲 สุ่มชื่อ Topic แล้ว — Subscribe ชื่อนี้ในแอป ntfy", "🎲 Topic generated — subscribe to it in the ntfy app")); },
+      testNtfy: async () => {
+        if (!state.alerts.topic.trim()) { toast(L("ใส่ชื่อ ntfy Topic ก่อน (หรือกด 🎲)", "Enter an ntfy topic first (or tap 🎲)")); $("#ntfy-topic")?.focus(); return; }
+        toast(L("📡 กำลังส่งสัญญาณไปที่ข้อมือ…", "📡 Sending to your wrist…"));
+        const ok = await sendNtfy(L("⌚ FlowRecover ทดสอบสั่น", "⌚ FlowRecover buzz test"), L("ถ้าข้อมือคุณสั่น แปลว่าเชื่อมต่อสำเร็จ! 🎉", "If your wrist buzzed, you're connected! 🎉"));
+        toast(ok ? L("✅ ส่งแล้ว! เช็กมือถือ/นาฬิกาของคุณ", "✅ Sent! Check your phone/watch") : L("❌ ส่งไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตหรือชื่อ Topic", "❌ Failed — check your connection or topic"));
+      },
+      testAlert: () => { beep(); vibrate([300, 120, 300, 120, 700]); if (state.alerts.notify && "Notification" in window && Notification.permission === "granted") new Notification("⚡ FlowRecover", { body: L("ทดสอบการแจ้งเตือนสำเร็จ", "Notification test successful") }); toast(L("🔔 ทดสอบเสียง + สั่น", "🔔 Sound + vibration test")); }
+    };
+    const FORMS = {
+      idea: (fd, f) => { const text = (fd.idea || "").trim(); if (!text) return; state.ideas.push({ id: uid(), text, at: Date.now() }); f.reset(); f.querySelector("input").blur(); save(); renderTopbar(); toast(L("💡 เก็บไอเดียแล้ว — กลับไปโฟกัสต่อ!", "💡 Idea saved — back to focus!")); },
+      addTask: fd => {
+        const title = fd.title.trim(); if (!title) return;
+        state.tasks.push({ id: uid(), title, date: state.queueDate || dkey(), start: toMin(fd.start), dur: Number(fd.dur) || 60, projectId: fd.project || null, priority: fd.priority, done: false, bookmark: "" });
+        rerender(); toast(L("＋ เพิ่มงานเข้าคิวแล้ว", "＋ Task added")); $("#task-title")?.focus();
+      },
+      addRoutine: fd => { const title = fd.title.trim(); if (!title) return; state.routines.push({ id: uid(), title, freq: fd.freq, time: fd.time || "", created: dkey(), log: {} }); rerender(); toast(L("🔁 สร้างกิจวัตรแล้ว", "🔁 Routine created")); },
+      addProject: fd => { const title = fd.title.trim(); if (!title) return; const p = { id: uid(), title, monthlyGoal: fd.goal.trim(), manual: 0, coordinator: { name: "", contact: "" }, links: [], steps: [] }; state.projects.unshift(p); state.openProject = p.id; rerender(); toast(L("🗂️ สร้างโปรเจคแล้ว", "🗂️ Project created")); },
+      addStep: (fd, f) => { const p = proj(f.dataset.pid); const title = fd.title.trim(); if (!p || !title) return; p.steps.push({ id: uid(), title, status: "todo" }); rerender(); document.getElementById(`fsi-${p.id}`)?.focus(); },
+      addLink: (fd, f) => { const p = proj(f.dataset.pid); const url = fd.url.trim(); if (!p || !/^https?:\/\//i.test(url)) { toast(L("ลิงก์ต้องขึ้นต้นด้วย https://", "Link must start with https://")); return; } p.links.push({ id: uid(), label: fd.label.trim(), url }); rerender(); },
+      addHabit: fd => { const name = fd.name.trim(); if (!name) return; P().habits.push({ id: uid(), name }); rerender(); },
+      demoLogin: fd => {
+        const email = fd.email.trim().toLowerCase(), name = fd.name.trim();
+        state.user = { uid: "demo_" + b64e(email).slice(0, 12), name, email, photo: "", demo: true };
+        if (state.sub.owner_email !== email) { state.sub = { subscription_status: "trial", trial_start_at: Date.now(), owner_email: email }; track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" }); }
+        $("#demo-dlg").close(); seed(); save(); showApp(); toast(L(`👋 ยินดีต้อนรับ ${name}! เริ่มทดลองใช้ฟรี 7 วัน`, `👋 Welcome ${name}! Your 7-day free trial has started`));
+      }
+    };
+    function addCrud(name, fd) {
+      const fields = CRUD[name].fields, row = { id: uid(), ts: Date.now() };
+      let has = false;
+      fields.forEach(([k, , t]) => { let v = fd[k] ?? ""; if (t === "number") v = v === "" ? 0 : Number(v); else v = String(v).trim(); if (v && t !== "date" && t !== "select") has = true; row[k] = v; });
+      if (!has) { toast(L("กรอกข้อมูลอย่างน้อย 1 ช่อง", "Fill in at least one field")); return; }
+      P()[name].push(row); rerender(); toast(L("✅ บันทึกแล้ว", "✅ Saved"));
+    }
+
+    /* ===================== Event delegation ===================== */
+    document.addEventListener("click", e => {
+      const el = e.target.closest("[data-act]"); if (!el) return;
+      ensureAudio();
+      const fn = A[el.dataset.act]; if (!fn) return;
+      e.preventDefault(); fn(el.dataset, el);
+    });
+    document.addEventListener("input", e => {
+      const el = e.target.closest("[data-bind]"); if (!el) return;
+      let v = el.type === "checkbox" ? el.checked : el.value;
+      if (el.dataset.num || el.type === "number" || el.type === "range") v = v === "" ? 0 : Number(v);
+      setPath(state, el.dataset.bind, v); save();
+      if (el.dataset.live === "tiny") $("#tiny-formula").innerHTML = tinyText();
+    });
+    document.addEventListener("change", e => {
+      const el = e.target;
+      if (el.dataset.actChange === "plannerDate") { state.plannerDate = el.value || dkey(); renderView(); return; }
+      if (el.dataset.bind === "alerts.notify" && el.checked && "Notification" in window) {
+        Notification.requestPermission().then(p => { if (p !== "granted") { state.alerts.notify = false; el.checked = false; save(); toast(L("เบราว์เซอร์ไม่อนุญาตการแจ้งเตือน", "Notifications were blocked by the browser")); } else toast(L("🔔 เปิดแจ้งเตือนเบราว์เซอร์แล้ว", "🔔 Browser notifications on")); });
+      }
+      if (el.dataset.rr) renderView();
+    });
+    document.addEventListener("submit", e => {
+      const f = e.target; e.preventDefault();
+      const fd = Object.fromEntries(new FormData(f));
+      if (f.dataset.crud) addCrud(f.dataset.crud, fd);
+      else if (f.dataset.form) FORMS[f.dataset.form]?.(fd, f);
+    });
+    $("#paywall").addEventListener("cancel", e => e.preventDefault()); // Paywall cannot be dismissed with Esc / back gesture
+    document.addEventListener("keydown", e => {
+      if (e.key === "/" && !e.target.closest("input,textarea,select") && state.user) { e.preventDefault(); $("#idea-input").focus(); }
+    });
+
+    /* ===================== Auth & boot ===================== */
+    function showAuth() { $("#app").hidden = true; $("#auth-screen").hidden = false; if ($("#paywall").open) $("#paywall").close(); }
+    function showApp() { $("#auth-screen").hidden = true; $("#app").hidden = false; seed(); renderAll(); }
+    async function login() {
+      if (fb) {
+        try { await fb.signInWithPopup(fb.auth, new fb.GoogleAuthProvider()); }
+        catch (e) { console.error(e); toast(L("เข้าสู่ระบบไม่สำเร็จ: ", "Sign-in failed: ") + (e.code || e.message)); }
+      } else $("#demo-dlg").showModal();
+    }
+    async function logout() {
+      if (!confirm(L("ออกจากระบบ? (ข้อมูลยังเก็บไว้ในบัญชีของคุณ)", "Sign out? (your data stays in your account)"))) return;
+      ["account-dlg", "paywall", "pay-dlg"].forEach(id => $("#" + id).open && $("#" + id).close());
+      if (fb) await fb.signOut(fb.auth);
+      else { state.user = null; save(); showAuth(); }
+    }
+    async function initFirebase() {
+      const [app, auth, fs] = await Promise.all([
+        import(`${FIREBASE_SDK}/firebase-app.js`), import(`${FIREBASE_SDK}/firebase-auth.js`), import(`${FIREBASE_SDK}/firebase-firestore.js`)
+      ]);
+      const a = app.initializeApp(FIREBASE_CONFIG);
+      fb = {
+        auth: auth.getAuth(a), db: fs.getFirestore(a), GoogleAuthProvider: auth.GoogleAuthProvider, signInWithPopup: auth.signInWithPopup, signOut: auth.signOut,
+        doc: fs.doc, getDoc: fs.getDoc, setDoc: fs.setDoc, onSnapshot: fs.onSnapshot, serverTimestamp: fs.serverTimestamp
+      };
+      let unsub = null;
+      auth.onAuthStateChanged(fb.auth, async u => {
+        unsub?.(); unsub = null;
+        if (!u) { state.user = null; save(); showAuth(); return; }
+        const switched = state.user?.uid !== u.uid;
+        state.user = { uid: u.uid, name: u.displayName || u.email, email: u.email, photo: u.photoURL || "" };
+        const uref = fb.doc(fb.db, "users", u.uid);
+        try {
+          const snap = await fb.getDoc(uref);
+          if (!snap.exists()) {
+            // First Google sign-in → start 7-day trial
+            await fb.setDoc(uref, { email: (u.email || "").toLowerCase(), name: u.displayName || "", photo: u.photoURL || "", trial_start_at: fb.serverTimestamp(), subscription_status: "trial", created_at: fb.serverTimestamp() });
+            state.sub = { subscription_status: "trial", trial_start_at: Date.now(), pro_pending_at: state.sub.pro_pending_at, pro_until: state.sub.pro_until };
+            track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
+          }
+          unsub = fb.onSnapshot(uref, s => s.exists() && applyServerSub(s.data()));
+          const ds = await fb.getDoc(fb.doc(fb.db, "users", u.uid, "data", "main"));
+          if (ds.exists()) { const keep = { user: state.user, sub: state.sub, lang: state.lang }; state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep }); state.queueDate = dkey(); state.plannerDate = dkey(); }
+          else { if (switched) { const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang }; state = hydrate(keep); state.queueDate = dkey(); state.plannerDate = dkey(); } seed(); cloudSave(); }
+        } catch (e) { console.error(e); toast(L("โหลดข้อมูลจากคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องชั่วคราว", "Couldn't load cloud data — using local data for now")); }
+        LANG = state.lang; save(); renderStatic(); showApp();
+      });
+    }
+
+    /* ---------- Ticker ---------- */
+    let tick = 0;
+    setInterval(() => {
+      if (!state.user || $("#app").hidden) return;
+      tick++;
+      if (state.tab === "focus") {
+        const cur = currentTask(), key = state.focus.interrupt ? "int" : cur ? cur.id : "none:" + (nextTask()?.id || "");
+        if (key !== lastCockpitKey && !document.activeElement?.closest?.("#view-focus input, #view-focus textarea, #view-focus select")) renderView();
+        else tickCockpit();
+      }
+      if (tick % 15 === 0) checkAlerts();
+      if (tick % 30 === 0) { renderBanner(); checkPaywall(); }
+    }, 1000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && state.user) { renderBanner(); checkPaywall(); checkAlerts(); if (state.tab === "focus") renderView(); } });
+
+    /* ---------- Boot ---------- */
+    applyTheme();
+    loadPixel();
+    if (location.hash.startsWith("#share=")) {
+      renderShare();
+    } else {
+      renderStatic();
+      handleStripeReturn();
+      if (FIREBASE_READY) {
+        try { await initFirebase(); }
+        catch (e) { console.error(e); fb = null; toast(L("เชื่อมต่อ Firebase ไม่สำเร็จ — ใช้โหมดสาธิต", "Firebase connection failed — using demo mode")); state.user ? showApp() : showAuth(); }
+      } else state.user ? showApp() : showAuth();
+    }
+  </script>
+</body>
+
+</html>
