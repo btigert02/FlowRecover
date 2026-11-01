@@ -2272,6 +2272,87 @@
     @media (max-width: 400px) { .bottom-nav .nav-btn { font-size: .6rem } .bottom-nav .nav-btn .ico { font-size: 1.2rem } }
     .wd-pick button[aria-pressed=true] { color: #04150f }
     .g-label small { flex: none; font-size: .7rem }
+
+    /* ---------- Calendar page ---------- */
+    .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px }
+    .cal-dow { font-size: .72rem; font-weight: 700; color: var(--muted); text-align: center; padding: 4px 0 }
+    .cal-cell { min-height: 92px; display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 6px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); text-align: left; overflow: hidden; transition: border-color .15s, transform .15s }
+    .cal-cell:hover { border-color: var(--amber); transform: translateY(-1px) }
+    .cal-cell.out { opacity: .45 }
+    .cal-cell.off { background: linear-gradient(180deg, rgba(16, 185, 129, .13), var(--surface-2)) }
+    .cal-cell.sel { outline: 2px solid var(--amber); outline-offset: -1px }
+    .cal-n { font-family: 'Inter'; font-weight: 800; font-size: .8rem; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; flex: none }
+    .cal-cell.today .cal-n { background: linear-gradient(135deg, var(--amber), #ea580c); color: #1a1205 }
+    .cal-evs { display: grid; gap: 2px; min-width: 0 }
+    .cal-pill { font-style: normal; font-size: .66rem; font-weight: 600; padding: 1px 5px; border-radius: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(56, 189, 248, .18); color: var(--sky) }
+    .cal-pill.t { background: rgba(245, 158, 11, .16); color: var(--amber) }
+    .cal-pill.s { background: rgba(167, 139, 250, .18); color: var(--violet) }
+    .cal-pill.more { background: none; color: var(--muted) }
+    .cal-list { list-style: none; display: grid; gap: 8px }
+    .cal-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border-left: 3px solid var(--sky) }
+    .cal-item.t { border-left-color: var(--amber) }
+    .cal-item.s { border-left-color: var(--violet) }
+    .cal-item .grow { flex: 1; min-width: 0; word-break: break-word }
+    .cal-time { font-family: 'Inter'; font-size: .74rem; font-weight: 700; color: var(--muted); min-width: 84px; padding-top: 2px }
+
+    /* ---------- Finance ---------- */
+    .fin-kind { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+    .fin-kind label { position: relative }
+    .fin-kind input { position: absolute; opacity: 0; pointer-events: none }
+    .fin-kind span { display: block; text-align: center; padding: 11px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid var(--border); font-weight: 800; cursor: pointer; transition: all .2s }
+    .fin-kind input:checked + span.exp { border-color: var(--rose); background: rgba(251, 113, 133, .12); color: var(--rose) }
+    .fin-kind input:checked + span.inc { border-color: var(--emerald); background: rgba(16, 185, 129, .12); color: var(--emerald) }
+    .fin-kind input:focus-visible + span { outline: 2px solid var(--amber); outline-offset: 2px }
+    .amt-inc { color: var(--emerald); white-space: nowrap }
+    .amt-exp { color: var(--rose); white-space: nowrap }
+    .txns { list-style: none; display: grid; gap: 6px }
+    .txn { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 12px; background: var(--surface-2) }
+    .txn-ico { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: var(--surface-3); flex: none; font-size: 1.1rem }
+    .txn .grow { flex: 1; min-width: 0 }
+    .txn .grow b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .r-add { font-size: .95rem; flex: none }
+    .hour { grid-template-columns: 58px 1fr auto }
+
+    /* ---------- Tax ---------- */
+    .tax-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+    .tax-mode button { padding: 14px; border-radius: 16px; background: var(--surface-2); border: 1.5px solid var(--border); text-align: left; font-size: .8rem; line-height: 1.45; color: var(--muted); transition: all .2s }
+    .tax-mode button b { display: block; font-size: 1rem; color: var(--text); margin-bottom: 2px }
+    .tax-mode button.on { border-color: var(--amber); background: linear-gradient(135deg, rgba(245, 158, 11, .14), rgba(16, 185, 129, .06)); box-shadow: 0 10px 24px -16px var(--amber) }
+    .tax-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px }
+    .tax-grid .field small, .tax-h small { color: var(--muted); font-size: .7rem; font-weight: 500 }
+    .tax-h { margin: 16px 0 8px; font-size: .92rem }
+    .tax-layout { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start }
+    .tax-side { position: sticky; top: 90px }
+    .tax-big { margin: 12px 0; padding: 14px 16px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 800; flex-wrap: wrap }
+    .tax-big b { font-size: 1.5rem }
+    .tax-big.due { background: rgba(251, 113, 133, .12); color: var(--rose); border: 1px solid rgba(251, 113, 133, .35) }
+    .tax-big.refund { background: rgba(16, 185, 129, .12); color: var(--emerald); border: 1px solid rgba(16, 185, 129, .35) }
+    .tax-sum { display: grid }
+    .tax-line { display: flex; justify-content: space-between; gap: 10px; font-size: .86rem; padding: 6px 0; border-bottom: 1px dashed var(--border) }
+    .tax-line b { font-family: 'Inter'; white-space: nowrap }
+    .tax-line.sub { font-weight: 800 }
+    .tax-line.ded { color: var(--muted); font-size: .8rem; padding: 3px 0 3px 8px }
+    .tax-br { margin-top: 12px }
+    .tax-br summary { cursor: pointer; font-weight: 700; font-size: .86rem }
+    .tax-table { width: 100%; border-collapse: collapse; font-size: .78rem; margin-top: 8px }
+    .tax-table th, .tax-table td { padding: 6px 4px; text-align: right; border-bottom: 1px solid var(--border) }
+    .tax-table th:first-child, .tax-table td:first-child { text-align: left }
+    .tax-table tr.muted { opacity: .45 }
+    .tax-tips, .tax-compare { margin-top: 14px; display: grid; gap: 8px }
+    .tax-tip { padding: 10px 12px; border-radius: 12px; background: rgba(16, 185, 129, .08); border-left: 3px solid var(--emerald); font-size: .84rem; line-height: 1.5 }
+    .tax-tip.warn { background: rgba(245, 158, 11, .1); border-left-color: var(--amber) }
+    .tax-compare { padding: 12px; border-radius: 14px; background: var(--surface-2) }
+    @media (max-width: 900px) { .tax-layout { grid-template-columns: 1fr } .tax-side { position: static } }
+    @media (max-width: 520px) { .bottom-nav { padding-left: 2px; padding-right: 2px } .bottom-nav .nav-btn { font-size: .58rem; letter-spacing: -.02em } .bottom-nav .nav-btn .ico { font-size: 1.12rem } }
+    @media (max-width: 640px) {
+      .cal-cell { min-height: 56px; padding: 4px; border-radius: 10px }
+      .cal-evs { grid-template-columns: repeat(auto-fill, minmax(8px, 1fr)); gap: 2px }
+      .cal-pill { font-size: 0; padding: 0; height: 6px; border-radius: 3px; background: var(--sky) }
+      .cal-pill.t { background: var(--amber) }
+      .cal-pill.s { background: var(--violet) }
+      .cal-pill.more { font-size: .56rem; height: auto; background: none; grid-column: 1/-1 }
+      .tax-mode { grid-template-columns: 1fr }
+    }
     @media (max-width: 640px) {
       .act-form { grid-template-columns: 1fr 1fr }
       .act-form input[name=title] { grid-column: 1/-1 }
@@ -2308,6 +2389,7 @@
         <section class="view" id="view-queue" hidden></section>
         <section class="view" id="view-projects" hidden></section>
         <section class="view" id="view-planner" hidden></section>
+        <section class="view" id="view-calendar" hidden></section>
         <section class="view" id="view-report" hidden></section>
         <section class="view" id="view-guide" hidden></section>
       </main>
@@ -2337,6 +2419,9 @@
   </dialog>
   <dialog id="rest-dlg" closedby="any" aria-labelledby="rest-dlg-title">
     <div class="dlg-body" id="rest-dlg-body"></div>
+  </dialog>
+  <dialog id="routine-dlg" closedby="any" aria-labelledby="routine-dlg-title">
+    <form class="dlg-body" data-form="toRoutine" id="routine-dlg-form" autocomplete="off"></form>
   </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
@@ -2416,6 +2501,7 @@
       gcal: { calendarId: "primary", lastSync: 0 },
       mapMode: "flow", mapProject: "", ganttZoom: "month", openStep: null, plannerGuideOpen: true,
       report: { range: "month", date: null, project: "all", type: "all" },
+      cal: { view: "month", date: null, sel: null }, finView: { range: "month", date: null, kind: "exp" },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
@@ -2580,9 +2666,10 @@
     const prog = p => p.steps?.length ? Math.round(p.steps.filter(s => s.status === "done").length / p.steps.length * 100) : (Number(p.manual) || 0);
     const STEP = { todo: ["Todo", "var(--muted)"], doing: ["Doing", "var(--amber)"], waiting: ["Waiting", "var(--sky)"], done: ["Done", "var(--emerald)"] };
     const STEP_ORDER = ["todo", "doing", "waiting", "done"];
-    const freqLabel = f => ({ daily: L("ทุกวัน", "Daily"), eod: L("วันเว้นวัน", "Every other day"), weekday: L("จ.-ศ.", "Mon–Fri") }[f]);
+    const freqLabel = f => ({ daily: L("ทุกวัน", "Daily"), eod: L("วันเว้นวัน", "Every other day"), weekday: L("จ.-ศ.", "Mon–Fri"), weekend: L("ส.-อา.", "Sat–Sun") }[f]);
     function isDue(r, date) {
       if (r.freq === "weekday") { const g = parseD(date).getDay(); return g >= 1 && g <= 5; }
+      if (r.freq === "weekend") { const g = parseD(date).getDay(); return g === 0 || g === 6; }
       if (r.freq === "eod") { const diff = Math.round((parseD(date) - parseD(r.created)) / 864e5); return diff >= 0 && diff % 2 === 0; }
       return true;
     }
@@ -2675,7 +2762,8 @@
       }
       for (const r of state.routines) {
         if (!r.time || !isDue(r, today) || r.log?.[today]) continue;
-        const m = toMin(r.time), k = `${today}:r:${r.id}`;
+        const m = toMin(r.time), k = `${today}:r:${r.id}`, rl = r.remind ?? 30;
+        if (rl && m - rl >= 0 && n >= m - rl && n < m - rl + 2 && !F[k + ":pre"]) { F[k + ":pre"] = 1; changed = true; fireAlert(L(`⏰ อีก ${rl} นาที ถึงเวลากิจวัตร`, `⏰ Routine in ${rl} min`), `${r.time} ${r.title}`); }
         if (n >= m && n < m + 2 && !F[k]) { F[k] = 1; changed = true; fireAlert(L("🔁 ถึงเวลากิจวัตร", "🔁 Routine time"), r.title); }
       }
       if (changed) save();
@@ -2696,7 +2784,7 @@
       <p class="muted" style="margin-top:8px">${L("จัดตารางงานยืดหยุ่น • ถูกแทรกก็ไม่หลุด • สมุดวางแผนชีวิตครบวงจร", "Adaptive Time-Blocking • Interrupt Recovery • All-in-One Life Planner OS")}</p></div>
     <div class="feat">
       <div><b>${L("⏸️ งานแทรกไม่ทำให้หลุด", "⏸️ Interruptions won't derail you")}</b>${L("บันทึกจุดค้าง + เลื่อนคิวอัตโนมัติ", "Context bookmark + auto-reflow")}</div>
-      <div><b>${L("🔁 กิจวัตรอัตโนมัติ", "🔁 Recurring routines")}</b>${L("ทุกวัน / วันเว้นวัน / จ.-ศ.", "Daily / every other day / Mon–Fri")}</div>
+      <div><b>${L("🔁 กิจวัตรอัตโนมัติ", "🔁 Recurring routines")}</b>${L("ทุกวัน / วันเว้นวัน / จ.-ศ. / ส.-อา.", "Daily / every other day / weekdays / weekends")}</div>
       <div><b>${L("🗂️ โปรเจค & แชร์ทีม", "🗂️ Projects & team sharing")}</b>${L("ความคืบหน้า + ผังเชื่อมโยง", "Progress + relationship map")}</div>
       <div><b>📔 Life Planner</b>${L("เป้าหมาย นิสัย การเงิน สุขภาพ", "Goals, habits, money, health")}</div>
     </div>
@@ -2705,7 +2793,7 @@
     <div class="pay-badges"><span class="chip">💳 ${L("บัตรเครดิต/เดบิต", "Credit/Debit card")}</span><span class="chip">📱 QR PromptPay</span><span class="chip">🔒 Stripe</span></div>
     ${FIREBASE_READY ? "" : `<p class="muted sm">${L("⚙️ โหมดสาธิต: ยังไม่ได้ตั้งค่า Firebase (ดู SETUP.md)", "⚙️ Demo mode: Firebase not configured (see SETUP.md)")}</p>`}
   </div>`;
-      const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
+      const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["calendar", "📆", L("ปฏิทิน", "Calendar")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
       $("#bottom-nav").setAttribute("aria-label", L("เมนูหลัก", "Main menu"));
       $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo">⚡</span><span>FlowRecover</span></div>` +
         tabs.map(([k, i, l]) => `<button class="nav-btn ${state.tab === k ? "on" : ""}" data-act="tab" data-tab="${k}" id="nav-${k}"><span class="ico">${i}</span>${l}</button>`).join("");
@@ -2753,13 +2841,13 @@
       el.innerHTML = `<div class="banner-row"><span class="banner-text">🎁 ${L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span>${proBtn("banner-pay")}</div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
     }
     function renderView() {
-      ["focus", "queue", "projects", "planner", "report", "guide"].forEach(t => {
+      ["focus", "queue", "calendar", "projects", "planner", "report", "guide"].forEach(t => {
         const v = $(`#view-${t}`), on = state.tab === t, nb = $(`#nav-${t}`);
         if (!v || !nb) return;
         v.hidden = !on; nb.classList.toggle("on", on);
         if (on) nb.setAttribute("aria-current", "page"); else nb.removeAttribute("aria-current");
       });
-      ({ focus: renderFocus, queue: renderQueue, projects: renderProjects, planner: renderPlanner, report: renderReport, guide: renderGuide })[state.tab]?.();
+      ({ focus: renderFocus, queue: renderQueue, calendar: renderCalendar, projects: renderProjects, planner: renderPlanner, report: renderReport, guide: renderGuide })[state.tab]?.();
     }
 
     /* ---------- ⚡ Focus ---------- */
@@ -3005,7 +3093,11 @@
         <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
           <label class="row" style="gap:6px;align-items:center"><span class="muted sm">📅 ${L("เลือกวัน", "Pick date")}</span><input class="input" type="date" id="q-date-pick" value="${date}" data-act-change="queueDate" style="width:auto"></label>
           ${isOffDay(date) ? `<span class="chip chip-emerald">🏖️ ${L("วันหยุด", "Day off")}</span>` : ""}
-          <button class="btn btn-sm" data-act="gcalSyncDay" data-date="${date}" id="btn-gcal-day" style="margin-left:auto">📆 ${L("ส่งคิววันนี้เข้า Google Calendar", "Push this day to Google Calendar")}</button>
+          <div class="row" style="gap:6px;flex-wrap:wrap;margin-left:auto">
+            <button class="btn btn-sm" data-act="gcalPull" data-a="${date}" id="btn-gcal-pull">📥 ${L("ดึงจาก Google Calendar", "Pull from Google Calendar")}</button>
+            <button class="btn btn-sm" data-act="gcalPull" data-a="${date}" data-b="${addDays(date, 6)}" id="btn-gcal-pull7">📥 ${L("7 วัน", "7 days")}</button>
+            <button class="btn btn-sm" data-act="gcalSyncDay" data-date="${date}" id="btn-gcal-day">📆 ${L("ส่งคิววันนี้เข้า Google Calendar", "Push this day to Google Calendar")}</button>
+          </div>
         </div>
         <article class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -3040,14 +3132,15 @@
         <article class="card"><h3>🔁 ${L("กิจวัตรทำซ้ำ", "Recurring Routines")}</h3>
           <form class="form-grid" data-form="addRoutine" id="form-add-routine" autocomplete="off">
             <label class="field full"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="routine-title" required placeholder="${L("เช่น วิ่ง 3 กม. / อ่านหนังสือ", "e.g. Run 3 km / Read")}"></label>
-            <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="routine-freq"><option value="daily">${L("ทุกวัน (Daily)", "Daily")}</option><option value="eod">${L("วันเว้นวัน", "Every other day")}</option><option value="weekday">${L("เฉพาะ จ.-ศ.", "Weekdays (Mon–Fri)")}</option></select></label>
+            <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="routine-freq">${freqOpts()}</select></label>
             <label class="field"><span>${L("เวลา (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" id="routine-time"></label>
+            <label class="field full"><span>${L("การเตือน (เมื่อกำหนดเวลา)", "Reminder (when a time is set)")}</span><select class="input" name="remind" id="routine-remind">${remindOpts(30)}</select></label>
             <button class="btn btn-emerald full" type="submit" id="btn-add-routine">＋ ${L("สร้างกิจวัตร", "Create routine")}</button>
           </form>
           <h4 style="margin:16px 0 8px">✅ ${L("ถึงรอบวันนี้", "Due today")} (${dueR.length})</h4>
           ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("วันนี้ไม่มีกิจวัตรที่ถึงรอบ", "No routines due today")}</p>`}
           <h4 style="margin:16px 0 8px">📚 ${L("กิจวัตรทั้งหมด", "All routines")}</h4>
-          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}</span> <span class="streak">🔥${streak(r)}</span></div><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
+          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}${r.time && (r.remind ?? 30) ? ` · ⏰${r.remind ?? 30}${L(" นาที", "m")}` : ""}</span> <span class="streak">🔥${streak(r)}</span></div><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
         </article>
       </div>
     </div>`;
@@ -3217,11 +3310,13 @@
       },
       workouts: {
         fields: [["date", ["วันที่", "Date"], "date"], ["type", ["ประเภท", "Type"], "text", ["วิ่ง / เวท / โยคะ", "Run / weights / yoga"]], ["mins", ["นาที", "Minutes"], "number"], ["weight", ["น้ำหนัก (กก.)", "Weight (kg)"], "number"]],
-        row: r => `<b>${fmtDate(r.date)}</b> · 🏃 ${esc(r.type || "-")} · ${minLabel(r.mins || 0)}${r.weight ? ` · ⚖️ <span class="sum">${r.weight} ${L("กก.", "kg")}</span>` : ""}`
+        row: r => `<b>${fmtDate(r.date)}</b> · 🏃 ${esc(r.type || "-")} · ${minLabel(r.mins || 0)}${r.weight ? ` · ⚖️ <span class="sum">${r.weight} ${L("กก.", "kg")}</span>` : ""}`,
+        rt: r => [r.type ? `${r.type}${r.mins ? ` ${minLabel(r.mins)}` : ""}` : "", ""]
       },
       meals: {
         fields: [["date", ["วันที่", "Date"], "date"], ["meal", ["มื้อ", "Meal"], "select", [["b", "เช้า", "Breakfast"], ["l", "กลางวัน", "Lunch"], ["d", "เย็น", "Dinner"], ["s", "ว่าง", "Snack"]]], ["food", ["เมนู", "Food"], "text", ["เช่น สลัดอกไก่", "e.g. Chicken salad"]], ["kcal", ["แคลอรี", "Calories"], "number"]],
-        row: r => `<b>${fmtDate(r.date)}</b> · ${esc(optLabel("meals", "meal", r.meal))} · 🥗 ${esc(r.food || "-")} <span class="sum">${money(r.kcal)} kcal</span>`
+        row: r => `<b>${fmtDate(r.date)}</b> · ${esc(optLabel("meals", "meal", r.meal))} · 🥗 ${esc(r.food || "-")} <span class="sum">${money(r.kcal)} kcal</span>`,
+        rt: r => [r.food || "", { b: "07:00", l: "12:00", d: "18:00" }[r.meal] || ""]
       },
       trips: {
         fields: [["place", ["สถานที่", "Destination"], "text", ["เช่น เชียงใหม่", "e.g. Chiang Mai"]], ["date", ["วันเดินทาง", "Travel date"], "date"], ["budget", ["งบ (฿)", "Budget (฿)"], "number"], ["notes", ["แผน/โน้ต", "Plan/notes"], "text", ["ที่พัก กิจกรรม", "Hotel, activities"]]],
@@ -3229,7 +3324,8 @@
       },
       media: {
         fields: [["kind", ["ประเภท", "Type"], "select", [["book", "📚 หนังสือ", "📚 Book"], ["movie", "🎬 หนัง", "🎬 Movie"]]], ["title", ["ชื่อเรื่อง", "Title"], "text", ["ชื่อหนังสือ/หนัง", "Book/movie title"]], ["rating", ["คะแนน", "Rating"], "select", [["5", "5 ⭐", "5 ⭐"], ["4", "4 ⭐", "4 ⭐"], ["3", "3 ⭐", "3 ⭐"], ["2", "2 ⭐", "2 ⭐"], ["1", "1 ⭐", "1 ⭐"]]]],
-        row: r => `${esc(optLabel("media", "kind", r.kind))} <b>${esc(r.title || "-")}</b> · ${"⭐".repeat(Number(r.rating) || 0)}`
+        row: r => `${esc(optLabel("media", "kind", r.kind))} <b>${esc(r.title || "-")}</b> · ${"⭐".repeat(Number(r.rating) || 0)}`,
+        rt: r => [r.title ? (r.kind === "movie" ? L("ดู ", "Watch ") : L("อ่าน ", "Read ")) + r.title : "", ""]
       },
       sleeps: {
         fields: [
@@ -3252,7 +3348,7 @@
     }
     function crudList(name, limit = 30) {
       const rows = [...P()[name]].sort((a, b) => (b.date || "").localeCompare(a.date || "") || b.ts - a.ts).slice(0, limit);
-      return rows.length ? `<ul class="rows">${rows.map(r => `<li class="row-item"><div>${CRUD[name].row(r)}</div><button class="icon-btn" data-act="delCrud" data-name="${name}" data-id="${r.id}" id="cd-${r.id}" aria-label="${L("ลบ", "Delete")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีข้อมูล", "No entries yet")}</p>`;
+      return rows.length ? `<ul class="rows">${rows.map(r => { const rt = CRUD[name].rt?.(r); return `<li class="row-item"><div>${CRUD[name].row(r)}</div><div class="row" style="gap:4px;flex:none">${rt && rt[0] ? rBtn("c-" + r.id, rt[0], rt[1] || "") : ""}<button class="icon-btn" data-act="delCrud" data-name="${name}" data-id="${r.id}" id="cd-${r.id}" aria-label="${L("ลบ", "Delete")}">🗑️</button></div></li>`; }).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีข้อมูล", "No entries yet")}</p>`;
     }
     function radar() {
       const R = 70, cx = 90, cy = 90, pts = (scale) => DIMS.map((d, i) => { const a = (i * 72 - 90) * Math.PI / 180, r = scale(d) * R; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(" ");
@@ -3265,8 +3361,8 @@
     }
     function renderPlanner() {
       const sec = state.plannerSec;
-      const tabs = [["cg", "C/G", L("เป้าหมาย 5 มิติ & ตาราง 24 ชม.", "5-dimension goals & 24h plan")], ["hm", "H/M", L("นิสัย • อารมณ์ • Level Up", "Habits • Mood • Level Up")], ["f", "F", L("รายรับ-รายจ่าย & เป้าออม", "Income, expenses & savings")], ["wl", "W/L", L("ออกกำลังกาย • อาหาร • ทริป • หนังสือ/หนัง", "Workout • Meals • Trips • Books/Movies")]];
-      const body = { cg: plannerCG, hm: plannerHM, f: plannerF, wl: plannerWL }[sec]();
+      const tabs = [["cg", "C/G", L("เป้าหมาย 5 มิติ & ตาราง 24 ชม.", "5-dimension goals & 24h plan")], ["hm", "H/M", L("นิสัย • อารมณ์ • Level Up", "Habits • Mood • Level Up")], ["f", "F", L("รายรับ-รายจ่าย & เป้าออม", "Income, expenses & savings")], ["wl", "W/L", L("ออกกำลังกาย • อาหาร • ทริป • หนังสือ/หนัง", "Workout • Meals • Trips • Books/Movies")], ["tx", "TX", L("ภาษีเงินได้ & ค่าลดหย่อน (บุคคลธรรมดา / นิติบุคคล)", "Income tax & deductions (individual / company)")]];
+      const body = { cg: plannerCG, hm: plannerHM, f: plannerF, wl: plannerWL, tx: plannerTX }[sec]?.() ?? plannerCG();
       $("#view-planner").innerHTML = `
     ${plannerGuide(sec)}
     <div class="planner-head"><div><h1 style="font-size:1.45rem">📔 Life Planner</h1><p class="muted sm">${tabs.find(t => t[0] === sec)[2]}</p></div>
@@ -3275,11 +3371,11 @@
     }
     function plannerCG() {
       const mk = dkey().slice(0, 7), date = state.plannerDate || dkey(), D = P().daily[date] || {};
-      const hour = h => { const k = `h${pad(h)}`; return `<div class="hour"><b>${pad(h)}:00</b><input class="input" id="hr-${k}" data-bind="planner.daily.${date}.plan.${k}" value="${esc(D.plan?.[k])}" placeholder="…"></div>`; };
+      const hour = h => { const k = `h${pad(h)}`; return `<div class="hour"><b>${pad(h)}:00</b><input class="input" id="hr-${k}" data-bind="planner.daily.${date}.plan.${k}" value="${esc(D.plan?.[k])}" placeholder="…">${rBtn("h-" + k, "", `${pad(h)}:00`, `hr-${k}`)}</div>`; };
       return `<div class="grid">
     <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3></div>
       <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ แล้วให้คะแนนความพึงพอใจ 1-5 ดาว เพื่อเห็นสมดุลชีวิตของคุณในกราฟ", "Set a goal for each dimension and rate your satisfaction 1–5 stars to see your life balance on the chart.")}</p></div>
-      <div class="dims" style="margin-top:12px">${DIMS.map(d => `<div class="dim" style="--dc:${d.c}"><div class="dim-head"><div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}</small></div>${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}</div>
+      <div class="dims" style="margin-top:12px">${DIMS.map(d => `<div class="dim" style="--dc:${d.c}"><div class="dim-head"><div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}</small></div><div class="row" style="gap:4px;align-items:center">${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}${rBtn("g-" + d.k, "", "", `goal-${d.k}`)}</div></div>
         <textarea class="input" rows="2" id="goal-${d.k}" data-bind="planner.goals.${d.k}.goal" placeholder="${L(`เป้าหมายด้าน${d.th}…`, `Your ${d.en.toLowerCase()} goal…`)}">${esc(P().goals[d.k]?.goal)}</textarea></div>`).join("")}</div></article>
     <div class="grid grid-2b">
       <article class="card"><h3>🎯 Monthly Focus • ${monthLabel()}</h3>
@@ -3311,18 +3407,18 @@
         <p class="muted sm" style="margin-bottom:8px">${L("วันนี้รู้สึกอย่างไร?", "How do you feel today?")}</p>
         <div class="moods">${MOODS.map(([e, th, en]) => `<button class="mood-btn ${P().mood[today] === e ? "on" : ""}" data-act="mood" data-v="${e}" id="mood-${en}"><span>${e}</span>${L(th, en)}</button>`).join("")}</div>
         <div class="mood-strip">${wk.map(d => `<div>${P().mood[d] || "·"}<small>${dayName(parseD(d))}</small></div>`).join("")}</div>
-        <label class="field" style="margin-top:14px"><span>⚡ Mood Booster — ${L("กิจกรรมที่ช่วยเติมพลังบวก", "activities that lift your mood")}</span><textarea class="input" id="booster" data-bind="planner.booster" placeholder="${L("เช่น ฟังเพลงโปรด เดินเล่น 10 นาที โทรหาเพื่อน", "e.g. Favorite music, 10-min walk, call a friend")}">${esc(P().booster)}</textarea></label></article>
+        <label class="field" style="margin-top:14px"><span>⚡ Mood Booster — ${L("กิจกรรมที่ช่วยเติมพลังบวก", "activities that lift your mood")}</span><textarea class="input" id="booster" data-bind="planner.booster" placeholder="${L("เช่น ฟังเพลงโปรด เดินเล่น 10 นาที โทรหาเพื่อน", "e.g. Favorite music, 10-min walk, call a friend")}">${esc(P().booster)}</textarea></label><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn btn-sm" data-act="toRoutineDlg" data-from="booster" id="ra-booster">🔁 ${L("เพิ่มเป็นกิจวัตร", "Make it a routine")}</button></div></article>
     </div>
     <article class="card"><div class="card-head"><h3>🔥 Habit Tracker (${L("+5 แต้ม/ช่อง", "+5 pts/check")})</h3></div>
       <div style="overflow-x:auto"><table class="habit-grid"><thead><tr><th style="text-align:left">${L("นิสัย", "Habit")}</th>${wk.map(d => `<th>${dayName(parseD(d))}<br>${parseD(d).getDate()}</th>`).join("")}<th></th></tr></thead>
-      <tbody>${P().habits.map(h => `<tr><td>${esc(h.name)}</td>${wk.map(d => { const on = !!P().habitLog[h.id]?.[d]; return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></td></tr>`).join("")}</tbody></table></div>
+      <tbody>${P().habits.map(h => `<tr><td>${esc(h.name)}</td>${wk.map(d => { const on = !!P().habitLog[h.id]?.[d]; return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><div class="row" style="gap:2px;flex-wrap:nowrap">${rBtn("hb-" + h.id, h.name)}<button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></div></td></tr>`).join("")}</tbody></table></div>
       ${P().habits.length ? "" : `<p class="empty">${L("เพิ่มนิสัยแรกของคุณ", "Add your first habit")}</p>`}
       <form class="row" data-form="addHabit" id="form-add-habit" style="margin-top:10px" autocomplete="off"><input class="input grow" name="name" id="habit-name" required placeholder="${L("เพิ่มนิสัยใหม่ เช่น นั่งสมาธิ 5 นาที", "New habit, e.g. Meditate 5 min")}" style="flex:1;min-width:0"><button class="btn btn-emerald" type="submit" id="btn-add-habit">＋</button></form></article>
     <div class="grid grid-2b">
       <article class="card"><h3>🌱 Tiny Habit</h3>
         <div class="form-grid"><label class="field"><span>${L("หลังจาก… (นิสัยเดิม)", "After I… (existing habit)")}</span><input class="input" id="tiny-after" data-bind="planner.tiny.after" data-live="tiny" value="${esc(T.after)}" placeholder="${L("แปรงฟันเสร็จ", "brush my teeth")}"></label>
         <label class="field"><span>${L("ฉันจะ… (นิสัยใหม่เล็กๆ)", "I will… (tiny new habit)")}</span><input class="input" id="tiny-will" data-bind="planner.tiny.will" data-live="tiny" value="${esc(T.will)}" placeholder="${L("วิดพื้น 2 ครั้ง", "do 2 push-ups")}"></label></div>
-        <div class="tiny-formula" id="tiny-formula" style="margin-top:12px">${tinyText()}</div></article>
+        <div class="tiny-formula" id="tiny-formula" style="margin-top:12px">${tinyText()}</div><div class="row" style="justify-content:flex-end;margin-top:8px"><button type="button" class="btn btn-sm" data-act="toRoutineDlg" data-from="tiny-will" id="ra-tiny">🔁 ${L("ตั้งเป็นกิจวัตรทำซ้ำ", "Make it a recurring routine")}</button></div></article>
       <article class="card"><h3>🧱 Obstacle & Solution</h3>
         <label class="field"><span>Obstacle${L(" (อุปสรรค)", "")}</span><textarea class="input" id="obstacle" data-bind="planner.obstacle" placeholder="${L("อะไรขวางไม่ให้ทำนิสัยนี้?", "What stops you from doing this habit?")}">${esc(P().obstacle)}</textarea></label>
         <label class="field" style="margin-top:10px"><span>Solution${L(" (ทางแก้)", "")}</span><textarea class="input" id="solution" data-bind="planner.solution" placeholder="${L("จะแก้อย่างไร?", "How will you solve it?")}">${esc(P().solution)}</textarea></label></article>
@@ -3330,26 +3426,6 @@
   </div>`;
     }
     const tinyText = () => { const T = P().tiny; return `💡 <b>${L("หลังจาก", "After I")}</b> ${esc(T.after || "……")} <b>${L("ฉันจะ", "I will")}</b> ${esc(T.will || "……")} 🎉`; };
-    function plannerF() {
-      const mk = dkey().slice(0, 7), F = P().finance;
-      const mon = P().expenses.filter(e => (e.date || "").startsWith(mk));
-      const food = mon.reduce((a, e) => a + (Number(e.food) || 0), 0), travel = mon.reduce((a, e) => a + (Number(e.travel) || 0), 0), other = mon.reduce((a, e) => a + (Number(e.other) || 0), 0);
-      const exp = food + travel + other, inc = Number(F.income) || 0, rem = inc - exp;
-      const goal = Number(F.goal) || 0, saved = Number(F.saved) || 0, sp = goal ? Math.min(100, Math.round(saved / goal * 100)) : 0;
-      return `<div class="grid">
-    <article class="card"><h3>💰 ${L("สรุปงบเดือน", "Monthly budget")} ${monthLabel()}</h3>
-      <div class="money"><div class="stat"><b class="emerald mono">${money(inc)}</b><span>Income${L(" รายรับ", "")}</span></div><div class="stat"><b class="rose mono">${money(exp)}</b><span>Expense${L(" รายจ่าย", "")}</span></div><div class="stat"><b class="mono ${rem >= 0 ? "amber" : "rose"}">${money(rem)}</b><span>Remaining${L(" คงเหลือ", "")}</span></div></div>
-      <label class="field" style="margin-top:12px"><span>${L("ตั้งรายรับเดือนนี้ (฿)", "This month's income (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-income" data-bind="planner.finance.income" data-num="1" data-rr="1" value="${inc || ""}" placeholder="30000"></label>
-      <div class="chips" style="margin-top:10px"><span class="chip">🍜 ${L("อาหาร", "Food")} ${money(food)}</span><span class="chip">🚌 ${L("เดินทาง", "Transport")} ${money(travel)}</span><span class="chip">🧾 ${L("อื่นๆ", "Other")} ${money(other)}</span></div></article>
-    <article class="card"><h3>🐷 Savings Progress Tracker</h3>
-      <div class="row" style="justify-content:space-between"><b class="mono emerald" style="font-size:1.6rem">${money(saved)} ฿</b><span class="muted">${L("เป้า", "Goal")} ${money(goal)} ฿ • ${sp}%</span></div>
-      <div class="bar" style="margin:10px 0;height:14px"><i style="width:${sp}%"></i></div>
-      <div class="row"><button class="btn btn-emerald grow" data-act="addSave" data-v="1000" id="btn-save-1000">+1,000 ฿</button><button class="btn btn-emerald grow" data-act="addSave" data-v="5000" id="btn-save-5000">+5,000 ฿</button><button class="btn" data-act="addSave" data-v="-1000" id="btn-save-minus">−1,000</button></div>
-      <label class="field" style="margin-top:12px"><span>${L("เป้าหมายเงินออม (฿)", "Savings goal (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-goal" data-bind="planner.finance.goal" data-num="1" data-rr="1" value="${goal || ""}"></label></article>
-    <article class="card"><h3>🧾 ${L("บันทึกรายจ่ายรายวัน", "Daily expenses")}</h3>${crudForm("expenses")}${crudList("expenses")}
-      ${mon.length ? `<div class="row" style="justify-content:space-between;margin-top:10px;padding:12px;border-radius:12px;background:var(--surface-2)"><b>${L("รวมเดือนนี้", "Total this month")}</b><span class="sum" style="font-size:1.2rem">${money(exp)} ฿</span></div>` : ""}</article>
-  </div>`;
-    }
     function plannerWL() {
       const today = dkey(), kcal = P().meals.filter(m => m.date === today).reduce((a, m) => a + (Number(m.kcal) || 0), 0);
       const ws = P().workouts.filter(w => Number(w.weight)).sort((a, b) => a.date.localeCompare(b.date));
@@ -4454,7 +4530,7 @@
         if (s.start || s.end) { await gUpsert(s, evStep(p, s)); n++; }
         for (const a of s.activities || []) if (a.date && !taskQueued(a.taskId)) { await gUpsert(a, evAct(p, s, a)); n++; }
       }
-      for (const t of tasks) { await gUpsert(t, evTask(t)); n++; }
+      for (const t of tasks) { await gUpsert(t, evTask(t)); t.gsig = tsig(t); n++; }
       state.gcal.lastSync = Date.now(); save();
       return n;
     }
@@ -4804,7 +4880,7 @@
       return `<details class="card pg-guide" id="planner-guide" ${state.plannerGuideOpen ? "open" : ""}>
       <summary>💡 ${L("คำแนะนำ & ตัวอย่างการใช้ Life Planner", "Life Planner guide & examples")}</summary>
       <div class="pg-body">
-        <p class="muted sm">${L("Life Planner คือสมุดวางแผนชีวิตดิจิทัล แบ่งเป็น 4 หมวด — เริ่มจากตั้งเป้าหมาย (C/G) → สร้างนิสัย (H/M) → ดูแลการเงิน (F) → ดูแลสุขภาพและไลฟ์สไตล์ (W/L) ทุกอย่างบันทึกอัตโนมัติและซิงก์ทุกเครื่อง", "Life Planner is your digital life notebook in 4 sections — set goals (C/G) → build habits (H/M) → manage money (F) → care for health & lifestyle (W/L). Everything autosaves and syncs across devices.")}</p>
+        <p class="muted sm">${L("Life Planner คือสมุดวางแผนชีวิตดิจิทัล แบ่งเป็น 5 หมวด — เริ่มจากตั้งเป้าหมาย (C/G) → สร้างนิสัย (H/M) → ดูแลการเงิน (F) → ดูแลสุขภาพและไลฟ์สไตล์ (W/L) → วางแผนภาษี (TX) กด 🔁 ข้างรายการเพื่อตั้งเป็นกิจวัตรทำซ้ำ ทุกอย่างบันทึกอัตโนมัติและซิงก์ทุกเครื่อง", "Life Planner is your digital life notebook in 5 sections — set goals (C/G) → build habits (H/M) → manage money (F) → care for health & lifestyle (W/L) → plan taxes (TX). Tap 🔁 next to an item to make it a recurring routine. Everything autosaves and syncs across devices.")}</p>
         <div class="pg-secs">${Object.entries(PG).map(([k, x]) => `<button class="pg-sec ${k === sec ? "on" : ""}" data-act="psec" data-v="${k}" id="pgs-${k}"><b>${x.i} ${x.k} · ${L(x.t[0], x.t[1])}</b>${L(x.d[0], x.d[1])}</button>`).join("")}</div>
         <div class="grid grid-2">
           <div><b>🧭 ${L(`วิธีใช้หมวด ${g.k}`, `How to use ${g.k}`)}</b><ol style="margin-top:8px">${g.how.map(h => `<li>${L(h[0], h[1])}</li>`).join("")}</ol></div>
@@ -4974,6 +5050,647 @@
       }
     });
 
+    /* =====================================================================
+       Extensions II: Google Calendar delete/update/pull • Calendar page
+       • weekend routines & Planner → routine • income/expense summary + Excel
+       • Thai income tax (personal / company)
+       ===================================================================== */
+    const LIVE = {};
+    const kpiBox = (v, l, c = "") => `<div class="kpi"><b class="${c}">${v}</b><span>${l}</span></div>`;
+
+    /* ---------- 🔄 Google Calendar: propagate in-app edits & deletes ---------- */
+    const tsig = t => `${t.date}|${t.start}|${t.dur}|${t.title}|${t.done ? 1 : 0}`;
+    const G_FATAL = e => ["auth", "scope", "disabled"].includes(e?.code) || e?.message === "demo";
+    function gObjects() {
+      const m = {};
+      state.tasks.forEach(t => { if (t.gcalId) m["t:" + t.id] = t.gcalId; });
+      state.projects.forEach(p => p.steps.forEach(s => { if (s.gcalId) m["s:" + s.id] = s.gcalId; (s.activities || []).forEach(a => { if (a.gcalId) m["a:" + a.id] = a.gcalId; }); }));
+      return m;
+    }
+    const tStartEnd = t => { const d = parseD(t.date), st = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, t.start); return [st, new Date(st.getTime() + t.dur * 60e3)]; };
+    async function gPatchTime(t) {
+      const [st, en] = tStartEnd(t);
+      const r = await gFetch(`${GCAL()}/${encodeURIComponent(t.gcalId)}`, { method: "PATCH", body: JSON.stringify({ summary: t.title, start: { dateTime: st.toISOString() }, end: { dateTime: en.toISOString() } }) });
+      if (r.status === 404 || r.status === 410) { delete t.gcalId; delete t.fromGcal; return; }
+      if (!r.ok) throw new GErr("http", r.status);
+    }
+    let gBusy = false;
+    async function gSyncChanges(force = false) {
+      if (gBusy || !fb || !state.user || state.user.demo) return 0;
+      const G = state.gcal; G.known ||= {};
+      state.tasks.forEach(t => { if (t.gcalId && !t.gsig) t.gsig = tsig(t); });
+      const before = JSON.stringify(G.known), cur = gObjects();
+      const gone = Object.entries(G.known).filter(([k]) => !cur[k]);
+      const changed = state.tasks.filter(t => t.gcalId && t.gsig !== tsig(t));
+      if (!gone.length && !changed.length) { G.known = cur; if (JSON.stringify(cur) !== before) save(); return 0; }
+      if (!gTokenValid("cal")) {
+        G.known = { ...G.known, ...cur }; if (JSON.stringify(G.known) !== before) save();
+        if (!force) return 0;
+        await googleToken(["cal"]);
+      }
+      gBusy = true; let n = 0;
+      try {
+        for (const [k, id] of gone) {
+          try {
+            const r = await gFetch(`${GCAL()}/${encodeURIComponent(id)}`, { method: "DELETE" });
+            if (r.ok || r.status === 404 || r.status === 410) { delete G.known[k]; n++; }
+          } catch (e) { if (G_FATAL(e)) throw e; delete G.known[k]; console.warn("gcal delete", e); }
+        }
+        for (const t of changed) {
+          try { if (t.fromGcal) await gPatchTime(t); else await gUpsert(t, evTask(t)); n++; }
+          catch (e) { if (G_FATAL(e)) throw e; console.warn("gcal update", e); }
+          t.gsig = tsig(t);
+        }
+        G.known = { ...G.known, ...gObjects() };
+      } finally { gBusy = false; save(); }
+      return n;
+    }
+    setInterval(() => { gSyncChanges().catch(e => console.warn("gcal sync", e)); }, 15000);
+
+    /* ---------- 📥 Pull events from Google Calendar ---------- */
+    async function gList(a, b) {
+      const tMin = parseD(a).toISOString(), tMax = parseD(addDays(b, 1)).toISOString();
+      let items = [], pageToken = "";
+      do {
+        const q = new URLSearchParams({ timeMin: tMin, timeMax: tMax, singleEvents: "true", orderBy: "startTime", maxResults: "250" });
+        if (pageToken) q.set("pageToken", pageToken);
+        const r = await gFetch(`${GCAL()}?${q}`);
+        if (!r.ok) throw new GErr("http", r.status, (await r.json().catch(() => ({})))?.error?.message);
+        const j = await r.json(); items = items.concat(j.items || []); pageToken = j.nextPageToken || "";
+      } while (pageToken && items.length < 2500);
+      return items.filter(e => e.status !== "cancelled");
+    }
+    const evIsMine = e => !!e.extendedProperties?.private?.flowrecover;
+    const evDeclined = e => (e.attendees || []).some(x => x.self && x.responseStatus === "declined");
+    function evTimes(e) {
+      if (e.start?.date) return { allDay: true, a: e.start.date, b: addDays(e.end?.date || addDays(e.start.date, 1), -1) };
+      const s = new Date(e.start?.dateTime), en = new Date(e.end?.dateTime || s.getTime() + 36e5);
+      return { allDay: false, a: dkey(s), b: dkey(new Date(Math.max(s.getTime(), en.getTime() - 1))), s, en, start: s.getHours() * 60 + s.getMinutes(), dur: Math.max(5, Math.round((en - s) / 6e4)) };
+    }
+    function importEvent(e) {
+      const T = evTimes(e); if (T.allDay) return null;
+      const dur = Math.max(5, Math.min(T.dur, 24 * 60 - T.start)), title = e.summary || L("(ไม่มีชื่อ)", "(no title)");
+      let t = state.tasks.find(x => x.gcalId === e.id);
+      if (t) {
+        if (t.fromGcal && (t.date !== T.a || t.start !== T.start || t.dur !== dur || t.title !== title)) { Object.assign(t, { date: T.a, start: T.start, dur, title }); t.gsig = tsig(t); return "upd"; }
+        return "same";
+      }
+      t = { id: uid(), title, date: T.a, start: T.start, dur, projectId: null, priority: "main", done: false, bookmark: e.location ? "📍 " + e.location : "", gcalId: e.id, fromGcal: true, gLink: e.htmlLink || "" };
+      t.gsig = tsig(t); state.tasks.push(t); return "add";
+    }
+    async function gPull(a, b) {
+      await gSyncChanges(true);
+      const items = await gList(a, b), c = { add: 0, upd: 0, del: 0, allDay: 0 }, seen = new Set();
+      for (const e of items) {
+        if (evIsMine(e) || evDeclined(e)) continue;
+        if (e.start?.date) { c.allDay++; continue; }
+        seen.add(e.id);
+        const r = importEvent(e); if (r === "add") c.add++; else if (r === "upd") c.upd++;
+      }
+      state.tasks = state.tasks.filter(t => {
+        if (t.fromGcal && !t.done && t.date >= a && t.date <= b && !seen.has(t.gcalId)) { delete state.gcal.known?.["t:" + t.id]; c.del++; return false; }
+        return true;
+      });
+      state.gcal.lastPull = Date.now(); rerender();
+      return c;
+    }
+    const pullMsg = c => L(`📥 ดึงจาก Google Calendar: เพิ่ม ${c.add} • อัปเดต ${c.upd}${c.del ? ` • ลบ ${c.del}` : ""}${c.allDay ? ` • ข้ามนัดทั้งวัน ${c.allDay}` : ""}`, `📥 From Google Calendar: ${c.add} added • ${c.upd} updated${c.del ? ` • ${c.del} removed` : ""}${c.allDay ? ` • ${c.allDay} all-day skipped` : ""}`);
+
+    /* ---------- 📆 Calendar page ---------- */
+    function calState() { state.cal ||= {}; const C = state.cal; C.view ||= "month"; C.date ||= dkey(); C.sel ||= dkey(); return C; }
+    function calRange() {
+      const C = calState();
+      if (C.view === "agenda") return [dkey(), addDays(dkey(), 30)];
+      const d = parseD(C.date), first = new Date(d.getFullYear(), d.getMonth(), 1), a = addDays(dkey(first), -first.getDay());
+      return [a, addDays(a, 41)];
+    }
+    const calCache = {};
+    async function calLoad(a, b, force = false) {
+      const k = a + "_" + b, c = calCache[k];
+      if (!force && c && (c.loading || Date.now() - c.at < 5 * 60e3)) return;
+      calCache[k] = { ...(c || { items: [] }), loading: true, at: c?.at || 0 };
+      try { calCache[k] = { at: Date.now(), items: await gList(a, b) }; }
+      catch (e) { calCache[k] = { at: Date.now(), items: c?.items || [], err: e?.code || e?.message || "error" }; if (force) gErrToast(e); }
+      if (state.tab === "calendar") renderCalendar();
+    }
+    function calIndex(a, b) {
+      const map = {}, push = (d, x) => { if (d >= a && d <= b) (map[d] ||= []).push(x); };
+      const items = calCache[a + "_" + b]?.items || [], imported = new Set(state.tasks.filter(t => t.gcalId).map(t => t.gcalId));
+      items.forEach(e => {
+        if (evIsMine(e) || evDeclined(e) || imported.has(e.id)) return;
+        const T = evTimes(e);
+        for (let d = T.a < a ? a : T.a, i = 0; d <= T.b && d <= b && i < 62; d = addDays(d, 1), i++) push(d, { k: "g", e, T, d, title: e.summary || L("(ไม่มีชื่อ)", "(no title)"), sort: T.allDay || d !== T.a ? -1 : T.start });
+      });
+      state.tasks.forEach(t => push(t.date, { k: "t", t, title: t.title, sort: t.start }));
+      state.projects.forEach(p => p.steps.forEach(s => {
+        if (s.start) push(s.start, { k: "s", p, s, title: "▶ " + s.title, sort: -2 });
+        if (s.end && s.end !== s.start) push(s.end, { k: "s", p, s, title: "🏁 " + s.title, sort: -2 });
+      }));
+      Object.values(map).forEach(l => l.sort((x, y) => x.sort - y.sort));
+      return map;
+    }
+    function calDayPanel(d, list) {
+      const row = x => {
+        if (x.k === "g") {
+          const T = x.T, e = x.e, time = T.allDay ? L("ทั้งวัน", "All day") : d === T.a ? `${fmt(T.start)}–${fmtClock(T.en)}` : L("ต่อเนื่อง", "cont.");
+          return `<li class="cal-item"><span class="cal-time">${time}</span><div class="grow"><b>${esc(x.title)}</b>${e.location ? `<div class="muted sm">📍 ${esc(e.location)}</div>` : ""}
+            <div class="row" style="gap:6px;margin-top:6px;flex-wrap:wrap">${T.allDay ? "" : `<button class="btn btn-sm" data-act="calImport" data-id="${esc(e.id)}" id="ci-${esc(e.id)}-${d}">➕ ${L("เข้าคิวงาน", "Add to queue")}</button>`}${e.htmlLink ? `<a class="btn btn-sm" href="${esc(e.htmlLink)}" target="_blank" rel="noopener" id="co-${esc(e.id)}-${d}">↗ Google</a>` : ""}</div></div></li>`;
+        }
+        if (x.k === "t") {
+          const t = x.t, p = proj(t.projectId);
+          return `<li class="cal-item t"><span class="cal-time">${fmt(t.start)}–${fmt(t.start + t.dur)}</span><div class="grow"><b>${t.done ? "✅ " : ""}${esc(t.title)}</b><div class="muted sm">${t.fromGcal ? "📥 " + L("จาก Google Calendar", "from Google Calendar") : t.gcalId ? "📆 " + L("ซิงก์กับ Google แล้ว", "synced to Google") : "⚡ FlowRecover"}${p ? " • 🗂️ " + esc(p.title) : ""}</div></div></li>`;
+        }
+        return `<li class="cal-item s"><span class="cal-time">🧭</span><div class="grow"><b>${esc(x.title)}</b><div class="muted sm">🗂️ ${esc(x.p.title)}</div></div></li>`;
+      };
+      return `<article class="card"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3>${d === dkey() ? "📍 " : ""}${fmtDate(d)}${isOffDay(d) ? " 🏖️" : ""}</h3>
+        <div class="row" style="gap:6px;flex-wrap:wrap"><button class="btn btn-sm" data-act="qdateGo" data-v="${d}" id="cq-${d}">📅 ${L("เปิดคิววันนี้", "Open queue")}</button><button class="btn btn-sm" data-act="gcalPull" data-a="${d}" id="cp-${d}">📥 ${L("ดึงเข้าคิว", "Pull to queue")}</button></div></div>
+        ${list.length ? `<ul class="cal-list">${list.map(row).join("")}</ul>` : `<p class="empty">${L("ไม่มีนัดหมายหรืองาน", "Nothing scheduled")}</p>`}</article>`;
+    }
+    function renderCalendar() {
+      const C = calState(), on = !!gTokenValid("cal"), [a, b] = calRange(), today = dkey();
+      if (on) calLoad(a, b);
+      const c = calCache[a + "_" + b], idx = calIndex(a, b), d0 = parseD(C.date);
+      const title = LANG === "en" ? `${MONTHS.en[d0.getMonth()]} ${d0.getFullYear()}` : `${MONTHS.th[d0.getMonth()]} ${d0.getFullYear() + 543}`;
+      const pill = x => `<i class="cal-pill ${x.k}">${x.k === "g" && !x.T.allDay && x.d === x.T.a ? fmt(x.T.start) + " " : x.k === "t" ? fmt(x.t.start) + " " : ""}${esc(x.title)}</i>`;
+      let body;
+      if (C.view === "month") {
+        const cells = [...Array(42)].map((_, i) => {
+          const d = addDays(a, i), l = idx[d] || [], pd = parseD(d);
+          return `<button class="cal-cell ${pd.getMonth() !== d0.getMonth() ? "out" : ""} ${d === today ? "today" : ""} ${d === C.sel ? "sel" : ""} ${isOffDay(d) ? "off" : ""}" data-act="calSel" data-v="${d}" id="cal-${d}" aria-label="${fmtDate(d)} — ${l.length}"><span class="cal-n">${pd.getDate()}</span><span class="cal-evs">${l.slice(0, 3).map(pill).join("")}${l.length > 3 ? `<i class="cal-pill more">+${l.length - 3}</i>` : ""}</span></button>`;
+        }).join("");
+        body = `<article class="card"><div class="cal-grid">${DAYS[LANG].map(x => `<div class="cal-dow">${x}</div>`).join("")}${cells}</div>
+          <div class="legend" style="margin-top:10px"><span><i style="background:#38bdf8"></i>Google Calendar</span><span><i style="background:#f59e0b"></i>${L("คิวงาน", "Queue")}</span><span><i style="background:#a78bfa"></i>${L("ขั้นตอนโปรเจค", "Project steps")}</span><span><i style="background:rgba(16,185,129,.45)"></i>${L("วันหยุด", "Day off")}</span></div></article>
+          ${calDayPanel(C.sel, idx[C.sel] || [])}`;
+      } else {
+        const days = []; for (let d = a; d <= b; d = addDays(d, 1)) if ((idx[d] || []).length) days.push(d);
+        body = days.length ? days.map(d => calDayPanel(d, idx[d])).join("") : `<p class="empty">${L("ไม่มีนัดหมายใน 30 วันข้างหน้า", "Nothing in the next 30 days")}</p>`;
+      }
+      const status = !on ? "" : c?.loading ? `⏳ ${L("กำลังโหลดจาก Google Calendar…", "Loading from Google Calendar…")}` : c?.err ? `⚠️ ${L("โหลดไม่สำเร็จ", "Couldn't load")} (${esc(c.err)}) — ${L("กดรีเฟรชหรือเชื่อมต่อใหม่", "refresh or reconnect")}` : c?.at ? `✓ ${L("อัปเดตล่าสุด", "Updated")} ${fmtClock(c.at)} • ${(c.items || []).length} ${L("รายการ", "events")}` : "";
+      $("#view-calendar").innerHTML = `
+    <div class="view-head"><div><h1>📆 ${L("ปฏิทิน Google Calendar", "Google Calendar")}</h1><p>${L("ดูนัดหมายจาก Google Calendar รวมกับคิวงานและโปรเจค • ดึงนัดเข้าคิวได้ในแตะเดียว", "Your Google Calendar alongside your queue and projects • pull events into the queue in one tap")}</p></div></div>
+    <div class="grid">
+      ${on ? "" : `<article class="card g-panel"><b>🔗 ${L("ยังไม่ได้เชื่อม Google Calendar", "Google Calendar isn't connected")}</b>
+        <p class="muted sm" style="margin:6px 0 10px">${L("เชื่อมต่อเพื่อดูนัดหมายของคุณในแอป ดึงนัดเข้าคิวงาน และให้การแก้ไข/ลบงานในแอปอัปเดตไปยัง Google Calendar อัตโนมัติ (ระหว่างนี้จะแสดงเฉพาะคิวงานและโปรเจค)", "Connect to see your events here, pull them into the queue, and let in-app edits/deletes update Google Calendar automatically (showing only your queue and projects for now).")}</p>
+        <button class="btn btn-sm" data-act="gConnect" id="btn-cal-connect"><span class="link-ico">${GOOGLE_SVG}</span>${L("เชื่อมต่อบัญชี Google", "Connect Google")}</button></article>`}
+      <article class="card"><div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="seg" role="tablist"><button class="${C.view === "month" ? "on" : ""}" data-act="calView" data-v="month" id="cv-month">🗓️ ${L("รายเดือน", "Month")}</button><button class="${C.view === "agenda" ? "on" : ""}" data-act="calView" data-v="agenda" id="cv-agenda">📋 ${L("30 วันข้างหน้า", "Next 30 days")}</button></div>
+        ${C.view === "month" ? `<div class="row" style="gap:6px;align-items:center"><button class="icon-btn" data-act="calNav" data-v="-1" id="cal-prev" aria-label="${L("เดือนก่อน", "Previous month")}">‹</button><b style="min-width:120px;text-align:center">${title}</b><button class="icon-btn" data-act="calNav" data-v="1" id="cal-next" aria-label="${L("เดือนถัดไป", "Next month")}">›</button><button class="btn btn-sm" data-act="calToday" id="cal-today">${L("วันนี้", "Today")}</button></div>` : ""}
+        <div class="row" style="gap:6px;flex-wrap:wrap">${on ? `<button class="btn btn-sm" data-act="calRefresh" id="cal-refresh">🔄 ${L("รีเฟรช", "Refresh")}</button><button class="btn btn-sm" data-act="gcalPull" data-a="${a < today && C.view === "month" ? a : a}" data-b="${b}" id="cal-pull-all">📥 ${L("ดึงทั้งช่วงเข้าคิว", "Pull all to queue")}</button>` : ""}<a class="btn btn-sm" href="https://calendar.google.com/calendar/r" target="_blank" rel="noopener" id="cal-open-g">↗ ${L("เปิด Google Calendar", "Open Google Calendar")}</a></div>
+      </div>${status ? `<p class="muted sm" style="margin-top:8px">${status}</p>` : ""}</article>
+      ${body}
+    </div>`;
+    }
+
+    /* ---------- 🔁 Routines: weekend + Planner → routine (+30 min reminder) ---------- */
+    const FREQS = () => [["daily", L("ทุกวัน", "Daily")], ["eod", L("วันเว้นวัน", "Every other day")], ["weekday", L("เฉพาะ จ.-ศ.", "Weekdays (Mon–Fri)")], ["weekend", L("เฉพาะ ส.-อา.", "Weekends (Sat–Sun)")]];
+    const freqOpts = (v = "daily") => FREQS().map(([k, l]) => `<option value="${k}" ${k === v ? "selected" : ""}>${l}</option>`).join("");
+    const remindOpts = (v = 30) => [[0, L("เตือนตรงเวลาเท่านั้น", "At the time only")], [10, L("ก่อน 10 นาที", "10 min before")], [15, L("ก่อน 15 นาที", "15 min before")], [30, L("ก่อน 30 นาที", "30 min before")], [60, L("ก่อน 1 ชั่วโมง", "1 hour before")]].map(([k, l]) => `<option value="${k}" ${k === v ? "selected" : ""}>⏰ ${l}</option>`).join("");
+    const rBtn = (id, title = "", time = "", from = "") => `<button type="button" class="icon-btn r-add" data-act="toRoutineDlg" data-title="${esc(title)}" data-time="${esc(time)}" data-from="${esc(from)}" id="ra-${id}" title="${L("เพิ่มเป็นกิจวัตรทำซ้ำ", "Add as a recurring routine")}" aria-label="${L("เพิ่มเป็นกิจวัตรทำซ้ำ", "Add as a recurring routine")}">🔁</button>`;
+    function openRoutineDlg(title, time) {
+      const f = $("#routine-dlg-form");
+      f.innerHTML = `<div class="dlg-head"><h2 id="routine-dlg-title">🔁 ${L("เพิ่มเป็นกิจวัตรทำซ้ำ", "Add as a recurring routine")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="routine-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+        <p class="muted sm">${L("กิจวัตรจะขึ้นอัตโนมัติตามรอบในหน้าโฟกัสและคิวงาน — ถ้ากำหนดเวลา ระบบจะเตือนล่วงหน้าให้ (ค่าเริ่มต้น 30 นาที)", "The routine appears automatically on Focus and Queue — set a time to get an advance reminder (30 min by default).")}</p>
+        <label class="field"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="rd-title" required value="${esc(title)}" placeholder="${L("เช่น วิ่ง 3 กม.", "e.g. Run 3 km")}"></label>
+        <div class="form-grid">
+          <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="rd-freq">${freqOpts()}</select></label>
+          <label class="field"><span>${L("เวลา (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" id="rd-time" value="${esc(time || "")}"></label>
+          <label class="field full"><span>${L("การเตือน", "Reminder")}</span><select class="input" name="remind" id="rd-remind">${remindOpts(30)}</select></label>
+        </div>
+        <button class="btn btn-emerald btn-xl" type="submit" id="rd-save">＋ ${L("สร้างกิจวัตร", "Create routine")}</button>`;
+      $("#routine-dlg").showModal(); setTimeout(() => $("#rd-title")?.focus(), 40);
+    }
+    function makeRoutine(fd) {
+      const title = (fd.title || "").trim(); if (!title) return null;
+      const r = { id: uid(), title, freq: FREQS().some(x => x[0] === fd.freq) ? fd.freq : "daily", time: fd.time || "", remind: fd.remind === undefined ? 30 : Number(fd.remind) || 0, created: dkey(), log: {} };
+      state.routines.push(r); return r;
+    }
+    const routineToast = r => toast(r.time ? L(`🔁 สร้างกิจวัตร “${trunc(r.title, 20)}” แล้ว${r.remind ? ` • ⏰ เตือนก่อน ${r.remind} นาที` : ""}`, `🔁 Routine “${trunc(r.title, 20)}” created${r.remind ? ` • ⏰ ${r.remind} min reminder` : ""}`) : L("🔁 สร้างกิจวัตรแล้ว", "🔁 Routine created"));
+
+    /* ---------- 💸 Income & expenses ---------- */
+    const XCAT = () => ({
+      food: ["🍜", L("อาหาร/เครื่องดื่ม", "Food & drinks"), "#f59e0b"], transport: ["🚌", L("เดินทาง/น้ำมัน", "Transport & fuel"), "#38bdf8"],
+      home: ["🏠", L("ที่พัก/ค่าเช่า/ผ่อนบ้าน", "Housing & rent"), "#a78bfa"], bills: ["💡", L("บิล/น้ำไฟ/เน็ต/มือถือ", "Bills & utilities"), "#facc15"],
+      shop: ["🛍️", L("ช้อปปิ้ง/ของใช้", "Shopping"), "#f472b6"], health: ["💊", L("สุขภาพ/ยา", "Health"), "#34d399"],
+      edu: ["📚", L("การศึกษา/คอร์ส", "Education"), "#60a5fa"], fun: ["🎬", L("บันเทิง/ท่องเที่ยว", "Fun & travel"), "#fb7185"],
+      family: ["👨‍👩‍👧", L("ครอบครัว/ของขวัญ", "Family & gifts"), "#c084fc"], invest: ["📈", L("ออม/ลงทุน", "Savings & investing"), "#10b981"],
+      tax: ["🧾", L("ภาษี/ประกัน", "Tax & insurance"), "#94a3b8"], biz: ["💼", L("ต้นทุนธุรกิจ", "Business costs"), "#fbbf24"],
+      debt: ["💳", L("หนี้/บัตรเครดิต", "Debt & cards"), "#ef4444"], other: ["📦", L("อื่นๆ", "Other"), "#64748b"]
+    });
+    const ICAT = () => ({
+      salary: ["💼", L("เงินเดือน/ค่าจ้าง", "Salary & wages"), "#10b981", 1], bonus: ["🎁", L("โบนัส", "Bonus"), "#34d399", 1],
+      freelance: ["🧑‍💻", L("ฟรีแลนซ์/ค่าบริการ", "Freelance & fees"), "#38bdf8", 2], biz: ["🏪", L("ขายของ/ธุรกิจ", "Sales & business"), "#f59e0b", 8],
+      rent: ["🏘️", L("ค่าเช่า", "Rental income"), "#a78bfa", 5], invest: ["📈", L("ดอกเบี้ย/ปันผล", "Interest & dividends"), "#facc15", 4],
+      other: ["✨", L("อื่นๆ", "Other"), "#94a3b8", 8]
+    });
+    function allTxns() {
+      const out = (P().txns ||= []).slice();
+      (P().expenses || []).forEach(r => [["food", "food"], ["travel", "transport"], ["other", "other"]].forEach(([f, c]) => {
+        const v = Number(r[f]) || 0; if (v) out.push({ id: `${r.id}~${f}`, legacy: true, date: r.date || "", type: "exp", cat: c, amount: v, note: r.note || "", ts: r.ts || 0 });
+      }));
+      return out;
+    }
+    const finView = () => { state.finView ||= { range: "month", date: null, kind: "exp" }; state.finView.date ||= dkey(); return state.finView; };
+    function finRange() {
+      const V = finView(), d = parseD(V.date);
+      if (V.range === "week") { const a = addDays(V.date, -((d.getDay() + 6) % 7)); return [a, addDays(a, 6)]; }
+      if (V.range === "month") return [dkey(new Date(d.getFullYear(), d.getMonth(), 1)), dkey(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+      return [`${d.getFullYear()}-01-01`, `${d.getFullYear()}-12-31`];
+    }
+    function finTitle() {
+      const V = finView(), [a, b] = finRange(), d = parseD(V.date);
+      if (V.range === "week") return `${fmtShort(a)} – ${fmtShort(b)}`;
+      if (V.range === "month") return LANG === "en" ? `${MONTHS.en[d.getMonth()]} ${d.getFullYear()}` : `${MONTHS.th[d.getMonth()]} ${d.getFullYear() + 543}`;
+      return `${L("ปี", "Year")} ${yearLabel(d.getFullYear())}`;
+    }
+    const sumAmt = (rows, type) => rows.filter(x => x.type === type).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+    function finData() {
+      const [a, b] = finRange(), V = finView();
+      const rows = allTxns().filter(x => x.date >= a && x.date <= b).sort((x, y) => (y.date || "").localeCompare(x.date || "") || (y.ts || 0) - (x.ts || 0));
+      const inc = sumAmt(rows, "inc"), exp = sumAmt(rows, "exp");
+      const group = (type, CAT) => Object.entries(CAT).map(([k, [i, l, c]]) => ({ k, l: `${i} ${l}`, c, v: rows.filter(x => x.type === type && (CAT[x.cat] ? x.cat : "other") === k).reduce((s, x) => s + x.amount, 0) })).filter(g => g.v).sort((x, y) => y.v - x.v);
+      const bk = [];
+      if (V.range === "year") for (let m = 0; m < 12; m++) { const pre = a.slice(0, 5) + pad(m + 1); bk.push({ l: MONTHS[LANG][m], d: pre, f: x => x.date.startsWith(pre) }); }
+      else for (let d = a; d <= b; d = addDays(d, 1)) { const dd = d; bk.push({ l: V.range === "week" ? DAYS[LANG][parseD(d).getDay()] : String(parseD(d).getDate()), d: dd, f: x => x.date === dd }); }
+      bk.forEach(k => { const r = rows.filter(k.f); k.i = sumAmt(r, "inc"); k.e = sumAmt(r, "exp"); });
+      return { a, b, rows, inc, exp, net: inc - exp, rate: inc ? Math.round((inc - exp) / inc * 100) : null, byExp: group("exp", XCAT()), byInc: group("inc", ICAT()), bk };
+    }
+    function finChart(bk) {
+      const mx = Math.max(1, ...bk.flatMap(k => [k.i, k.e])), W = 640, H = 200, pb = 22, ch = H - pb - 8, bw = W / bk.length, step = bk.length > 16 ? Math.ceil(bk.length / 16) : 1;
+      return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${L("กราฟรายรับรายจ่าย", "Income and expense chart")}">
+        ${[.25, .5, .75, 1].map(g => `<line x1="0" x2="${W}" y1="${8 + ch * (1 - g)}" y2="${8 + ch * (1 - g)}" style="stroke:var(--border)" stroke-dasharray="3 4"/>`).join("")}
+        ${bk.map((k, i) => { const w = bw * .34, x0 = i * bw + bw * .14, hi = ch * k.i / mx, he = ch * k.e / mx; return `<g><title>${k.l}: +${money(k.i)} / −${money(k.e)} ฿</title><rect x="${x0}" y="${8 + ch - hi}" width="${w}" height="${hi}" rx="2" fill="#10b981"/><rect x="${x0 + w + bw * .04}" y="${8 + ch - he}" width="${w}" height="${he}" rx="2" fill="#fb7185"/>${i % step === 0 ? `<text x="${i * bw + bw / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="#94a3b8">${k.l}</text>` : ""}</g>`; }).join("")}
+      </svg><div class="legend"><span><i style="background:#10b981"></i>${L("รายรับ", "Income")}</span><span><i style="background:#fb7185"></i>${L("รายจ่าย", "Expenses")}</span></div>`;
+    }
+    const catBars = (groups, total) => groups.length ? groups.map(g => `<div class="hbar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(g.l)}">${esc(g.l)}</span><div class="bar"><i style="width:${Math.max(2, Math.round(g.v / total * 100))}%;background:${g.c}"></i></div><span class="mono sm"><b>${money(g.v)}</b> <span class="muted">${Math.round(g.v / total * 100)}%</span></span></div>`).join("") : `<p class="empty">${L("ยังไม่มีรายการในช่วงนี้", "No entries in this period")}</p>`;
+    const catOpts = t => Object.entries(t === "inc" ? ICAT() : XCAT()).map(([k, [i, l]]) => `<option value="${k}">${i} ${l}</option>`).join("");
+    function txnForm() {
+      const t = finView().kind === "inc" ? "inc" : "exp";
+      return `<form class="form-grid" data-form="addTxn" id="form-txn" autocomplete="off">
+        <div class="fin-kind full" role="radiogroup" aria-label="${L("ประเภท", "Type")}"><label><input type="radio" name="type" value="exp" ${t === "exp" ? "checked" : ""} data-act-change="txnType" id="txk-exp"><span class="exp">➖ ${L("รายจ่าย", "Expense")}</span></label><label><input type="radio" name="type" value="inc" ${t === "inc" ? "checked" : ""} data-act-change="txnType" id="txk-inc"><span class="inc">➕ ${L("รายรับ", "Income")}</span></label></div>
+        <label class="field"><span>${L("จำนวนเงิน (฿)", "Amount (฿)")}</span><input class="input" name="amount" id="txn-amount" type="number" inputmode="decimal" step="any" min="0" required placeholder="0"></label>
+        <label class="field"><span>${L("วันที่", "Date")}</span><input class="input" type="date" name="date" id="txn-date" value="${dkey()}"></label>
+        <label class="field"><span>${L("หมวดหมู่", "Category")}</span><select class="input" name="cat" id="txn-cat">${catOpts(t)}</select></label>
+        <label class="field"><span>${L("รายละเอียด", "Note")}</span><input class="input" name="note" id="txn-note" placeholder="${L("เช่น ข้าวกลางวัน / ค่าจ้างงานโลโก้", "e.g. Lunch / logo design fee")}"></label>
+        <button class="btn btn-emerald full" type="submit" id="btn-add-txn">＋ ${L("บันทึกรายการ", "Save entry")}</button></form>`;
+    }
+    function txnRow(x) {
+      const C = (x.type === "inc" ? ICAT() : XCAT())[x.cat] || (x.type === "inc" ? ICAT().other : XCAT().other);
+      return `<li class="txn"><span class="txn-ico">${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><div class="muted sm">${fmtDate(x.date)} • ${C[1]}${x.legacy ? " • " + L("บันทึกแบบเดิม", "legacy entry") : ""}</div></div><b class="mono ${x.type === "inc" ? "amt-inc" : "amt-exp"}">${x.type === "inc" ? "+" : "−"}${money(x.amount)}</b><button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="txd-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">🗑️</button></li>`;
+    }
+    function plannerF() {
+      const mk = dkey().slice(0, 7), F = P().finance, mon = allTxns().filter(x => (x.date || "").startsWith(mk));
+      const expM = sumAmt(mon, "exp"), incT = sumAmt(mon, "inc"), inc = incT || Number(F.income) || 0, rem = inc - expM;
+      const goal = Number(F.goal) || 0, saved = Number(F.saved) || 0, sp = goal ? Math.min(100, Math.round(saved / goal * 100)) : 0;
+      const D = finData(), V = finView(), XC = XCAT();
+      const topM = Object.entries(XC).map(([k, [i, l]]) => [i, l, mon.filter(x => x.type === "exp" && (XC[x.cat] ? x.cat : "other") === k).reduce((s, x) => s + x.amount, 0)]).filter(x => x[2]).sort((x, y) => y[2] - x[2]).slice(0, 4);
+      const topExp = D.rows.filter(x => x.type === "exp").sort((x, y) => y.amount - x.amount).slice(0, 5);
+      const ranges = [["week", L("รายสัปดาห์", "Weekly")], ["month", L("รายเดือน", "Monthly")], ["year", L("รายปี", "Yearly")]];
+      return `<div class="grid">
+    <div class="grid grid-2b">
+      <article class="card"><h3>💰 ${L("สรุปงบเดือน", "Monthly budget")} ${monthLabel()}</h3>
+        <div class="money"><div class="stat"><b class="emerald mono">${money(inc)}</b><span>Income${L(" รายรับ", "")}</span></div><div class="stat"><b class="rose mono">${money(expM)}</b><span>Expense${L(" รายจ่าย", "")}</span></div><div class="stat"><b class="mono ${rem >= 0 ? "amber" : "rose"}">${money(rem)}</b><span>Remaining${L(" คงเหลือ", "")}</span></div></div>
+        <label class="field" style="margin-top:12px"><span>${L("รายรับประจำเดือนที่ตั้งไว้ (฿) — ใช้เมื่อยังไม่ได้บันทึกรายรับ", "Planned monthly income (฿) — used until you log income")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-income" data-bind="planner.finance.income" data-num="1" data-rr="1" value="${Number(F.income) || ""}" placeholder="30000"></label>
+        ${topM.length ? `<div class="chips" style="margin-top:10px">${topM.map(([i, l, v]) => `<span class="chip">${i} ${l} ${money(v)}</span>`).join("")}</div>` : ""}</article>
+      <article class="card"><h3>🐷 Savings Progress Tracker</h3>
+        <div class="row" style="justify-content:space-between"><b class="mono emerald" style="font-size:1.6rem">${money(saved)} ฿</b><span class="muted">${L("เป้า", "Goal")} ${money(goal)} ฿ • ${sp}%</span></div>
+        <div class="bar" style="margin:10px 0;height:14px"><i style="width:${sp}%"></i></div>
+        <div class="row"><button class="btn btn-emerald grow" data-act="addSave" data-v="1000" id="btn-save-1000">+1,000 ฿</button><button class="btn btn-emerald grow" data-act="addSave" data-v="5000" id="btn-save-5000">+5,000 ฿</button><button class="btn" data-act="addSave" data-v="-1000" id="btn-save-minus">−1,000</button></div>
+        <label class="field" style="margin-top:12px"><span>${L("เป้าหมายเงินออม (฿)", "Savings goal (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-goal" data-bind="planner.finance.goal" data-num="1" data-rr="1" value="${goal || ""}"></label></article>
+    </div>
+    <div class="grid grid-2b">
+      <article class="card"><h3>💸 ${L("บันทึกรายรับ-รายจ่าย", "Log income & expenses")}</h3>${txnForm()}</article>
+      <article class="card"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3>📊 ${L("สรุปรายรับ-รายจ่าย", "Income & expense summary")}</h3></div>
+        <div class="seg" role="tablist">${ranges.map(([k, l]) => `<button class="${V.range === k ? "on" : ""}" data-act="finRange" data-v="${k}" id="fr-${k}">${l}</button>`).join("")}</div>
+        <div class="row" style="gap:6px;align-items:center;justify-content:center;margin:10px 0"><button class="icon-btn" data-act="finNav" data-v="-1" id="fin-prev" aria-label="${L("ก่อนหน้า", "Previous")}">‹</button><b style="min-width:150px;text-align:center">${finTitle()}</b><button class="icon-btn" data-act="finNav" data-v="1" id="fin-next" aria-label="${L("ถัดไป", "Next")}">›</button><button class="btn btn-sm" data-act="finNow" id="fin-now">${L("ปัจจุบัน", "Now")}</button></div>
+        <div class="kpis">${kpiBox(money(D.inc), L("รายรับ (฿)", "Income (฿)"), "emerald")}${kpiBox(money(D.exp), L("รายจ่าย (฿)", "Expenses (฿)"), "rose")}${kpiBox(money(D.net), L("คงเหลือสุทธิ (฿)", "Net (฿)"), D.net >= 0 ? "amber" : "rose")}${kpiBox(D.rate == null ? "–" : D.rate + "%", L("อัตราการออม", "Savings rate"), "sky")}</div>
+        <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-emerald grow" data-act="finExport" id="btn-fin-xlsx">⬇️ ${L("ดาวน์โหลด Excel (.xlsx)", "Download Excel (.xlsx)")}</button><button class="btn grow" data-act="finCopy" id="btn-fin-copy">📋 ${L("คัดลอกสรุป", "Copy summary")}</button></div></article>
+    </div>
+    <article class="card"><h3>📈 ${V.range === "year" ? L("รายรับ-รายจ่ายรายเดือน", "Income vs expenses per month") : L("รายรับ-รายจ่ายรายวัน", "Income vs expenses per day")} • ${finTitle()}</h3><div class="chart-wrap" style="margin-top:8px">${finChart(D.bk)}</div></article>
+    <div class="grid grid-2">
+      <article class="card"><h3>🧾 ${L("ใช้จ่ายไปกับอะไรบ้าง", "Where the money went")}</h3><p class="muted sm" style="margin-bottom:6px">${L("รวม", "Total")} ${money(D.exp)} ฿</p>${catBars(D.byExp, D.exp)}
+        ${topExp.length ? `<h4 style="margin:14px 0 6px">🔝 ${L("รายจ่ายก้อนใหญ่สุด", "Biggest expenses")}</h4><ul class="rows">${topExp.map(x => `<li class="row-item"><div>${(XCAT()[x.cat] || XCAT().other)[0]} ${esc(x.note || (XCAT()[x.cat] || XCAT().other)[1])} <span class="muted">· ${fmtDate(x.date)}</span></div><b class="mono amt-exp">${money(x.amount)}</b></li>`).join("")}</ul>` : ""}</article>
+      <article class="card"><h3>💵 ${L("รายรับมาจากไหน", "Where income came from")}</h3><p class="muted sm" style="margin-bottom:6px">${L("รวม", "Total")} ${money(D.inc)} ฿</p>${catBars(D.byInc, D.inc)}</article>
+    </div>
+    <article class="card"><div class="card-head"><h3>📒 ${L("รายการ", "Entries")} • ${finTitle()}</h3><span class="chip">${D.rows.length}</span></div>
+      ${D.rows.length ? `<ul class="txns">${D.rows.slice(0, 80).map(txnRow).join("")}</ul>${D.rows.length > 80 ? `<p class="muted sm center" style="margin-top:8px">${L(`แสดง 80 จาก ${D.rows.length} รายการ — ดาวน์โหลด Excel เพื่อดูทั้งหมด`, `Showing 80 of ${D.rows.length} — download Excel for all`)}</p>` : ""}` : `<p class="empty">${L("ยังไม่มีรายการในช่วงนี้ — เริ่มบันทึกจากฟอร์มด้านบน", "No entries yet — log one above")}</p>`}</article>
+  </div>`;
+    }
+    function finText() {
+      const D = finData(), lines = [`💸 FlowRecover — ${L("สรุปรายรับ-รายจ่าย", "Income & expenses")} ${finTitle()}`, `➕ ${L("รายรับ", "Income")}: ${money(D.inc)} ฿`, `➖ ${L("รายจ่าย", "Expenses")}: ${money(D.exp)} ฿`, `= ${L("คงเหลือ", "Net")}: ${money(D.net)} ฿${D.rate == null ? "" : ` (${L("ออมได้", "saved")} ${D.rate}%)`}`];
+      if (D.byExp.length) { lines.push("", L("ใช้จ่ายไปกับ:", "Spent on:")); D.byExp.forEach(g => lines.push(`${g.l}: ${money(g.v)} ฿ (${Math.round(g.v / D.exp * 100)}%)`)); }
+      return lines.join("\n");
+    }
+    async function finExport() {
+      const D = finData(), XC = XCAT(), IC = ICAT(), pct = (v, t) => t ? Math.round(v / t * 1000) / 10 : 0;
+      const catName = x => ((x.type === "inc" ? IC : XC)[x.cat] || (x.type === "inc" ? IC.other : XC.other))[1];
+      const sum = [[`FlowRecover — ${L("สรุปรายรับ-รายจ่าย", "Income & expense summary")}`], [L("ช่วงเวลา", "Period"), finTitle()], [L("ตั้งแต่", "From"), D.a, L("ถึง", "To"), D.b], [],
+        [L("รายรับรวม (฿)", "Total income (฿)"), D.inc], [L("รายจ่ายรวม (฿)", "Total expenses (฿)"), D.exp], [L("คงเหลือสุทธิ (฿)", "Net (฿)"), D.net], [L("อัตราการออม (%)", "Savings rate (%)"), D.rate ?? "-"], [],
+        [L("รายจ่ายตามหมวด", "Expenses by category"), L("จำนวนเงิน (฿)", "Amount (฿)"), "%"], ...D.byExp.map(g => [g.l, g.v, pct(g.v, D.exp)]), [],
+        [L("รายรับตามหมวด", "Income by category"), L("จำนวนเงิน (฿)", "Amount (฿)"), "%"], ...D.byInc.map(g => [g.l, g.v, pct(g.v, D.inc)])];
+      const tx = [[L("วันที่", "Date"), L("ประเภท", "Type"), L("หมวดหมู่", "Category"), L("รายละเอียด", "Note"), L("รายรับ (฿)", "Income (฿)"), L("รายจ่าย (฿)", "Expense (฿)")],
+        ...[...D.rows].reverse().map(x => [x.date, x.type === "inc" ? L("รายรับ", "Income") : L("รายจ่าย", "Expense"), catName(x), x.note || "", x.type === "inc" ? x.amount : "", x.type === "exp" ? x.amount : ""]), [], [L("รวม", "Total"), "", "", "", D.inc, D.exp]];
+      const per = [[finView().range === "year" ? L("เดือน", "Month") : L("วันที่", "Date"), L("รายรับ (฿)", "Income (฿)"), L("รายจ่าย (฿)", "Expense (฿)"), L("คงเหลือ (฿)", "Net (฿)")], ...D.bk.map(k => [k.d, k.i, k.e, k.i - k.e])];
+      const fname = `FlowRecover_${L("รายรับรายจ่าย", "income-expense")}_${D.a}_${D.b}`;
+      toast(L("⏳ กำลังสร้างไฟล์ Excel…", "⏳ Building Excel file…"));
+      try {
+        const X = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+        const wb = X.utils.book_new(), add = (rows, name, cols) => { const ws = X.utils.aoa_to_sheet(rows); ws["!cols"] = cols.map(w => ({ wch: w })); X.utils.book_append_sheet(wb, ws, name); };
+        add(sum, L("สรุป", "Summary"), [36, 18, 10, 14]); add(tx, L("รายการ", "Entries"), [12, 10, 26, 36, 14, 14]); add(per, L("ตามช่วงเวลา", "By period"), [14, 14, 14, 14]);
+        X.writeFile(wb, fname + ".xlsx");
+        toast(L("⬇️ ดาวน์โหลดไฟล์ Excel แล้ว", "⬇️ Excel file downloaded"));
+      } catch (e) {
+        console.warn("xlsx export failed, falling back to CSV", e);
+        const csv = "\ufeff" + tx.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = fname + ".csv"; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        toast(L("⬇️ ดาวน์โหลดเป็น CSV แล้ว (เปิดด้วย Excel ได้)", "⬇️ Downloaded as CSV (opens in Excel)"));
+      }
+    }
+
+    /* ---------- 🧾 Thai income tax: personal & company ---------- */
+    // อัตราอ้างอิงปีภาษี 2568–2569 — กฎหมายอาจเปลี่ยน ปรับตัวเลขได้ที่นี่
+    const TAXY = () => { const T = (P().tax ||= {}); T.mode ||= "personal"; T.year ||= new Date().getFullYear(); T.p ||= {}; T.c ||= {}; return T; };
+    const BRACKETS = [[150000, 0], [300000, .05], [500000, .10], [750000, .15], [1000000, .20], [2000000, .25], [5000000, .30], [Infinity, .35]];
+    const n0 = v => Math.max(0, Number(v) || 0);
+    function progTax(net) {
+      let prev = 0, tax = 0; const rows = [];
+      for (const [cap, r] of BRACKETS) { const part = Math.max(0, Math.min(net, cap) - prev); rows.push({ from: prev, to: cap, r, part, tax: part * r }); tax += part * r; prev = cap; if (net <= cap) break; }
+      return { tax, rows, marg: rows.filter(x => x.part > 0).at(-1)?.r || 0 };
+    }
+    function calcPersonal(p0, yr, extra = {}) {
+      const p = { ...p0, ...extra }, i = k => n0(p[k]);
+      const gross = [1, 2, 3, 4, 5, 6, 7, 8].reduce((s, k) => s + i("i" + k), 0), wage = i("i1");
+      const ex = {
+        e12: Math.min((i("i1") + i("i2")) * .5, 100000), e3: Math.min(i("i3") * .5, 100000),
+        e5: Math.min(i("x5") || i("i5") * .3, i("i5")), e6: Math.min(i("x6") || i("i6") * (Number(p.e6r) === 60 ? .6 : .3), i("i6")),
+        e7: Math.min(i("x7") || i("i7") * .6, i("i7")), e8: Math.min(i("x8") || i("i8") * .6, i("i8"))
+      };
+      const expT = Object.values(ex).reduce((s, v) => s + v, 0), afterExp = Math.max(0, gross - expT);
+      const lifeHealth = Math.min(Math.min(i("life"), 100000) + Math.min(i("health"), 25000), 100000);
+      const pen = Math.min(i("pension"), gross * .15, 200000), pvd = Math.min(i("pvd"), wage * .15, 500000), rmf = Math.min(i("rmf"), gross * .3, 500000), ssf = Math.min(i("ssf"), gross * .3, 200000), nsf = Math.min(i("nsf"), 30000);
+      const ret = Math.min(pen + pvd + rmf + ssf + nsf, 500000), esg = Math.min(i("esg"), gross * .3, 300000);
+      const D = [
+        [L("ส่วนตัว", "Personal allowance"), 60000],
+        [L("คู่สมรส (ไม่มีเงินได้)", "Spouse (no income)"), Number(p.spouse) ? 60000 : 0],
+        [L("บุตร", "Children"), Math.min(i("kids"), 20) * 30000 + Math.min(i("kids2"), 20) * 60000],
+        [L("ฝากครรภ์/คลอดบุตร", "Pregnancy & childbirth"), Math.min(i("preg"), 60000)],
+        [L("อุปการะเลี้ยงดูบิดามารดา", "Parents"), Math.min(i("parents"), 4) * 30000],
+        [L("อุปการะคนพิการ/ทุพพลภาพ", "Disabled dependants"), Math.min(i("disabled"), 10) * 60000],
+        [L("ประกันสังคม", "Social security"), Math.min(i("sso"), yr >= 2026 ? 10500 : 9000)],
+        [L("ประกันชีวิต + ประกันสุขภาพตนเอง", "Life + health insurance"), lifeHealth],
+        [L("ประกันสุขภาพบิดามารดา", "Parents' health insurance"), Math.min(i("parentHealth"), 15000)],
+        [L("กลุ่มเกษียณ (ประกันบำนาญ • PVD/กบข. • RMF • SSF • กอช.)", "Retirement group (pension ins. • PVD • RMF • SSF • NSF)"), ret],
+        ["Thai ESG", esg],
+        [L("ดอกเบี้ยเงินกู้ซื้อที่อยู่อาศัย", "Mortgage interest"), Math.min(i("home"), 100000)],
+        [L("Easy E-Receipt / มาตรการรัฐ", "Easy E-Receipt / gov. scheme"), Math.min(i("stim"), 50000)],
+        [L("บริจาคพรรคการเมือง", "Political party donation"), Math.min(i("political"), 10000)]
+      ].filter(d => d[1] > 0);
+      const dedT = D.reduce((s, d) => s + d[1], 0);
+      let base = Math.max(0, afterExp - dedT);
+      const don2 = Math.min(i("donate2") * 2, base * .1); base -= don2;
+      const don1 = Math.min(i("donate"), base * .1); base -= don1;
+      const net = Math.max(0, base), pg = progTax(net), other = gross - wage;
+      let alt = other >= 120000 ? other * .005 : 0; if (alt <= 5000) alt = 0;
+      const due = Math.max(pg.tax, alt), wht = i("wht");
+      return { gross, ex, expT, afterExp, D, dedT, don: don1 + don2, net, pg, alt, due, wht, pay: due - wht, eff: gross ? due / gross : 0, used: { lifeHealth, ret, esg, rmf, ssf } };
+    }
+    function calcCorp(c) {
+      const v = k => n0(c[k]);
+      const rev = v("rev"), exp = v("exp"), profit = rev - exp, sme = v("cap") <= 5e6 && rev <= 30e6;
+      const taxable = Math.max(0, profit + v("nonded") - v("extra") - v("loss"));
+      const rows = sme ? [[0, 300000, 0], [300000, 3e6, .15], [3e6, Infinity, .2]] : [[0, Infinity, .2]];
+      const br = rows.map(([a, b, r]) => { const part = Math.max(0, Math.min(taxable, b) - a); return { a, b, r, part, tax: part * r }; });
+      const tax = br.reduce((s, x) => s + x.tax, 0), after = Math.max(0, profit - tax);
+      const div = after * Math.min(100, v("divPct")) / 100, divTax = div * .1;
+      const pNet = Math.max(0, rev - Math.max(rev * .6, exp) - 60000);
+      let pAlt = rev >= 120000 ? rev * .005 : 0; if (pAlt <= 5000) pAlt = 0;
+      return { rev, exp, profit, sme, taxable, br, tax, pay: tax - v("wht") - v("pnd51"), half: tax / 2, after, div, divTax, pTax: Math.max(progTax(pNet).tax, pAlt), vat: rev > 1.8e6 };
+    }
+    const pctTxt = r => `${Math.round(r * 1000) / 10}%`;
+    const tLine = (l, v, cls = "") => `<div class="tax-line ${cls}"><span>${l}</span><b>${v}</b></div>`;
+    function taxTips(p, yr, R) {
+      if (R.due <= 0) return "";
+      const tips = [], trial = (label, key, add) => { if (add < 1000) return; const R2 = calcPersonal(p, yr, { [key]: n0(p[key]) + add }); const save = R.due - R2.due; if (save > 0) tips.push([label, add, save]); };
+      trial("🌱 Thai ESG", "esg", Math.max(0, Math.min(R.gross * .3, 300000) - R.used.esg));
+      const retRoom = Math.max(0, 500000 - R.used.ret);
+      trial("📈 RMF", "rmf", Math.min(Math.max(0, Math.min(R.gross * .3, 500000) - R.used.rmf), retRoom));
+      trial("🛡️ SSF", "ssf", Math.min(Math.max(0, Math.min(R.gross * .3, 200000) - R.used.ssf), retRoom));
+      trial(L("💚 ประกันชีวิต", "💚 Life insurance"), "life", Math.max(0, 100000 - R.used.lifeHealth));
+      if (!tips.length) return "";
+      return `<div class="tax-tips"><b>💡 ${L("ช่องทางลดหย่อนที่ยังเหลือ (ประมาณการ)", "Remaining ways to save (estimate)")}</b>${tips.map(([l, add, s]) => `<div class="tax-tip">${l}: ${L("ซื้อเพิ่มได้อีก", "you can add")} <b>${money(Math.round(add))} ฿</b> → ${L("ประหยัดภาษีราว", "saves about")} <b class="emerald">${money(Math.round(s))} ฿</b></div>`).join("")}
+        <p class="muted sm">${L("แต่ละรายการคิดแยกกัน ศึกษาเงื่อนไขการถือครองและความเสี่ยงก่อนลงทุน", "Each tip is calculated on its own; check holding conditions and risks before investing.")}</p></div>`;
+    }
+    function personalResult() {
+      const T = TAXY(), R = calcPersonal(T.p, T.year), pay = Math.round(R.pay);
+      return `<div class="kpis">${kpiBox(money(Math.round(R.due)), L("ภาษีที่ต้องเสียทั้งปี (฿)", "Annual tax (฿)"), "amber")}${kpiBox(money(Math.round(R.net)), L("เงินได้สุทธิ (฿)", "Taxable income (฿)"))}${kpiBox(pctTxt(R.eff), L("อัตราภาษีเฉลี่ย", "Effective rate"), "sky")}${kpiBox(pctTxt(R.pg.marg), L("ขั้นภาษีสูงสุด", "Top bracket"), "violet")}</div>
+        <div class="tax-big ${pay > 0 ? "due" : "refund"}">${pay > 0 ? `💳 ${L("ต้องชำระเพิ่ม", "Tax to pay")}` : pay < 0 ? `💰 ${L("ได้รับเงินคืน", "Refund")}` : `✅ ${L("ไม่ต้องชำระเพิ่ม", "Nothing to pay")}`} <b class="mono">${money(Math.abs(pay))} ฿</b></div>
+        <div class="tax-sum">
+          ${tLine(L("เงินได้พึงประเมินรวม", "Total assessable income"), money(R.gross))}
+          ${tLine(L("หักค่าใช้จ่าย", "Less expenses"), "−" + money(Math.round(R.expT)))}
+          ${tLine(L("เงินได้หลังหักค่าใช้จ่าย", "Income after expenses"), money(Math.round(R.afterExp)), "sub")}
+          ${R.D.map(([l, v]) => tLine("• " + l, "−" + money(Math.round(v)), "ded")).join("")}
+          ${tLine(L("รวมค่าลดหย่อน", "Total deductions"), "−" + money(Math.round(R.dedT)), "sub")}
+          ${R.don ? tLine(L("เงินบริจาค (ไม่เกิน 10%)", "Donations (≤10%)"), "−" + money(Math.round(R.don))) : ""}
+          ${tLine(L("เงินได้สุทธิ", "Net taxable income"), money(Math.round(R.net)), "sub")}
+          ${tLine(L("ภาษีตามอัตราก้าวหน้า", "Progressive tax"), money(Math.round(R.pg.tax)))}
+          ${R.alt ? tLine(L("ภาษีวิธี 0.5% ของเงินได้ (ไม่รวม 40(1))", "0.5% method (excl. 40(1))"), money(Math.round(R.alt))) : ""}
+          ${tLine(L("ภาษีที่ต้องเสีย", "Tax due"), money(Math.round(R.due)), "sub")}
+          ${tLine(L("หักภาษี ณ ที่จ่ายแล้ว", "Less withholding tax"), "−" + money(R.wht))}
+        </div>
+        <details class="tax-br"><summary>📐 ${L("ดูการคำนวณตามขั้นบันได", "See bracket breakdown")}</summary><table class="tax-table"><thead><tr><th>${L("เงินได้สุทธิ", "Net income")}</th><th>${L("อัตรา", "Rate")}</th><th>${L("ส่วนที่คิด", "Portion")}</th><th>${L("ภาษี", "Tax")}</th></tr></thead><tbody>${R.pg.rows.map(x => `<tr class="${x.part ? "" : "muted"}"><td>${money(x.from + (x.from ? 1 : 0))} – ${x.to === Infinity ? L("ขึ้นไป", "+") : money(x.to)}</td><td>${pctTxt(x.r)}</td><td>${money(Math.round(x.part))}</td><td>${money(Math.round(x.tax))}</td></tr>`).join("")}</tbody></table></details>
+        ${taxTips(T.p, T.year, R)}`;
+    }
+    function corpResult() {
+      const R = calcCorp(TAXY().c), pay = Math.round(R.pay), corpTotal = R.tax + R.divTax;
+      return `<div class="kpis">${kpiBox(money(Math.round(R.profit)), L("กำไรทางบัญชี (฿)", "Accounting profit (฿)"), R.profit >= 0 ? "emerald" : "rose")}${kpiBox(money(Math.round(R.taxable)), L("กำไรสุทธิทางภาษี (฿)", "Taxable profit (฿)"))}${kpiBox(money(Math.round(R.tax)), L("ภาษีเงินได้นิติบุคคล (฿)", "Corporate income tax (฿)"), "amber")}${kpiBox(R.sme ? "SME" : "20%", R.sme ? L("อัตรา SME 0/15/20%", "SME rates 0/15/20%") : L("อัตราทั่วไป", "Standard rate"), "violet")}</div>
+        <div class="tax-big ${pay > 0 ? "due" : "refund"}">${pay > 0 ? `💳 ${L("ภ.ง.ด.50 ต้องชำระเพิ่ม", "PND 50 to pay")}` : pay < 0 ? `💰 ${L("ขอคืนภาษีได้", "Refundable")}` : `✅ ${L("ไม่ต้องชำระเพิ่ม", "Nothing to pay")}`} <b class="mono">${money(Math.abs(pay))} ฿</b></div>
+        <div class="tax-sum">
+          ${tLine(L("รายได้รวม", "Revenue"), money(R.rev))}${tLine(L("หักค่าใช้จ่าย", "Less expenses"), "−" + money(R.exp))}
+          ${tLine(L("กำไรสุทธิทางภาษี (หลังปรับปรุง)", "Taxable profit (adjusted)"), money(Math.round(R.taxable)), "sub")}
+          ${R.br.map(x => tLine(`• ${money(x.a + (x.a ? 1 : 0))} – ${x.b === Infinity ? L("ขึ้นไป", "+") : money(x.b)} @ ${pctTxt(x.r)}`, money(Math.round(x.tax)), "ded")).join("")}
+          ${tLine(L("ภาษีเงินได้นิติบุคคลทั้งปี", "Annual corporate tax"), money(Math.round(R.tax)), "sub")}
+          ${tLine(L("ประมาณการ ภ.ง.ด.51 (ครึ่งปี)", "Estimated PND 51 (half-year)"), money(Math.round(R.half)))}
+          ${tLine(L("กำไรหลังภาษี", "Profit after tax"), money(Math.round(R.after)))}
+          ${R.div ? tLine(L("ปันผลให้ผู้ถือหุ้น • หัก ณ ที่จ่าย 10%", "Dividends • 10% withholding"), `${money(Math.round(R.div))} • ${money(Math.round(R.divTax))}`) : ""}
+        </div>
+        <div class="tax-compare"><b>⚖️ ${L("เทียบกับบุคคลธรรมดา (ประมาณการ)", "Compared with a sole proprietor (estimate)")}</b>
+          <div class="tax-line"><span>🏢 ${L("บริษัท: ภาษีนิติบุคคล + ภาษีปันผล", "Company: corporate + dividend tax")}</span><b>${money(Math.round(corpTotal))} ฿</b></div>
+          <div class="tax-line"><span>👤 ${L("บุคคลธรรมดา 40(8): หักเหมา 60% หรือตามจริง + ลดหย่อนส่วนตัว", "Individual 40(8): 60% flat or actual + personal allowance")}</span><b>${money(Math.round(R.pTax))} ฿</b></div>
+          <p class="muted sm">${R.pTax > corpTotal ? L("👉 ระดับกำไรนี้ จดบริษัทอาจเสียภาษีน้อยกว่า — แต่มีค่าทำบัญชี/สอบบัญชีเพิ่ม", "👉 At this profit a company may pay less tax — but adds bookkeeping/audit costs") : L("👉 ระดับกำไรนี้ บุคคลธรรมดายังคุ้มกว่าหรือใกล้เคียง", "👉 At this profit, staying an individual is cheaper or similar")}</p></div>
+        ${R.vat ? `<div class="tax-tip warn">⚠️ ${L("รายได้เกิน 1.8 ล้านบาท/ปี ต้องจดทะเบียนภาษีมูลค่าเพิ่ม (VAT 7%) ภายใน 30 วัน", "Revenue above 1.8M ฿/year — VAT (7%) registration is required within 30 days")}</div>` : ""}`;
+    }
+    LIVE.tax = () => { const el = $("#tax-result"); if (el) el.innerHTML = TAXY().mode === "corp" ? corpResult() : personalResult(); };
+    function taxDeadlines() {
+      const T = TAXY(), y = T.year;
+      const rows = T.mode === "corp" ? [
+        [`${y}-08-31`, L("ภ.ง.ด.51 ภาษีครึ่งปี (รอบบัญชีตามปีปฏิทิน)", "PND 51 half-year tax (calendar fiscal year)")],
+        [`${y + 1}-05-30`, L(`ภ.ง.ด.50 ภาษีทั้งปี ${yearLabel(y)} (ภายใน 150 วันหลังปิดรอบบัญชี)`, `PND 50 annual tax for ${y} (within 150 days of year-end)`)]
+      ] : [
+        [`${y}-09-30`, L("ภ.ง.ด.94 ภาษีครึ่งปี (ถ้ามีเงินได้ 40(5)–40(8))", "PND 94 half-year (if you have 40(5)–40(8) income)")],
+        [`${y + 1}-03-31`, L(`ภ.ง.ด.90/91 ปีภาษี ${yearLabel(y)} (ยื่นออนไลน์ได้ถึงประมาณ 8 เม.ย.)`, `PND 90/91 for ${y} (online filing until about Apr 8)`)]
+      ];
+      return `<article class="card"><h3>📅 ${L("กำหนดยื่นภาษี", "Filing deadlines")}</h3><ul class="rows">${rows.map(([d, l], i) => `<li class="row-item"><div><b>${fmtShort(d)}</b> <span class="muted">· ${l}</span></div><button class="btn btn-sm" data-act="taxDue" data-d="${d}" data-t="${esc(l)}" id="txdue-${i}">➕ ${L("เข้าคิว", "Queue")}</button></li>`).join("")}</ul>
+        ${T.mode === "corp" ? `<p class="muted sm" style="margin-top:8px">🔁 ${L("รายเดือน: ภ.ง.ด.1/3/53 ภายในวันที่ 7 (ออนไลน์ 15) • ภ.พ.30 ภายในวันที่ 15 (ออนไลน์ 23) ถ้าจด VAT", "Monthly: PND 1/3/53 by the 7th (online 15th) • PP 30 by the 15th (online 23rd) if VAT-registered")}</p>` : ""}</article>`;
+    }
+    function plannerTX() {
+      const T = TAXY(), M = T.mode, cy = new Date().getFullYear(), id = p => "tax-" + p.replace(/\./g, "-");
+      const num = (path, label, hint = "") => `<label class="field"><span>${label}${hint ? ` <small>${hint}</small>` : ""}</span><input class="input" type="number" inputmode="decimal" step="any" min="0" id="${id(path)}" data-bind="planner.tax.${path}" data-num="1" data-live="tax" value="${getPath(T, path) || ""}" placeholder="0"></label>`;
+      const sel = (path, label, opts) => `<label class="field"><span>${label}</span><select class="input" id="${id(path)}" data-bind="planner.tax.${path}" data-num="1" data-live="tax">${opts.map(([v, l]) => `<option value="${v}" ${Number(getPath(T, path) || 0) === v ? "selected" : ""}>${l}</option>`).join("")}</select></label>`;
+      const cnt = (path, label, max, hint) => sel(path, label + (hint ? ` (${hint})` : ""), [...Array(max + 1)].map((_, k) => [k, String(k)]));
+      const head = `<article class="card"><div class="tax-mode" role="tablist">
+          <button class="${M !== "corp" ? "on" : ""}" data-act="taxMode" data-v="personal" id="taxm-personal" role="tab" aria-selected="${M !== "corp"}"><b>👤 ${L("บุคคลธรรมดา", "Individual")}</b>${L("พนักงาน ฟรีแลนซ์ ขายของออนไลน์ (ภ.ง.ด.90/91)", "Employees, freelancers, online sellers (PND 90/91)")}</button>
+          <button class="${M === "corp" ? "on" : ""}" data-act="taxMode" data-v="corp" id="taxm-corp" role="tab" aria-selected="${M === "corp"}"><b>🏢 ${L("นิติบุคคล (จดทะเบียนบริษัท)", "Company (registered)")}</b>${L("บริษัท/หจก. (ภ.ง.ด.50/51)", "Company / partnership (PND 50/51)")}</button></div>
+        <div class="row" style="gap:10px;margin-top:12px;flex-wrap:wrap;align-items:end">
+          <label class="field" style="min-width:160px"><span>${L("ปีภาษี", "Tax year")}</span><select class="input" id="tax-year" data-bind="planner.tax.year" data-num="1" data-rr="1">${[cy - 1, cy, cy + 1].map(y => `<option value="${y}" ${T.year === y ? "selected" : ""}>${yearLabel(y)}</option>`).join("")}</select></label>
+          ${M !== "corp" ? `<button class="btn btn-sm" data-act="taxFromFin" id="btn-tax-fin">📥 ${L(`ดึงรายรับจากบันทึกการเงินปี ${yearLabel(T.year)}`, `Fill income from ${T.year} finance log`)}</button>` : ""}</div>
+        <p class="muted sm" style="margin-top:10px">ℹ️ ${L("เครื่องคำนวณนี้ใช้ประมาณการตามอัตราปีภาษี 2568–2569 เพื่อวางแผนเท่านั้น ควรตรวจสอบเงื่อนไขล่าสุดกับกรมสรรพากร (rd.go.th) หรือนักบัญชีก่อนยื่นจริง", "Estimates use 2025–2026 Thai rates for planning only — confirm current rules with the Revenue Department (rd.go.th) or an accountant before filing.")}</p></article>`;
+      let inputs;
+      if (M === "corp") {
+        inputs = `<article class="card"><h3>🏢 ${L("ข้อมูลบริษัท (ทั้งรอบบัญชี)", "Company figures (full fiscal year)")}</h3><div class="tax-grid">
+          ${num("c.rev", L("รายได้รวม (฿)", "Total revenue (฿)"))}${num("c.exp", L("ค่าใช้จ่ายรวม (฿)", "Total expenses (฿)"))}
+          ${num("c.cap", L("ทุนจดทะเบียนชำระแล้ว (฿)", "Paid-up capital (฿)"), L("≤ 5 ล้าน + รายได้ ≤ 30 ล้าน = SME", "≤5M & revenue ≤30M = SME"))}
+          ${num("c.nonded", L("รายจ่ายต้องห้าม (บวกกลับ)", "Non-deductible expenses (add back)"), L("เช่น ค่าปรับ ค่ารับรองเกินเกณฑ์", "e.g. fines, excess entertainment"))}
+          ${num("c.extra", L("รายจ่ายที่หักได้เพิ่ม", "Extra deductions"), L("เช่น ค่าอบรม 200%, จ้างผู้สูงอายุ", "e.g. 200% training costs"))}
+          ${num("c.loss", L("ขาดทุนสะสมยกมา", "Tax losses brought forward"), L("ไม่เกิน 5 ปี", "up to 5 years"))}
+          ${num("c.wht", L("ภาษีถูกหัก ณ ที่จ่าย (฿)", "Withholding tax credits (฿)"))}${num("c.pnd51", L("ภาษีครึ่งปีที่จ่ายแล้ว ภ.ง.ด.51", "PND 51 already paid"))}
+          ${num("c.divPct", L("จ่ายปันผล (% ของกำไรหลังภาษี)", "Dividend payout (% of profit after tax)"))}</div></article>`;
+      } else {
+        inputs = `<article class="card"><h3>💼 ${L("เงินได้ทั้งปี (฿)", "Annual income (฿)")}</h3><div class="tax-grid">
+          ${num("p.i1", L("40(1) เงินเดือน ค่าจ้าง โบนัส", "40(1) Salary, wages, bonus"), L("หักเหมา 50% รวมกับ 40(2) ไม่เกิน 100,000", "50% with 40(2), max 100k"))}
+          ${num("p.i2", L("40(2) ค่าจ้างฟรีแลนซ์ ค่านายหน้า", "40(2) Freelance fees, commissions"))}
+          ${num("p.i3", L("40(3) ค่าลิขสิทธิ์", "40(3) Royalties"), L("หัก 50% ไม่เกิน 100,000", "50%, max 100k"))}
+          ${num("p.i4", L("40(4) ดอกเบี้ย เงินปันผล", "40(4) Interest, dividends"), L("ไม่มีค่าใช้จ่าย", "no expenses"))}
+          ${num("p.i5", L("40(5) ค่าเช่าทรัพย์สิน", "40(5) Rental income"), L("เหมา 30%", "30% flat"))}
+          ${num("p.i6", L("40(6) วิชาชีพอิสระ", "40(6) Liberal professions"))}
+          ${sel("p.e6r", L("อัตราหักเหมา 40(6)", "40(6) flat rate"), [[30, L("30% (กฎหมาย บัญชี วิศวกรรม ฯลฯ)", "30% (law, accounting, engineering…)")], [60, L("60% (การประกอบโรคศิลปะ)", "60% (medical)")]])}
+          ${num("p.i7", L("40(7) รับเหมาก่อสร้าง (ค่าแรง+ของ)", "40(7) Contracting"), L("เหมา 60%", "60% flat"))}
+          ${num("p.i8", L("40(8) ขายของ ธุรกิจ อื่นๆ", "40(8) Business, trading, other"), L("เหมา 60% (ส่วนใหญ่)", "60% flat (most)"))}
+          ${num("p.wht", L("ภาษีถูกหัก ณ ที่จ่ายแล้วทั้งปี", "Withholding tax already paid"), L("ดูจาก 50 ทวิ", "from your 50 Tawi"))}</div>
+          <details class="tax-br"><summary>🧮 ${L("หักค่าใช้จ่ายตามจริงแทนการหักเหมา (ถ้ามีหลักฐาน)", "Use actual expenses instead of flat rate (with receipts)")}</summary><div class="tax-grid" style="margin-top:10px">
+            ${num("p.x5", L("ค่าใช้จ่ายจริง 40(5)", "Actual 40(5) expenses"))}${num("p.x6", L("ค่าใช้จ่ายจริง 40(6)", "Actual 40(6) expenses"))}${num("p.x7", L("ค่าใช้จ่ายจริง 40(7)", "Actual 40(7) expenses"))}${num("p.x8", L("ค่าใช้จ่ายจริง 40(8)", "Actual 40(8) expenses"))}</div></details></article>
+        <article class="card"><h3>🧾 ${L("ค่าลดหย่อนภาษี", "Tax deductions")}</h3>
+          <h4 class="tax-h">👨‍👩‍👧 ${L("ครอบครัว", "Family")}</h4><div class="tax-grid">
+            ${sel("p.spouse", L("คู่สมรสไม่มีเงินได้ (60,000)", "Spouse with no income (60,000)"), [[0, L("ไม่มี", "No")], [1, L("มี", "Yes")]])}
+            ${cnt("p.kids", L("บุตร 30,000/คน", "Children 30,000 each"), 10)}
+            ${cnt("p.kids2", L("บุตรคนที่ 2+ เกิดตั้งแต่ 2561 (60,000/คน)", "2nd+ child born 2018+ (60,000 each)"), 10)}
+            ${cnt("p.parents", L("บิดามารดาอายุ 60+ (30,000/คน)", "Parents aged 60+ (30,000 each)"), 4)}
+            ${cnt("p.disabled", L("อุปการะคนพิการ (60,000/คน)", "Disabled dependants (60,000 each)"), 6)}
+            ${num("p.preg", L("ค่าฝากครรภ์/คลอดบุตร", "Pregnancy & birth costs"), "≤ 60,000")}</div>
+          <h4 class="tax-h">🛡️ ${L("ประกัน", "Insurance")}</h4><div class="tax-grid">
+            ${num("p.sso", L("ประกันสังคมที่จ่าย", "Social security paid"), T.year >= 2026 ? "≤ 10,500" : "≤ 9,000")}
+            ${num("p.life", L("เบี้ยประกันชีวิต", "Life insurance premiums"), "≤ 100,000")}
+            ${num("p.health", L("เบี้ยประกันสุขภาพตนเอง", "Own health insurance"), L("≤ 25,000 (รวมประกันชีวิต ≤ 100,000)", "≤25k (with life ≤100k)"))}
+            ${num("p.parentHealth", L("ประกันสุขภาพบิดามารดา", "Parents' health insurance"), "≤ 15,000")}
+            ${num("p.pension", L("ประกันชีวิตแบบบำนาญ", "Pension life insurance"), L("15% ของเงินได้ ≤ 200,000", "15% of income ≤200k"))}</div>
+          <h4 class="tax-h">📈 ${L("ออม & ลงทุน", "Savings & investing")} <small class="muted">${L("กลุ่มเกษียณรวมกันไม่เกิน 500,000", "retirement group ≤500k combined")}</small></h4><div class="tax-grid">
+            ${num("p.pvd", L("กองทุนสำรองเลี้ยงชีพ / กบข.", "Provident fund / GPF"), L("15% ของค่าจ้าง", "15% of wages"))}
+            ${num("p.rmf", "RMF", L("30% ของเงินได้ ≤ 500,000", "30% of income ≤500k"))}
+            ${num("p.ssf", "SSF", L("30% ≤ 200,000", "30% ≤200k"))}
+            ${num("p.nsf", L("กองทุนการออมแห่งชาติ (กอช.)", "National Savings Fund"), "≤ 30,000")}
+            ${num("p.esg", "Thai ESG", L("30% ≤ 300,000 (แยกจากกลุ่มเกษียณ)", "30% ≤300k (separate)"))}</div>
+          <h4 class="tax-h">🏠 ${L("อื่นๆ & บริจาค", "Other & donations")}</h4><div class="tax-grid">
+            ${num("p.home", L("ดอกเบี้ยเงินกู้ซื้อบ้าน", "Mortgage interest"), "≤ 100,000")}
+            ${num("p.stim", L("Easy E-Receipt / มาตรการรัฐปีนั้น", "Easy E-Receipt / that year's scheme"), "≤ 50,000")}
+            ${num("p.donate2", L("บริจาคการศึกษา กีฬา รพ.รัฐ (หัก 2 เท่า)", "Education/sport/public hospital (2×)"), L("≤ 10% ของเงินได้หลังลดหย่อน", "≤10% after deductions"))}
+            ${num("p.donate", L("บริจาคทั่วไป", "General donations"), L("≤ 10%", "≤10%"))}
+            ${num("p.political", L("บริจาคพรรคการเมือง", "Political party"), "≤ 10,000")}</div></article>`;
+      }
+      return `<div class="grid">${head}<div class="grid tax-layout"><div class="grid">${inputs}</div>
+        <div class="grid tax-side"><article class="card tax-res"><h3>🧮 ${M === "corp" ? L("ผลคำนวณภาษีนิติบุคคล", "Corporate tax result") : L(`ผลคำนวณภาษีปี ${yearLabel(T.year)}`, `Tax result for ${T.year}`)}</h3><div id="tax-result">${M === "corp" ? corpResult() : personalResult()}</div></article>${taxDeadlines()}</div></div></div>`;
+    }
+
+    /* ---------- Guide & planner guide entries ---------- */
+    PG.tx = { k: "TX", i: "🧾", t: ["ภาษี", "Tax"], d: ["ภาษีเงินได้บุคคลธรรมดา/นิติบุคคล • ค่าลดหย่อน • กำหนดยื่น", "Personal / company income tax • deductions • deadlines"],
+      how: [["เลือกว่าเป็น 👤 บุคคลธรรมดา หรือ 🏢 นิติบุคคล แล้วเลือกปีภาษี", "Choose 👤 Individual or 🏢 Company and the tax year"], ["กรอกเงินได้ทั้งปีตามประเภท 40(1)–40(8) หรือกด “ดึงรายรับจากบันทึกการเงิน”", "Enter annual income by type 40(1)–40(8), or tap “Fill income from finance log”"], ["ใส่ค่าลดหย่อนที่มี ระบบจำกัดเพดานให้อัตโนมัติ และคำนวณภาษีทันทีที่พิมพ์", "Add your deductions — caps apply automatically and tax updates as you type"], ["ดูคำแนะนำช่องลดหย่อนที่ยังเหลือ แล้วกด ➕ เพิ่มวันกำหนดยื่นเข้าคิวงาน", "Check the remaining-deduction tips and ➕ add filing deadlines to your queue"]],
+      ex: [["👤 เงินเดือน 600,000 • ประกันสังคม 9,000 • ประกันชีวิต 30,000 → เห็นภาษีและเงินคืนจาก 50 ทวิ", "👤 Salary 600,000 • social security 9,000 • life insurance 30,000 → see tax and refund vs your 50 Tawi"], ["🧑‍💻 ฟรีแลนซ์ 40(2) 400,000 ถูกหัก 3% = 12,000 → รู้ว่าจะได้เงินคืนเท่าไร", "🧑‍💻 Freelance 40(2) 400,000 with 3% withheld = 12,000 → see your refund"], ["🏢 บริษัทกำไร 1.2 ล้าน (SME) → ภาษี 135,000 เทียบกับบุคคลธรรมดา", "🏢 Company profit 1.2M (SME) → 135,000 tax vs. sole proprietor"]] };
+    GUIDE.th.push({ t: "ปฏิทิน Google • กิจวัตร • การเงิน & ภาษี", i: "🧾", s: [
+      ["ลบ/แก้งานแล้ว Google Calendar อัปเดตตาม", "งานที่ส่งเข้า Google Calendar แล้ว เมื่อลบ เลื่อน หรือติ๊กเสร็จในแอป ระบบจะอัปเดตในปฏิทินให้อัตโนมัติ (ถ้ายังไม่เชื่อมต่อ จะรอทำให้ครั้งถัดไป)"],
+      ["ดึงนัดจาก Google Calendar เข้าคิว", "หน้าคิวงาน กด “📥 ดึงจาก Google Calendar” (วันนี้หรือ 7 วัน) — นัดแบบมีเวลาจะกลายเป็นบล็อกงาน"],
+      ["หน้า 📆 ปฏิทิน", "ดูนัดหมาย Google รวมกับคิวงานและขั้นตอนโปรเจค แบบรายเดือนหรือ 30 วันข้างหน้า แตะวันเพื่อดูรายละเอียด"],
+      ["กิจวัตร ส.-อา. และเพิ่มจาก Planner", "เลือกรอบ “เฉพาะ ส.-อา.” ได้ และกด 🔁 ข้างรายการใน Planner เพื่อสร้างเป็นกิจวัตร ถ้าตั้งเวลา ระบบจะเตือนก่อน 30 นาที"],
+      ["สรุปรายรับ-รายจ่าย", "Planner › F: บันทึกพร้อมหมวดหมู่ ดูสรุปรายสัปดาห์/เดือน/ปี ว่าใช้จ่ายไปกับอะไร แล้วดาวน์โหลดเป็น Excel"],
+      ["ภาษีเงินได้ & ลดหย่อน", "Planner › TX: เลือกบุคคลธรรมดาหรือนิติบุคคล กรอกเงินได้และค่าลดหย่อน ระบบคำนวณภาษีและแนะนำช่องลดหย่อนที่เหลือ"]] });
+    GUIDE.en.push({ t: "Google Calendar • routines • money & tax", i: "🧾", s: [
+      ["Edits and deletes reach Google Calendar", "Tasks you pushed to Google Calendar update there automatically when you delete, move or complete them in the app (or the next time you connect)"],
+      ["Pull Google events into the queue", "On Queue, tap “📥 Pull from Google Calendar” (today or 7 days) — timed events become time blocks"],
+      ["📆 Calendar page", "See Google events with your queue and project steps, by month or the next 30 days. Tap a day for details"],
+      ["Weekend routines & Planner → routine", "Pick “Weekends (Sat–Sun)”, and tap 🔁 next to Planner items to make them routines. With a time set you get a 30-min reminder"],
+      ["Income & expense summary", "Planner › F: log entries with categories, see weekly/monthly/yearly summaries of where money went, and download Excel"],
+      ["Income tax & deductions", "Planner › TX: choose individual or company, enter income and deductions — tax is calculated with tips for remaining deductions"]] });
+    GUIDE_GO.push({ tab: "planner", sec: "tx" });
+
+    /* ---------- Change hooks, actions & forms ---------- */
+    CHANGE.txnType = el => { finView().kind = el.value; const s = $("#txn-cat"); if (s) s.innerHTML = catOpts(el.value); save(); };
+    Object.assign(A, {
+      delTask: d => {
+        const t = state.tasks.find(x => x.id === d.id); if (!t) return;
+        if (!confirm(t.gcalId ? L("ลบงานนี้? (จะลบออกจาก Google Calendar ด้วย)", "Delete this task? (it will also be removed from Google Calendar)") : L("ลบงานนี้?", "Delete this task?"))) return;
+        state.tasks = state.tasks.filter(x => x.id !== d.id); rerender();
+        if (t.gcalId) gSyncChanges(true).then(n => { if (n) toast(L("🗑️ ลบออกจาก Google Calendar แล้ว", "🗑️ Removed from Google Calendar")); })
+          .catch(e => { if (e?.message !== "demo") toast(L("⏳ จะลบใน Google Calendar ให้อัตโนมัติเมื่อเชื่อมต่อครั้งถัดไป", "⏳ It will be removed from Google Calendar next time you connect")); });
+      },
+      gConnect: () => { sessionStorage.removeItem("fr.gtok"); googleToken(["cal", "drive"]).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive แล้ว", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast); },
+      gcalPull: d => {
+        const a = d.a || state.queueDate || dkey(), b = d.b || a;
+        if (b > a && !confirm(L(`ดึงนัดหมายจาก Google Calendar ช่วง ${fmtShort(a)} – ${fmtShort(b)} เข้าคิวงาน?`, `Pull Google Calendar events from ${fmtShort(a)} – ${fmtShort(b)} into the queue?`))) return;
+        googleToken(["cal"]).then(() => { toast(L("📥 กำลังดึงจาก Google Calendar…", "📥 Pulling from Google Calendar…")); return gPull(a, b); }).then(c => toast(pullMsg(c))).catch(gErrToast);
+      },
+      calView: d => { calState().view = d.v; rerender(); },
+      calNav: d => { const C = calState(); C.date = addMonths(C.date.slice(0, 8) + "01", Number(d.v)); rerender(); },
+      calToday: () => { const C = calState(); C.date = C.sel = dkey(); rerender(); },
+      calSel: d => { const C = calState(); C.sel = d.v; if (d.v.slice(0, 7) !== C.date.slice(0, 7)) C.date = d.v; rerender(); setTimeout(() => document.getElementById(`cq-${d.v}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 60); },
+      calRefresh: () => { const [a, b] = calRange(); googleToken(["cal"]).then(() => calLoad(a, b, true)).catch(gErrToast); },
+      calImport: d => {
+        const e = Object.values(calCache).flatMap(c => c.items || []).find(x => x.id === d.id); if (!e) return;
+        const r = importEvent(e); rerender();
+        toast(r === "add" ? L(`📋 เพิ่ม “${trunc(e.summary || "", 22)}” เข้าคิวแล้ว`, `📋 Added “${trunc(e.summary || "", 22)}” to the queue`) : L("งานนี้อยู่ในคิวแล้ว", "Already in the queue"));
+      },
+      toRoutineDlg: d => {
+        const v = d.from ? (document.getElementById(d.from)?.value || "").trim() : "";
+        const title = v || d.title || "";
+        if (d.from && !title) { toast(L("พิมพ์รายการก่อน แล้วค่อยกด 🔁", "Type something first, then tap 🔁")); document.getElementById(d.from)?.focus(); return; }
+        openRoutineDlg(title, d.time || "");
+      },
+      finRange: d => { finView().range = d.v; rerender(); },
+      finNav: d => { const V = finView(), n = Number(d.v); V.date = V.range === "week" ? addDays(V.date, 7 * n) : addMonths(V.date, V.range === "month" ? n : 12 * n); rerender(); },
+      finNow: () => { finView().date = dkey(); rerender(); },
+      finExport: () => finExport(),
+      finCopy: async () => { const txt = finText(); try { await navigator.clipboard.writeText(txt); toast(L("📋 คัดลอกสรุปแล้ว", "📋 Summary copied")); } catch { prompt(L("คัดลอกข้อความนี้", "Copy this text"), txt); } },
+      delTxn: d => {
+        if (!confirm(L("ลบรายการนี้?", "Delete this entry?"))) return;
+        if (d.id.includes("~")) { const [rid, f] = d.id.split("~"), r = P().expenses.find(x => x.id === rid); if (r) { r[f] = 0; if (!expSum(r)) P().expenses = P().expenses.filter(x => x !== r); } }
+        else P().txns = (P().txns || []).filter(x => x.id !== d.id);
+        rerender();
+      },
+      taxMode: d => { TAXY().mode = d.v; rerender(); },
+      taxFromFin: () => {
+        const T = TAXY(), y = String(T.year), IC = ICAT(), sums = {};
+        allTxns().filter(x => x.type === "inc" && (x.date || "").startsWith(y)).forEach(x => { const s = (IC[x.cat] || IC.other)[3]; sums[s] = (sums[s] || 0) + x.amount; });
+        if (!Object.keys(sums).length) { toast(L(`ยังไม่มีรายรับที่บันทึกในปี ${yearLabel(T.year)} — บันทึกที่หมวด F ก่อน`, `No income logged for ${T.year} yet — log it in section F first`)); return; }
+        if (!confirm(L("แทนที่ช่องเงินได้ด้วยยอดรวมจากบันทึกรายรับ?", "Replace income fields with totals from your income log?"))) return;
+        [1, 2, 3, 4, 5, 6, 7, 8].forEach(k => { if (sums[k] !== undefined) T.p["i" + k] = Math.round(sums[k] * 100) / 100; });
+        rerender(); toast(L("📥 เติมเงินได้จากบันทึกการเงินแล้ว", "📥 Income filled from your finance log"));
+      },
+      taxDue: d => {
+        if (d.d < dkey()) { toast(L("กำหนดนี้ผ่านไปแล้ว", "This deadline has passed")); return; }
+        if (state.tasks.some(t => t.date === d.d && t.title === "🧾 " + d.t)) { toast(L("มีในคิวแล้ว", "Already queued")); return; }
+        state.tasks.push({ id: uid(), title: "🧾 " + d.t, date: d.d, start: 9 * 60, dur: 60, projectId: null, priority: "main", done: false, bookmark: "" });
+        rerender(); toast(L(`📅 เพิ่มกำหนดยื่นภาษีเข้าคิว ${fmtDate(d.d)} 09:00 แล้ว`, `📅 Filing deadline queued for ${fmtDate(d.d)} 09:00`));
+      }
+    });
+    Object.assign(FORMS, {
+      addRoutine: fd => { const r = makeRoutine(fd); if (!r) return; rerender(); routineToast(r); },
+      toRoutine: fd => { const r = makeRoutine(fd); if (!r) return; $("#routine-dlg").close(); rerender(); routineToast(r); },
+      addTxn: fd => {
+        const amount = Number(fd.amount); if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
+        const type = fd.type === "inc" ? "inc" : "exp";
+        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: fd.date || dkey(), type, cat: fd.cat || "other", amount, note: (fd.note || "").trim() });
+        finView().kind = type; rerender();
+        toast(type === "inc" ? L(`➕ บันทึกรายรับ ${money(amount)} ฿ แล้ว`, `➕ Income ${money(amount)} ฿ saved`) : L(`➖ บันทึกรายจ่าย ${money(amount)} ฿ แล้ว`, `➖ Expense ${money(amount)} ฿ saved`));
+        setTimeout(() => $("#txn-amount")?.focus(), 40);
+      }
+    });
+
     /* ===================== Event delegation ===================== */
     document.addEventListener("click", e => {
       const el = e.target.closest("[data-act]"); if (!el) return;
@@ -4987,6 +5704,7 @@
       if (el.dataset.num || el.type === "number" || el.type === "range") v = v === "" ? 0 : Number(v);
       setPath(state, el.dataset.bind, v); save();
       if (el.dataset.live === "tiny") $("#tiny-formula").innerHTML = tinyText();
+      else if (el.dataset.live && LIVE[el.dataset.live]) LIVE[el.dataset.live]();
     });
     document.addEventListener("change", e => {
       const el = e.target;
