@@ -2145,6 +2145,140 @@
       justify-content: center;
       flex-wrap: wrap
     }
+
+    /* ---------- Drag & drop sorting (touch friendly) ---------- */
+    .drag-handle {
+      flex: none;
+      width: 26px;
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background .2s, color .2s
+    }
+    .drag-handle:hover { background: var(--surface-3); color: var(--text) }
+    .drag-handle:active { cursor: grabbing }
+    .dragging {
+      position: relative;
+      z-index: 5;
+      opacity: .95;
+      outline: 2px solid var(--amber);
+      box-shadow: 0 16px 34px -12px rgba(0, 0, 0, .55);
+      transform: scale(1.015)
+    }
+    body.is-dragging, body.is-dragging * { user-select: none; -webkit-user-select: none; cursor: grabbing }
+    .sort-hint { font-size: .74rem; color: var(--muted); display: flex; align-items: center; gap: 4px }
+
+    /* ---------- Project top row, steps & activities ---------- */
+    .proj-top { display: flex; align-items: center }
+    .proj-top .drag-handle { margin-left: 10px }
+    .proj-top .proj-head { flex: 1; min-width: 0 }
+    .step { flex-wrap: wrap }
+    .step-row { display: flex; align-items: center; gap: 6px; width: 100% }
+    .step-title { flex: 1; min-width: 0; text-align: left; display: grid; gap: 2px; padding: 2px 0 }
+    .step-title span { font-weight: 600; word-break: break-word }
+    .step-title small { font-size: .74rem }
+    .step-detail {
+      width: 100%;
+      display: grid;
+      gap: 12px;
+      margin-top: 8px;
+      padding: 12px;
+      border-radius: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      animation: fadeUp .25s ease
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+    .span-btns { display: flex; gap: 6px; flex-wrap: wrap }
+    .span-btns .btn { min-height: 32px; padding: 4px 10px; font-size: .76rem }
+    .acts { list-style: none; display: grid; gap: 6px }
+    .act { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 12px; background: var(--surface-2) }
+    .act.done .act-title { text-decoration: line-through; opacity: .6 }
+    .act .check { width: 26px; height: 26px; margin: 0; border-radius: 8px }
+    .act-title { font-weight: 600; font-size: .88rem; word-break: break-word }
+    .act-form { display: grid; gap: 8px; grid-template-columns: 2fr 1fr 1fr 1fr }
+    .act-form .full { grid-column: 1/-1 }
+    .mini-check { display: flex; align-items: center; gap: 8px; font-size: .82rem; color: var(--muted) }
+    .mini-check input { width: 18px; height: 18px; accent-color: var(--amber) }
+    .g-panel { padding: 12px 14px; border-radius: 14px; background: linear-gradient(135deg, rgba(56, 189, 248, .08), rgba(167, 139, 250, .08)); border: 1px solid rgba(56, 189, 248, .25) }
+    .g-status { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: var(--surface-2) }
+    .g-status.on { color: var(--emerald); background: rgba(16, 185, 129, .12) }
+    .link-ico { width: 18px; height: 18px; flex: none }
+
+    /* ---------- Gantt timeline (months → years) ---------- */
+    .gantt-wrap { overflow-x: auto; border-radius: 16px; border: 1px solid var(--border); background: var(--surface-2); -webkit-overflow-scrolling: touch }
+    .gantt { position: relative; min-width: max-content }
+    .g-row { display: grid; grid-template-columns: var(--lw, 210px) var(--w); min-height: 40px; border-bottom: 1px solid var(--border) }
+    .g-row:last-child { border-bottom: 0 }
+    .g-label { position: sticky; left: 0; z-index: 2; background: var(--surface-2); padding: 8px 10px; font-size: .82rem; display: flex; align-items: center; gap: 6px; border-right: 1px solid var(--border); min-width: 0 }
+    .g-label span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+    .g-row.g-proj .g-label { font-weight: 800; color: var(--violet) }
+    .g-head { position: sticky; top: 0; z-index: 3; background: var(--surface) }
+    .g-head .g-label { background: var(--surface); font-weight: 700 }
+    .g-units { display: flex }
+    .g-unit { flex: none; font-size: .72rem; font-weight: 700; color: var(--muted); padding: 10px 6px; border-left: 1px solid var(--border); text-align: center; white-space: nowrap }
+    .g-track { position: relative; background-image: repeating-linear-gradient(90deg, transparent 0 calc(var(--cw) - 1px), var(--border) calc(var(--cw) - 1px) var(--cw)) }
+    .g-bar { position: absolute; top: 9px; height: 22px; border-radius: 8px; min-width: 8px; background: var(--bc); color: #0b1220; font-size: .7rem; font-weight: 800; padding: 0 8px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; cursor: pointer; box-shadow: 0 6px 14px -8px var(--bc); transition: transform .15s }
+    .g-bar:hover { transform: translateY(-1px) }
+    .g-proj .g-bar { top: 15px; height: 10px; padding: 0; background: linear-gradient(90deg, var(--violet), var(--sky)) }
+    .g-dot { position: absolute; top: 14px; width: 12px; height: 12px; transform: translateX(-6px) rotate(45deg); background: var(--amber); border: 2px solid var(--surface); border-radius: 2px; z-index: 1 }
+    .g-dot.done { background: var(--emerald) }
+    .g-today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--rose); z-index: 1; pointer-events: none }
+    .g-today::after { content: attr(data-l); position: absolute; top: 2px; left: 4px; font-size: .62rem; font-weight: 800; color: var(--rose); white-space: nowrap }
+
+    /* ---------- Days off ---------- */
+    .wd-pick { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 10px }
+    .wd-pick button { min-height: 42px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); font-weight: 700; color: var(--muted); transition: all .2s }
+    .wd-pick button.on { background: linear-gradient(135deg, var(--emerald), #059669); color: #04150f; border-color: transparent; box-shadow: 0 8px 18px -10px var(--emerald) }
+    .cockpit.offday { border-color: rgba(16, 185, 129, .45); background: radial-gradient(120% 120% at 100% 0%, rgba(16, 185, 129, .18), transparent 60%), radial-gradient(90% 90% at 0% 100%, rgba(56, 189, 248, .14), transparent 60%), var(--surface) }
+    .digest-box { margin-top: 14px; padding: 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border) }
+    .digest-preview { margin-top: 8px; font-size: .8rem; line-height: 1.55; white-space: pre-line; color: var(--muted) }
+
+    /* ---------- Report ---------- */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px }
+    .kpi { padding: 14px; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--border) }
+    .kpi b { display: block; font-family: 'Inter'; font-size: 1.5rem; font-weight: 800 }
+    .kpi span { font-size: .78rem; color: var(--muted) }
+    .hbar { display: grid; grid-template-columns: minmax(90px, 1.2fr) 3fr auto; gap: 10px; align-items: center; font-size: .84rem; padding: 6px 0 }
+    .hbar .bar { height: 10px }
+    .rep-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+    .chart-wrap svg { display: block; width: 100%; height: auto }
+
+    /* ---------- Planner guide ---------- */
+    .pg-guide { padding: 0; overflow: hidden; margin-bottom: 14px; border-color: rgba(245, 158, 11, .3) }
+    .pg-guide summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; align-items: center; gap: 8px; font-weight: 800; background: linear-gradient(90deg, rgba(245, 158, 11, .12), transparent) }
+    .pg-guide summary::-webkit-details-marker { display: none }
+    .pg-guide summary::after { content: "▾"; margin-left: auto; color: var(--muted); transition: transform .2s }
+    .pg-guide[open] summary::after { transform: rotate(180deg) }
+    .pg-body { padding: 4px 16px 16px; display: grid; gap: 14px }
+    .pg-secs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px }
+    .pg-sec { text-align: left; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--border); font-size: .8rem; line-height: 1.45; transition: all .2s }
+    .pg-sec b { display: block; font-size: .9rem; margin-bottom: 2px }
+    .pg-sec.on { border-color: var(--amber); background: rgba(245, 158, 11, .1) }
+    .pg-sec:hover { transform: translateY(-1px) }
+    .pg-body ol, .pg-body ul { padding-left: 20px; display: grid; gap: 6px; font-size: .86rem; line-height: 1.55 }
+    .pg-ex li { list-style: none; margin-left: -20px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border-left: 3px solid var(--emerald) }
+
+    .link-ico svg { width: 100%; height: 100%; display: block }
+    .btn .link-ico { margin-right: 6px; display: inline-block; vertical-align: -3px }
+    .bottom-nav .nav-btn { min-width: 0; white-space: nowrap; letter-spacing: -.01em }
+    @media (max-width: 400px) { .bottom-nav .nav-btn { font-size: .6rem } .bottom-nav .nav-btn .ico { font-size: 1.2rem } }
+    .wd-pick button[aria-pressed=true] { color: #04150f }
+    .g-label small { flex: none; font-size: .7rem }
+    @media (max-width: 640px) {
+      .act-form { grid-template-columns: 1fr 1fr }
+      .act-form input[name=title] { grid-column: 1/-1 }
+      .g-row { --lw: 132px }
+      .rep-filters { grid-template-columns: 1fr }
+      .hbar { grid-template-columns: 80px 1fr auto }
+    }
   </style>
 </head>
 
@@ -2174,6 +2308,7 @@
         <section class="view" id="view-queue" hidden></section>
         <section class="view" id="view-projects" hidden></section>
         <section class="view" id="view-planner" hidden></section>
+        <section class="view" id="view-report" hidden></section>
         <section class="view" id="view-guide" hidden></section>
       </main>
     </div>
@@ -2276,7 +2411,11 @@
       queueDate: null, plannerDate: null, openProject: null, restTab: "break",
       ideas: [], tasks: [], routines: [], projects: [],
       focus: { interrupt: null, log: [], lastReflow: null, rest: null, sleep: null },
-      alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {} },
+      alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {}, digest: { on: true, mode: "evening", time: "17:00" } },
+      offDays: { weekdays: [], dates: {}, work: {} },
+      gcal: { calendarId: "primary", lastSync: 0 },
+      mapMode: "flow", mapProject: "", ganttZoom: "month", openStep: null, plannerGuideOpen: true,
+      report: { range: "month", date: null, project: "all", type: "all" },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
@@ -2290,7 +2429,9 @@
       const P = o.planner || {};
       return {
         ...d, ...o,
-        sub: { ...d.sub, ...o.sub }, focus: { ...d.focus, ...o.focus }, alerts: { ...d.alerts, ...o.alerts },
+        sub: { ...d.sub, ...o.sub }, focus: { ...d.focus, ...o.focus },
+        alerts: { ...d.alerts, ...o.alerts, digest: { ...d.alerts.digest, ...(o.alerts?.digest || {}) } },
+        offDays: { ...d.offDays, ...o.offDays }, gcal: { ...d.gcal, ...o.gcal }, report: { ...d.report, ...o.report },
         planner: { ...d.planner, ...P, tiny: { ...d.planner.tiny, ...P.tiny }, finance: { ...d.planner.finance, ...P.finance }, sleeps: P.sleeps || [] }
       };
     }
@@ -2525,7 +2666,8 @@
       const n = nowMin(), today = dkey(), F = state.alerts.fired, lead = Number(state.alerts.lead) || 0;
       Object.keys(F).forEach(k => { if (!k.startsWith(today)) delete F[k]; });
       let changed = false;
-      for (const t of tasksOn(today)) {
+      if (checkDigest(n, today, F)) changed = true;
+      for (const t of (isOffDay(today) ? [] : tasksOn(today))) {
         if (t.done) continue;
         const ks = `${today}:${t.id}:${t.start}:s`, ke = `${today}:${t.id}:${t.start + t.dur}:e`;
         if (n >= t.start - lead && n < t.start + 2 && !F[ks]) { F[ks] = 1; changed = true; fireAlert(lead ? L(`⏰ อีก ${lead} นาที เริ่มงาน`, `⏰ Starting in ${lead} min`) : L("⚡ ถึงเวลาเริ่มงาน", "⚡ Time to start"), `${fmt(t.start)} ${t.title}`); }
@@ -2563,7 +2705,7 @@
     <div class="pay-badges"><span class="chip">💳 ${L("บัตรเครดิต/เดบิต", "Credit/Debit card")}</span><span class="chip">📱 QR PromptPay</span><span class="chip">🔒 Stripe</span></div>
     ${FIREBASE_READY ? "" : `<p class="muted sm">${L("⚙️ โหมดสาธิต: ยังไม่ได้ตั้งค่า Firebase (ดู SETUP.md)", "⚙️ Demo mode: Firebase not configured (see SETUP.md)")}</p>`}
   </div>`;
-      const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["guide", "📖", L("วิธีใช้", "Guide")]];
+      const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
       $("#bottom-nav").setAttribute("aria-label", L("เมนูหลัก", "Main menu"));
       $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo">⚡</span><span>FlowRecover</span></div>` +
         tabs.map(([k, i, l]) => `<button class="nav-btn ${state.tab === k ? "on" : ""}" data-act="tab" data-tab="${k}" id="nav-${k}"><span class="ico">${i}</span>${l}</button>`).join("");
@@ -2611,18 +2753,19 @@
       el.innerHTML = `<div class="banner-row"><span class="banner-text">🎁 ${L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span>${proBtn("banner-pay")}</div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
     }
     function renderView() {
-      ["focus", "queue", "projects", "planner", "guide"].forEach(t => {
+      ["focus", "queue", "projects", "planner", "report", "guide"].forEach(t => {
         const v = $(`#view-${t}`), on = state.tab === t, nb = $(`#nav-${t}`);
+        if (!v || !nb) return;
         v.hidden = !on; nb.classList.toggle("on", on);
         if (on) nb.setAttribute("aria-current", "page"); else nb.removeAttribute("aria-current");
       });
-      ({ focus: renderFocus, queue: renderQueue, projects: renderProjects, planner: renderPlanner, guide: renderGuide })[state.tab]();
+      ({ focus: renderFocus, queue: renderQueue, projects: renderProjects, planner: renderPlanner, report: renderReport, guide: renderGuide })[state.tab]?.();
     }
 
     /* ---------- ⚡ Focus ---------- */
     function renderFocus() {
       const I = state.focus.interrupt, Rst = state.focus.rest, Slp = state.focus.sleep, cur = currentTask(), nxt = nextTask(), today = dkey();
-      lastCockpitKey = I ? "int" : Slp ? "sleep" : Rst ? "rest" : cur ? cur.id : "none:" + (nxt?.id || "");
+      lastCockpitKey = cockpitKey();
       let cockpit;
       if (I) {
         const t = state.tasks.find(x => x.id === I.taskId);
@@ -2683,6 +2826,8 @@
       </div>
       <button class="btn btn-amber btn-xl" data-act="endRest" id="btn-end-rest" style="width:100%">⚡ ${L("ชาร์จพลังเต็มที่แล้ว (พร้อมลุยงานต่อ)", "Fully recharged! (Resume work)")}</button>
     </article>`;
+      } else if (isOffDay(today)) {
+        cockpit = offDayCockpit(today);
       } else if (cur) {
         const p = proj(cur.projectId);
         cockpit = `<article class="card cockpit" id="cockpit">
@@ -2751,9 +2896,10 @@
       </div>
       <div class="grid">
         <article class="card"><div class="card-head"><h3>📋 ${L("คิวที่เหลือวันนี้", "Remaining today")}</h3><button class="btn btn-sm" data-act="tab" data-tab="queue" id="btn-focus-queue">${L("ดูทั้งหมด", "View all")}</button></div>
-          ${remaining.length ? `<ul class="tasks">${remaining.slice(0, 5).map(taskRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานค้าง 🎉", "All clear 🎉")}</p>`}</article>
+          ${remaining.length ? `<p class="sort-hint">↕️ ${L("ลากที่ ⠿ เพื่อสลับลำดับคิว", "Drag ⠿ to reorder")}</p><ul class="tasks" data-sort="queue:${today}">${remaining.slice(0, 5).map(taskRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานค้าง 🎉", "All clear 🎉")}</p>`}</article>
         <article class="card"><h3>🔁 ${L("กิจวัตรวันนี้", "Today's routines")}</h3>
           ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีกิจวัตรที่ถึงรอบวันนี้", "No routines due today")}</p>`}</article>
+        ${offDaysCard()}
         ${alertsCard()}
       </div>
     </div>`;
@@ -2766,7 +2912,8 @@
     <label class="switch"><span>📳 ${L("สั่นมือถือ", "Phone vibration")}</span><input type="checkbox" id="sw-vibrate" data-bind="alerts.vibrate" ${A.vibrate ? "checked" : ""}></label>
     <label class="switch"><span>🔔 ${L("แจ้งเตือนเบราว์เซอร์", "Browser notifications")}</span><input type="checkbox" id="sw-notify" data-bind="alerts.notify" ${A.notify ? "checked" : ""}></label>
     <label class="field" style="margin-top:12px"><span>${L("เตือนล่วงหน้าก่อนเริ่มงาน", "Remind me before a task starts")}</span>
-      <select class="input" id="sel-lead" data-bind="alerts.lead" data-num="1">${[0, 5, 10, 15].map(v => `<option value="${v}" ${Number(A.lead) === v ? "selected" : ""}>${v ? minLabel(v) : L("ตรงเวลา", "On time")}</option>`).join("")}</select></label>
+      <select class="input" id="sel-lead" data-bind="alerts.lead" data-num="1">${[0, 5, 10, 15, 30, 60].map(v => `<option value="${v}" ${Number(A.lead) === v ? "selected" : ""}>${v ? minLabel(v) : L("ตรงเวลา", "On time")}</option>`).join("")}</select></label>
+    ${digestBox()}
     <label class="field" style="margin-top:12px"><span>📲 ${L("ntfy.sh Topic ส่วนตัว (ส่งเข้าสมาร์ทวอทช์)", "Private ntfy.sh topic (pushes to your smartwatch)")}</span>
       <div class="row"><input class="input grow" id="ntfy-topic" data-bind="alerts.topic" value="${esc(A.topic)}" placeholder="flowrecover-ab12x" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"><button class="btn" data-act="randTopic" id="btn-rand-topic" title="${L("สุ่มชื่อ", "Random name")}">🎲</button></div></label>
     <div class="row" style="margin-top:12px"><button class="btn btn-emerald grow" data-act="testNtfy" id="btn-test-ntfy">📲 ${L("ทดสอบสั่นเข้าข้อมือ", "Test wrist buzz")}</button><button class="btn grow" data-act="testAlert" id="btn-test-alert">🔔 ${L("ทดสอบบนเครื่องนี้", "Test on this device")}</button></div>
@@ -2824,11 +2971,12 @@
       const over = !t.done && t.start + t.dur > DAY_END;
       const isSleep = t.isSleep || /นอน|sleep|bedtime|เข้านอน/i.test(t.title);
       const isRest = !isSleep && (t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title));
-      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}">
+      return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}" data-sort-id="${t.id}">
+    <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
     <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
     <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span></div>
       <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
-      <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${prioChip(t)}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
+      <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
     <div class="task-actions"><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
   </li>`;
@@ -2853,6 +3001,11 @@
           <button class="${date === today ? "on" : ""}" data-act="qdate" data-v="${today}" id="qd-today">${L("วันนี้", "Today")}</button>
           <button class="${date === addDays(today, 1) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 1)}" id="qd-tomorrow">${L("พรุ่งนี้", "Tomorrow")}</button>
           <button class="${date === addDays(today, 2) ? "on" : ""}" data-act="qdate" data-v="${addDays(today, 2)}" id="qd-after">${fmtDate(addDays(today, 2))}</button>
+        </div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+          <label class="row" style="gap:6px;align-items:center"><span class="muted sm">📅 ${L("เลือกวัน", "Pick date")}</span><input class="input" type="date" id="q-date-pick" value="${date}" data-act-change="queueDate" style="width:auto"></label>
+          ${isOffDay(date) ? `<span class="chip chip-emerald">🏖️ ${L("วันหยุด", "Day off")}</span>` : ""}
+          <button class="btn btn-sm" data-act="gcalSyncDay" data-date="${date}" id="btn-gcal-day" style="margin-left:auto">📆 ${L("ส่งคิววันนี้เข้า Google Calendar", "Push this day to Google Calendar")}</button>
         </div>
         <article class="card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
@@ -2879,7 +3032,7 @@
             <button class="btn btn-amber full" type="submit" id="btn-add-task">＋ ${L("เพิ่มเข้าคิว", "Add to queue")}</button>
           </form></article>
         <article class="card"><div class="card-head"><h3>🗓️ ${fmtDate(date)}</h3><span class="chip">${L(`${list.length} งาน • เหลือ ${Math.floor(totalMin / 60)} ชม. ${totalMin % 60} น.`, `${list.length} tasks • ${Math.floor(totalMin / 60)}h ${totalMin % 60}m left`)}</span></div>
-          ${list.length ? `<ul class="tasks">${list.map(taskRow).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีงานในวันนี้", "No tasks for this day yet")}</p>`}
+          ${list.length ? `<p class="sort-hint">↕️ ${L("ใช้นิ้วลากที่ ⠿ เพื่อจัดคิวก่อน-หลัง (เวลาจะจัดให้อัตโนมัติ)", "Drag ⠿ to reorder (times re-slot automatically)")}</p><ul class="tasks" data-sort="queue:${date}">${list.map(taskRow).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีงานในวันนี้", "No tasks for this day yet")}</p>`}
           ${secLeft.length ? `<button class="btn" style="width:100%;margin-top:12px" data-act="moveSecondary" data-date="${date}" id="btn-q-move-secondary">📦 ${L(`ย้ายงานรอง ${secLeft.length} งานไปวันถัดไป`, `Move ${secLeft.length} secondary tasks to the next day`)}</button>` : ""}
         </article>
       </div>
@@ -2904,33 +3057,41 @@
     function renderProjects() {
       const sub = state.projSub;
       $("#view-projects").innerHTML = `
-    <div class="view-head"><div><h1>🗂️ ${L("โปรเจค", "Projects")}</h1><p>${L("ความคืบหน้า • ผู้ประสานงาน • ไฟล์ Drive • แชร์ให้ทีม", "Progress • coordinators • Drive files • team sharing")}</p></div></div>
-    <div class="seg" style="margin-bottom:14px"><button class="${sub === "list" ? "on" : ""}" data-act="projSub" data-v="list" id="ps-list">🗂️ ${L("รายการโปรเจค", "Project list")}</button><button class="${sub === "map" ? "on" : ""}" data-act="projSub" data-v="map" id="ps-map">🕸️ ${L("แผนภูมิความเชื่อมโยง", "Relationship map")}</button></div>
-    ${sub === "map" ? mapView() : projectList()}`;
+    <div class="view-head"><div><h1>🗂️ ${L("โปรเจค", "Projects")}</h1><p>${L("ขั้นตอน • กิจกรรมย่อย • Timeline หลายเดือน–หลายปี • Google Calendar & Drive", "Steps • activities • multi-month to multi-year timeline • Google Calendar & Drive")}</p></div></div>
+    <div class="seg" style="margin-bottom:14px">
+      <button class="${sub === "list" ? "on" : ""}" data-act="projSub" data-v="list" id="ps-list">🗂️ ${L("รายการ", "List")}</button>
+      <button class="${sub === "gantt" ? "on" : ""}" data-act="projSub" data-v="gantt" id="ps-gantt">📆 Timeline</button>
+      <button class="${sub === "map" ? "on" : ""}" data-act="projSub" data-v="map" id="ps-map">🕸️ ${L("แผนภูมิ", "Map")}</button>
+    </div>
+    ${sub === "map" ? mapView() : sub === "gantt" ? ganttView() : projectList()}`;
     }
     function projectList() {
       return `<div class="grid">
+    ${googlePanel()}
     <article class="card"><h3>＋ ${L("สร้างโปรเจคใหม่", "New project")}</h3>
       <form class="form-grid" data-form="addProject" id="form-add-project" autocomplete="off">
         <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" name="title" id="proj-title" required placeholder="${L("เช่น แคมเปญปีใหม่", "e.g. New Year campaign")}"></label>
         <label class="field"><span>${L("เป้าหมายรายเดือนที่เกี่ยวข้อง", "Related monthly goal")}</span><input class="input" name="goal" id="proj-goal" placeholder="${L("เช่น เพิ่มยอดขาย 20%", "e.g. Grow sales by 20%")}"></label>
         <button class="btn btn-amber full" type="submit" id="btn-add-project">＋ ${L("สร้างโปรเจค", "Create project")}</button>
       </form></article>
-    ${state.projects.length ? state.projects.map(projectCard).join("") : `<p class="empty">${L("ยังไม่มีโปรเจค", "No projects yet")}</p>`}
+    ${state.projects.length ? `<p class="sort-hint">↕️ ${L("ใช้นิ้วลาก ⠿ เพื่อจัดลำดับความสำคัญของโปรเจค", "Drag ⠿ to prioritise projects")}</p><div class="grid" data-sort="projects">${state.projects.map(projectCard).join("")}</div>` : `<p class="empty">${L("ยังไม่มีโปรเจค", "No projects yet")}</p>`}
   </div>`;
     }
     function projectCard(p) {
-      const i = state.projects.indexOf(p), open = state.openProject === p.id, pct = prog(p);
+      const i = state.projects.indexOf(p), open = state.openProject === p.id, pct = prog(p), today = dkey();
       const cnt = s => p.steps.filter(x => x.status === s).length;
       const tasks = state.tasks.filter(t => t.projectId === p.id).sort((a, b) => (a.date + fmt(a.start)).localeCompare(b.date + fmt(b.start)));
-      return `<article class="card proj">
+      const range = projRange(p);
+      const durOpts = [15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("");
+      return `<article class="card proj" data-sort-id="${p.id}">
+    <div class="proj-top"><span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
     <button class="proj-head" data-act="openProject" data-id="${p.id}" id="ph-${p.id}" aria-expanded="${open}">
       <div class="ring" style="--p:${pct}"><span>${pct}%</span></div>
       <div class="grow" style="min-width:0"><b style="display:block">${esc(p.title)}</b>
         <span class="muted sm">🎯 ${esc(p.monthlyGoal || L("ยังไม่ระบุเป้าหมาย", "No goal set"))}</span>
-        <div class="chips" style="margin-top:6px"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span></div></div>
+        <div class="chips" style="margin-top:6px"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span>${range ? `<span class="chip chip-violet">📆 ${fmtShort(range[0])} → ${fmtShort(range[1])}</span>` : ""}</div></div>
       <span class="muted">${open ? "▲" : "▼"}</span>
-    </button>
+    </button></div>
     ${open ? `<div class="proj-body">
       <div class="form-grid">
         <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" id="pt-${p.id}" data-bind="projects.${i}.title" value="${esc(p.title)}"></label>
@@ -2940,19 +3101,41 @@
       </div>
       <div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${L("ความคืบหน้า", "Progress")}</b><b class="mono emerald">${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
         ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">${L("คำนวณอัตโนมัติจากขั้นตอนที่ Done", "Auto-calculated from Done steps")}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
-      <div><b>🧭 ${L("Timeline ขั้นตอนการทำงาน", "Workflow timeline")}</b><p class="muted sm">${L("แตะป้ายสถานะเพื่อเปลี่ยน Todo → Doing → Waiting → Done", "Tap a status to cycle Todo → Doing → Waiting → Done")}</p>
-        <ul class="steps" style="margin-top:10px">${p.steps.map(s => `<li class="step" style="--sc:${STEP[s.status][1]}"><span class="grow">${esc(s.title)}</span><button class="st-btn" data-act="stepCycle" data-pid="${p.id}" data-sid="${s.id}" id="st-${s.id}">${STEP[s.status][0]}</button><button class="icon-btn" data-act="delStep" data-pid="${p.id}" data-sid="${s.id}" id="sd-${s.id}" aria-label="${L("ลบขั้นตอน", "Delete step")}">✕</button></li>`).join("")}</ul>
-        <form class="row" data-form="addStep" data-pid="${p.id}" id="fs-${p.id}" style="margin-top:8px" autocomplete="off"><input class="input grow" name="title" required placeholder="${L("เพิ่มขั้นตอนใหม่…", "Add a step…")}" id="fsi-${p.id}" style="flex:1;min-width:0"><button class="btn" type="submit" id="fsb-${p.id}">＋</button></form></div>
-      <div><b>📁 ${L("ไฟล์แนบ Google Drive", "Google Drive files")}</b>
-        ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>📄<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ", "No files attached")}</p>`}
-        <form class="form-grid" data-form="addLink" data-pid="${p.id}" id="fl-${p.id}" style="margin-top:8px" autocomplete="off"><input class="input" name="label" placeholder="${L("ชื่อไฟล์", "File name")}" id="fll-${p.id}"><input class="input" name="url" type="url" required placeholder="https://drive.google.com/..." id="flu-${p.id}"><button class="btn full" type="submit" id="flb-${p.id}">📎 ${L("แนบลิงก์", "Attach link")}</button></form></div>
-      <div><b>📋 ${L("งานที่ผูกกับโปรเจคนี้", "Linked tasks")} (${tasks.length})</b>
-        ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span></div></li>`).join("")}</ul>` : `<p class="muted sm">${L("เพิ่มงานจากหน้า 📅 คิวงาน แล้วเลือกโปรเจคนี้", "Add tasks from 📅 Queue and pick this project")}</p>`}</div>
+      <div><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>🧭 ${L("Timeline ขั้นตอนการทำงาน", "Workflow timeline")}</b>
+          <div class="row" style="gap:6px"><button class="btn btn-sm" data-act="projSub" data-v="gantt" id="pgantt-${p.id}">📆 Gantt</button><button class="btn btn-sm" data-act="gcalSyncProject" data-id="${p.id}" id="gsp-${p.id}">📆 ${L("ส่งทั้งโปรเจคเข้า Calendar", "Push project to Calendar")}</button></div></div>
+        <p class="muted sm" style="margin-top:4px">${L("แตะชื่อขั้นตอน → กำหนดวันเริ่ม–สิ้นสุด (วางแผนได้หลายเดือนถึงหลายปี) แยกกิจกรรมย่อย ส่งเข้าคิวงาน/Google Calendar • แตะป้ายสถานะเพื่อเปลี่ยน • ลาก ⠿ จัดลำดับ", "Tap a step → set start/end (months to years), break into activities, queue them or push to Google Calendar • tap the status to cycle • drag ⠿ to reorder")}</p>
+        <ul class="steps" data-sort="steps:${p.id}" style="margin-top:10px">${p.steps.map(s => stepItem(p, s)).join("")}</ul>
+        <form class="form-grid" data-form="addStep" data-pid="${p.id}" id="fs-${p.id}" style="margin-top:8px" autocomplete="off">
+          <label class="field full"><span>＋ ${L("ขั้นตอนใหม่", "New step")}</span><input class="input" name="title" required placeholder="${L("เช่น ออกแบบ / ผลิต / เปิดตัว…", "e.g. Design / Build / Launch…")}" id="fsi-${p.id}"></label>
+          <label class="field"><span>🚀 ${L("วันเริ่ม (ไม่บังคับ)", "Start (optional)")}</span><input class="input" type="date" name="start" id="fss-${p.id}"></label>
+          <label class="field"><span>🏁 ${L("วันสิ้นสุด (ไม่บังคับ)", "End (optional)")}</span><input class="input" type="date" name="end" id="fse-${p.id}"></label>
+          <button class="btn full" type="submit" id="fsb-${p.id}">＋ ${L("เพิ่มขั้นตอน", "Add step")}</button>
+        </form></div>
+      <div><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>📁 ${L("ไฟล์แนบ Google Drive", "Google Drive files")}</b>
+          <button class="btn btn-sm" data-act="drivePick" data-pid="${p.id}" id="dp-${p.id}"><span class="link-ico">${DRIVE_SVG}</span>${L("เลือกไฟล์จาก Google Drive", "Pick from Google Drive")}</button></div>
+        ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>${linkIcon(l)}<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ — เลือกจาก Drive หรือคัดลอกลิงก์มาวาง", "No files yet — pick from Drive or paste a link")}</p>`}
+        <form class="form-grid" data-form="addLink" data-pid="${p.id}" id="fl-${p.id}" style="margin-top:8px" autocomplete="off">
+          <input class="input" name="label" placeholder="${L("ชื่อไฟล์ (เว้นว่างได้ ตั้งชื่อให้อัตโนมัติ)", "File name (optional, auto)")}" id="fll-${p.id}">
+          <div class="row" style="gap:6px"><input class="input grow" name="url" type="url" required placeholder="https://drive.google.com/..." id="flu-${p.id}" style="flex:1;min-width:0"><button class="btn" type="button" data-act="pasteLink" data-pid="${p.id}" id="flp-${p.id}" title="${L("วางลิงก์จากคลิปบอร์ด", "Paste from clipboard")}">📋</button></div>
+          <button class="btn full" type="submit" id="flb-${p.id}">📎 ${L("แนบลิงก์ที่คัดลอกมา", "Attach pasted link")}</button>
+        </form></div>
+      <div><b>📋 ${L("เพิ่มคิวงานจากโปรเจคนี้", "Queue a task from this project")}</b>
+        <form class="form-grid" data-form="projTask" data-pid="${p.id}" id="fpt-${p.id}" style="margin-top:8px" autocomplete="off">
+          <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" required id="fptt-${p.id}" placeholder="${L("เช่น ประชุมสรุปแบบกับลูกค้า", "e.g. Design review with client")}"></label>
+          <label class="field"><span>📅 ${L("วันที่", "Date")}</span><input class="input" type="date" name="date" value="${nextWorkDay(addDays(today, -1))}" id="fptd-${p.id}"></label>
+          <label class="field"><span>⏰ ${L("เวลาเริ่ม", "Start")}</span><input class="input" type="time" name="start" value="${suggestStart(today)}" id="fpts-${p.id}"></label>
+          <label class="field"><span>${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="fptu-${p.id}">${durOpts}</select></label>
+          <label class="field"><span>🧭 ${L("ขั้นตอน", "Step")}</span><select class="input" name="step" id="fptst-${p.id}"><option value="">—</option>${p.steps.map(s => `<option value="${s.id}">${esc(trunc(s.title, 40))}</option>`).join("")}</select></label>
+          <label class="field full"><span>${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="fptp-${p.id}"><option value="main">⭐ ${L("งานหลัก", "Main")}</option><option value="secondary">${L("งานรอง", "Secondary")}</option></select></label>
+          <button class="btn btn-amber full" type="submit" id="fptb-${p.id}">＋ ${L("เพิ่มเข้าคิวงาน", "Add to queue")}</button>
+        </form>
+        <b class="sm" style="display:block;margin-top:12px">${L("งานที่ผูกกับโปรเจคนี้", "Linked tasks")} (${tasks.length})</b>
+        ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span>${stepChip(t)}</div><button class="icon-btn" data-act="qdateGo" data-v="${t.date}" id="ptq-${t.id}" title="${L("ไปที่คิววันนั้น", "Open that day's queue")}" aria-label="${L("ไปที่คิววันนั้น", "Open that day's queue")}">📅</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีงาน — เพิ่มจากฟอร์มด้านบน หรือจากกิจกรรมย่อยของขั้นตอน", "No tasks yet — add one above or from a step's activities")}</p>`}</div>
       <div class="row"><button class="btn btn-emerald grow" data-act="share" data-id="${p.id}" id="share-${p.id}">🔗 ${L("สร้างลิงก์แชร์ความคืบหน้า", "Create progress share link")}</button><button class="btn btn-ghost" data-act="delProject" data-id="${p.id}" id="pdel-${p.id}">🗑️ ${L("ลบ", "Delete")}</button></div>
     </div>` : ""}
   </article>`;
     }
-    function mapView() {
+    function mapColumns() {
       if (!state.projects.length) return `<p class="empty">${L("สร้างโปรเจคก่อน เพื่อดูแผนภูมิความเชื่อมโยง", "Create a project first to see the relationship map")}</p>`;
       const goals = [], projs = [], tasks = [], coords = [], edges = [];
       state.projects.forEach(p => {
@@ -3085,6 +3268,7 @@
       const tabs = [["cg", "C/G", L("เป้าหมาย 5 มิติ & ตาราง 24 ชม.", "5-dimension goals & 24h plan")], ["hm", "H/M", L("นิสัย • อารมณ์ • Level Up", "Habits • Mood • Level Up")], ["f", "F", L("รายรับ-รายจ่าย & เป้าออม", "Income, expenses & savings")], ["wl", "W/L", L("ออกกำลังกาย • อาหาร • ทริป • หนังสือ/หนัง", "Workout • Meals • Trips • Books/Movies")]];
       const body = { cg: plannerCG, hm: plannerHM, f: plannerF, wl: plannerWL }[sec]();
       $("#view-planner").innerHTML = `
+    ${plannerGuide(sec)}
     <div class="planner-head"><div><h1 style="font-size:1.45rem">📔 Life Planner</h1><p class="muted sm">${tabs.find(t => t[0] === sec)[2]}</p></div>
       <div class="shortcuts" role="tablist" aria-label="Life Planner">${tabs.map(([k, l, d]) => `<button class="${sec === k ? "on" : ""}" data-act="psec" data-v="${k}" id="psec-${k}" title="${d}" role="tab" aria-selected="${sec === k}">${l}</button>`).join("")}</div></div>
     ${body}`;
@@ -3772,7 +3956,7 @@
         if (defer) {
           state.tasks.forEach(t => {
             if (t.date === today && !t.done && !t.isSleep) {
-              t.date = addDays(today, 1);
+              t.date = nextWorkDay(today);
               deferredCount++;
             }
           });
@@ -4002,6 +4186,794 @@
       P()[name].push(row); rerender(); toast(L("✅ บันทึกแล้ว", "✅ Saved"));
     }
 
+    /* =====================================================================
+       Extensions: days off • next-day digest • steps/activities • Gantt
+       • Flowchart / Mind map • Google Calendar & Drive • drag-sort • report
+       ===================================================================== */
+    const isOffDay = d => { const O = state.offDays || {}; if (!d || O.work?.[d]) return false; return !!(O.dates?.[d] || (O.weekdays || []).includes(parseD(d).getDay())); };
+    function nextWorkDay(d) { let x = addDays(d, 1); for (let i = 0; i < 90 && isOffDay(x); i++) x = addDays(x, 1); return x; }
+    function cockpitKey() {
+      const F = state.focus; if (F.interrupt) return "int"; if (F.sleep) return "sleep"; if (F.rest) return "rest";
+      const today = dkey(); if (isOffDay(today)) return "off:" + today;
+      const c = currentTask(); return c ? c.id : "none:" + (nextTask()?.id || "");
+    }
+    const yearLabel = y => LANG === "en" ? y : y + 543;
+    const fmtShort = k => { if (!k) return ""; const d = parseD(k); return `${d.getDate()} ${MONTHS[LANG][d.getMonth()]} ${String(yearLabel(d.getFullYear())).slice(-2)}`; };
+    const addMonths = (k, n) => { const d = parseD(k), day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + n); d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); return dkey(d); };
+    const STEP_HEX = { todo: "#94a3b8", doing: "#f59e0b", waiting: "#38bdf8", done: "#10b981" };
+    const PALETTE = ["#f59e0b", "#a78bfa", "#10b981", "#38bdf8", "#f472b6", "#fb7185", "#facc15", "#34d399"];
+    const DRIVE_SVG = `<svg viewBox="0 0 87.3 78" aria-hidden="true"><path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/><path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/><path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/><path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/><path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 28h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/></svg>`;
+    function findStep(pid, sid) { const p = proj(pid); return p ? [p, p.steps.find(s => s.id === sid) || null] : [null, null]; }
+    function findAct(pid, sid, aid) { const [p, s] = findStep(pid, sid); return [p, s, s?.activities?.find(a => a.id === aid) || null]; }
+    function stepChip(t) {
+      if (!t.stepId) return "";
+      const [, s] = findStep(t.projectId, t.stepId); if (!s) return "";
+      const a = t.actId ? (s.activities || []).find(x => x.id === t.actId) : null;
+      return `<span class="chip chip-sky">🧭 ${esc(trunc(a ? a.title : s.title, 22))}</span>`;
+    }
+    function projRange(p) {
+      const ds = [];
+      p.steps.forEach(s => { if (s.start) ds.push(s.start); if (s.end) ds.push(s.end); (s.activities || []).forEach(a => a.date && ds.push(a.date)); });
+      if (!ds.length) return null; ds.sort(); return [ds[0], ds.at(-1)];
+    }
+    const taskQueued = id => !!id && state.tasks.some(t => t.id === id);
+    function taskType(t) {
+      if (t.isSleep || /นอน|sleep|bedtime|เข้านอน/i.test(t.title)) return "sleep";
+      if (t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title)) return "break";
+      return t.priority === "secondary" ? "secondary" : "main";
+    }
+    const TYPES = () => ({ main: [L("⭐ งานหลัก", "⭐ Main"), "#f59e0b"], secondary: [L("📌 งานรอง", "📌 Secondary"), "#94a3b8"], break: [L("☕ พักผ่อน", "☕ Break"), "#10b981"], sleep: [L("🌙 นอนหลับ", "🌙 Sleep"), "#818cf8"] });
+
+    /* ---------- 🏖️ Days off ---------- */
+    function offDayCockpit(today) {
+      const left = tasksOn(today).filter(t => !t.done && !t.isSleep), nw = nextWorkDay(today);
+      return `<article class="card cockpit offday" id="cockpit">
+      <div class="cockpit-top"><span class="pill pill-emerald">🏖️ ${L("วันหยุดพักผ่อน", "Day off")}</span><span class="muted sm">${fmtDate(today)}</span></div>
+      <h2 class="cockpit-title">${L("วันนี้เป็นวันหยุดของคุณ — ไม่จำเป็นต้องทำงานทุกวัน 🌿", "Today is your day off — you don't have to work every day 🌿")}</h2>
+      <p class="muted">${L("ระบบจะไม่เตือนคิวงานในวันหยุด ใช้เวลานี้พักผ่อน อยู่กับครอบครัว หรือทำสิ่งที่ชอบ แล้วกลับมาลุยใหม่อย่างสดชื่น", "No task alerts today. Rest, spend time with people you love, and come back refreshed.")}</p>
+      ${left.length ? `<div class="bookmark-note sm">📦 ${L(`มี ${left.length} งานค้างอยู่ในคิววันนี้`, `${left.length} tasks are queued today`)}</div>
+      <button class="btn btn-emerald" data-act="moveOffDayTasks" data-date="${today}" id="btn-move-off">📦 ${L(`ย้ายไปวันทำงานถัดไป (${fmtDate(nw)})`, `Move to next work day (${fmtDate(nw)})`)}</button>` : ""}
+      <div class="row" style="gap:8px">
+        <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest">☕ ${L("พักผ่อน", "Break")}</button>
+        <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep">🌙 ${L("เข้านอน", "Sleep")}</button>
+      </div>
+      <button class="btn" data-act="workToday" data-date="${today}" id="btn-work-today">💼 ${L("วันนี้ขอทำงาน (ยกเว้นวันหยุดครั้งนี้)", "Work today (skip this day off)")}</button>
+    </article>`;
+    }
+    function offDaysCard() {
+      const O = state.offDays, today = dkey(), tm = addDays(today, 1);
+      const upcoming = []; for (let i = 0; i < 120 && upcoming.length < 10; i++) { const d = addDays(today, i); if (isOffDay(d)) upcoming.push(d); }
+      return `<article class="card" id="offdays-card"><h3>🏖️ ${L("วันหยุด / วันพัก", "Days off")}</h3>
+      <p class="muted sm">${L("เลือกวันที่ไม่ต้องทำงาน — ระบบจะไม่เตือนคิว และปุ่ม “ไปพรุ่งนี้” จะข้ามวันหยุดให้อัตโนมัติ", "Pick the days you don't work — no queue alerts, and “move to tomorrow” skips them automatically")}</p>
+      <p class="sm" style="margin-top:8px"><b>${L("หยุดประจำทุกสัปดาห์", "Every week")}</b></p>
+      <div class="wd-pick" role="group" aria-label="${L("วันหยุดประจำสัปดาห์", "Weekly days off")}">${[1, 2, 3, 4, 5, 6, 0].map(w => `<button class="${O.weekdays.includes(w) ? "on" : ""}" data-act="toggleWeekday" data-v="${w}" id="wd-${w}" aria-pressed="${O.weekdays.includes(w)}">${DAYS[LANG][w]}</button>`).join("")}</div>
+      <div class="row" style="gap:8px;margin-top:10px">
+        <button class="btn btn-sm grow ${isOffDay(today) ? "btn-emerald" : ""}" data-act="toggleOffDate" data-date="${today}" id="btn-off-today">${isOffDay(today) ? "✓ " : ""}${L("วันนี้หยุด", "Off today")}</button>
+        <button class="btn btn-sm grow ${isOffDay(tm) ? "btn-emerald" : ""}" data-act="toggleOffDate" data-date="${tm}" id="btn-off-tomorrow">${isOffDay(tm) ? "✓ " : ""}${L("พรุ่งนี้หยุด", "Off tomorrow")}</button>
+      </div>
+      <form class="row" data-form="addOffDate" id="form-off-date" style="gap:8px;margin-top:10px;align-items:end" autocomplete="off">
+        <label class="field" style="flex:1;min-width:0"><span>${L("ตั้งแต่", "From")}</span><input class="input" type="date" name="date" id="off-date" min="${today}" required></label>
+        <label class="field" style="flex:1;min-width:0"><span>${L("ถึง (ไม่บังคับ)", "To (optional)")}</span><input class="input" type="date" name="to" id="off-date-to" min="${today}"></label>
+        <button class="btn" type="submit" id="btn-add-off">＋</button>
+      </form>
+      <p class="muted sm" style="margin-top:4px">${L("เพิ่มวันหยุดพิเศษ วันลา หรือช่วงพักร้อนได้", "Add holidays, leave days or a vacation range")}</p>
+      ${upcoming.length ? `<div class="chips" style="margin-top:8px">${upcoming.map(d => `<span class="chip chip-emerald">🏖️ ${fmtDate(d)} <button class="link sm" data-act="toggleOffDate" data-date="${d}" id="offx-${d}" aria-label="${L("ยกเลิกวันหยุด", "Remove day off")}">✕</button></span>`).join("")}</div>` : ""}
+    </article>`;
+    }
+
+    /* ---------- 🗓️ Next-day digest ---------- */
+    function digestTime() {
+      const D = state.alerts.digest || {};
+      if (D.mode === "afternoon") return 15 * 60;
+      if (D.mode === "evening") return 18 * 60;
+      if (D.mode === "custom") return toMin(D.time || "17:00");
+      const list = tasksOn(dkey()).filter(t => !t.isSleep);
+      const end = list.length ? Math.max(...list.map(t => t.start + t.dur)) : 17 * 60;
+      return Math.min(23 * 60, end + 15);
+    }
+    function dueOn(date) {
+      const out = [];
+      state.projects.forEach(p => p.steps.forEach(s => {
+        if (s.status !== "done" && s.start === date) out.push(`🚀 ${p.title} › ${s.title} (${L("เริ่ม", "starts")})`);
+        if (s.status !== "done" && s.end === date) out.push(`🏁 ${p.title} › ${s.title} (${L("ครบกำหนด", "due")})`);
+        (s.activities || []).forEach(a => { if (!a.done && a.date === date && !taskQueued(a.taskId)) out.push(`🔹 ${s.title} › ${a.title}`); });
+      }));
+      return out;
+    }
+    function digestText() {
+      const today = dkey(), tm = addDays(today, 1), nw = nextWorkDay(today), lines = [];
+      const left = tasksOn(today).filter(t => !t.done && !t.isSleep).length;
+      if (isOffDay(tm)) lines.push(L(`🏖️ พรุ่งนี้ (${fmtDate(tm)}) เป็นวันหยุด — วันทำงานถัดไปคือ ${fmtDate(nw)}`, `🏖️ Tomorrow (${fmtDate(tm)}) is a day off — next work day is ${fmtDate(nw)}`));
+      const list = tasksOn(nw).filter(t => !t.done && !t.isSleep);
+      lines.push(L(`📅 คิว ${fmtDate(nw)}: ${list.length} งาน`, `📅 ${fmtDate(nw)}: ${list.length} tasks`));
+      list.slice(0, 6).forEach(t => lines.push(`• ${fmt(t.start)} ${t.title}`));
+      if (list.length > 6) lines.push(L(`…และอีก ${list.length - 6} งาน`, `…and ${list.length - 6} more`));
+      dueOn(nw).slice(0, 5).forEach(x => lines.push(x));
+      if (left) lines.push(L(`⚠️ วันนี้ยังค้าง ${left} งาน — ย้ายไปวันถัดไปได้ที่หน้าคิวงาน`, `⚠️ ${left} unfinished today — move them from the Queue tab`));
+      return lines.join("\n");
+    }
+    function checkDigest(n, today, F) {
+      const D = state.alerts.digest; if (!D?.on) return false;
+      const k = `${today}:digest`, m = digestTime();
+      if (F[k] || n < m || n > m + 30) return false;
+      F[k] = 1; fireAlert(L("🗓️ แจ้งคิวงานล่วงหน้า", "🗓️ Upcoming queue"), digestText()); return true;
+    }
+    function digestBox() {
+      const D = state.alerts.digest;
+      const modes = [["afternoon", L("ช่วงบ่าย 15:00", "Afternoon 15:00")], ["evening", L("ช่วงเย็น 18:00", "Evening 18:00")], ["close", L("หลังปิดคิวงานวันนี้ (+15 นาที)", "After today's last task (+15 min)")], ["custom", L("กำหนดเวลาเอง", "Custom time")]];
+      return `<div class="digest-box" id="digest-box">
+      <label class="switch"><span>🗓️ ${L("แจ้งคิวงานวันถัดไปล่วงหน้า", "Preview the next day's queue")}</span><input type="checkbox" id="sw-digest" data-bind="alerts.digest.on" data-rr="1" ${D.on ? "checked" : ""}></label>
+      ${D.on ? `<div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">
+        <select class="input grow" id="sel-digest-mode" data-bind="alerts.digest.mode" data-rr="1" style="flex:1;min-width:150px" aria-label="${L("เวลาแจ้งเตือน", "Alert time")}">${modes.map(([v, l]) => `<option value="${v}" ${D.mode === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+        ${D.mode === "custom" ? `<input class="input" type="time" id="digest-time" data-bind="alerts.digest.time" data-rr="1" value="${esc(D.time)}" style="width:auto" aria-label="${L("เวลา", "Time")}">` : ""}
+        <button class="btn btn-sm" data-act="testDigest" id="btn-test-digest">👀 ${L("ดูตัวอย่าง", "Preview")}</button>
+      </div>
+      <p class="muted sm" style="margin-top:6px">⏰ ${L(`แจ้งทุกวันเวลา ${fmt(digestTime())} น. (ข้ามวันหยุดให้อัตโนมัติ)`, `Daily at ${fmt(digestTime())} (skips days off automatically)`)}</p>
+      <div class="digest-preview" id="digest-preview" hidden></div>` : ""}
+    </div>`;
+    }
+
+    /* ---------- 🧭 Steps & activities ---------- */
+    function stepItem(p, s) {
+      const open = state.openStep === s.id, acts = s.activities || [], ad = acts.filter(a => a.done).length;
+      const pi = state.projects.indexOf(p), si = p.steps.indexOf(s);
+      const range = s.start || s.end ? `${fmtShort(s.start) || "…"} → ${fmtShort(s.end) || "…"}` : L("ยังไม่กำหนดวัน", "No dates yet");
+      const late = s.end && s.status !== "done" && s.end < dkey();
+      return `<li class="step" style="--sc:${STEP[s.status][1]}" data-sort-id="${s.id}">
+      <div class="step-row">
+        <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
+        <button class="step-title" data-act="openStep" data-sid="${s.id}" id="so-${s.id}" aria-expanded="${open}"><span>${esc(s.title)}</span><small class="${late ? "rose" : "muted"}">📆 ${range}${late ? " ⚠️" : ""}${acts.length ? ` • 🔹 ${ad}/${acts.length}` : ""}${(s.deps || []).length ? ` • 🔗 ${s.deps.length}` : ""}${s.gcalId ? " • 📆✓" : s.gcal ? " • 📆" : ""}</small></button>
+        <button class="st-btn" data-act="stepCycle" data-pid="${p.id}" data-sid="${s.id}" id="st-${s.id}">${STEP[s.status][0]}</button>
+        <button class="icon-btn" data-act="delStep" data-pid="${p.id}" data-sid="${s.id}" id="sd-${s.id}" aria-label="${L("ลบขั้นตอน", "Delete step")}">✕</button>
+      </div>
+      ${open ? stepDetail(p, s, pi, si) : ""}
+    </li>`;
+    }
+    function stepDetail(p, s, pi, si) {
+      const acts = s.activities || [], base = `projects.${pi}.steps.${si}`, others = p.steps.filter(x => x.id !== s.id), today = dkey();
+      const spans = [["w1", L("+1 สัปดาห์", "+1 wk")], ["m1", L("+1 เดือน", "+1 mo")], ["m3", L("+3 เดือน", "+3 mo")], ["m6", L("+6 เดือน", "+6 mo")], ["y1", L("+1 ปี", "+1 yr")], ["y2", L("+2 ปี", "+2 yr")], ["y3", L("+3 ปี", "+3 yr")]];
+      return `<div class="step-detail">
+      <div class="form-grid">
+        <label class="field"><span>🚀 ${L("วันเริ่ม", "Start date")}</span><input class="input" type="date" id="ss-${s.id}" data-bind="${base}.start" data-rr="1" value="${s.start || ""}"></label>
+        <label class="field"><span>🏁 ${L("วันสิ้นสุด", "End date")}</span><input class="input" type="date" id="se-${s.id}" data-bind="${base}.end" data-rr="1" value="${s.end || ""}" min="${s.start || ""}"></label>
+      </div>
+      <div><span class="muted sm">⏳ ${L("กำหนดระยะเวลาเร็ว (นับจากวันเริ่ม)", "Quick duration (from start date)")}</span>
+        <div class="span-btns" style="margin-top:6px">${spans.map(([v, l]) => `<button class="btn" data-act="stepSpan" data-pid="${p.id}" data-sid="${s.id}" data-v="${v}" id="sp-${v}-${s.id}">${l}</button>`).join("")}</div></div>
+      ${others.length ? `<label class="field"><span>🔗 ${L("ทำต่อจากขั้นตอน (ใช้วาด Flowchart) — กด Ctrl/⌘ เลือกได้หลายข้อ", "Comes after (used by the Flowchart) — Ctrl/⌘ for multiple")}</span><select class="input" multiple size="${Math.min(4, others.length)}" id="sdep-${s.id}" data-act-change="stepDeps" data-pid="${p.id}" data-sid="${s.id}" style="min-height:auto">${others.map(o => `<option value="${o.id}" ${(s.deps || []).includes(o.id) ? "selected" : ""}>${esc(o.title)}</option>`).join("")}</select></label>` : ""}
+      <div><b class="sm">🔹 ${L("กิจกรรมย่อย", "Activities")} (${acts.filter(a => a.done).length}/${acts.length})</b>
+        ${acts.length ? `<ul class="acts" data-sort="acts:${p.id}:${s.id}" style="margin-top:8px">${acts.map(a => actRow(p, s, a)).join("")}</ul>` : `<p class="muted sm">${L("แยกขั้นตอนนี้เป็นกิจกรรมย่อย แล้วส่งเข้าคิวงานได้ทันที", "Break this step into activities and queue them right away")}</p>`}
+        <form class="act-form" data-form="addAct" data-pid="${p.id}" data-sid="${s.id}" id="fa-${s.id}" style="margin-top:8px" autocomplete="off">
+          <input class="input" name="title" required placeholder="${L("กิจกรรมย่อยใหม่…", "New activity…")}" id="fat-${s.id}" aria-label="${L("ชื่อกิจกรรม", "Activity name")}">
+          <input class="input" type="date" name="date" id="fad-${s.id}" value="${s.start && s.start > today ? s.start : today}" aria-label="${L("วันที่", "Date")}">
+          <input class="input" type="time" name="time" id="fatm-${s.id}" value="${suggestStart(today)}" aria-label="${L("เวลา", "Time")}">
+          <select class="input" name="dur" id="fadu-${s.id}" aria-label="${L("ระยะเวลา", "Duration")}">${[15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("")}</select>
+          <label class="mini-check full"><input type="checkbox" name="queue" id="faq-${s.id}" checked> 📋 ${L("เพิ่มเข้าคิวงานทันที (ตามวันและเวลาที่เลือก)", "Add to the queue now (selected date & time)")}</label>
+          <button class="btn btn-amber full" type="submit" id="fab-${s.id}">＋ ${L("เพิ่มกิจกรรม", "Add activity")}</button>
+        </form></div>
+      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+        <label class="mini-check"><input type="checkbox" id="sg-${s.id}" data-bind="${base}.gcal" data-rr="1" ${s.gcal ? "checked" : ""}> 📆 ${L("เชื่อมขั้นตอนนี้กับ Google Calendar", "Link this step to Google Calendar")}</label>
+        <button class="btn btn-sm" data-act="gcalSyncStep" data-pid="${p.id}" data-sid="${s.id}" id="gss-${s.id}" style="margin-left:auto">📆 ${L("ส่งเข้า Calendar ตอนนี้", "Push to Calendar now")}</button>
+      </div>
+    </div>`;
+    }
+    function actRow(p, s, a) {
+      const q = taskQueued(a.taskId);
+      return `<li class="act ${a.done ? "done" : ""}" data-sort-id="${a.id}">
+      <span class="drag-handle" aria-hidden="true">⠿</span>
+      <button class="check" data-act="actToggle" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ac-${a.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark done")}">${a.done ? "✓" : ""}</button>
+      <div class="grow" style="min-width:0"><div class="act-title">${esc(a.title)}</div><div class="muted sm">${a.date ? "📅 " + fmtDate(a.date) : L("ไม่มีวันที่", "No date")}${q ? " • 📋 " + L("อยู่ในคิว", "queued") : ""}${a.gcalId ? " • 📆✓" : ""}</div></div>
+      ${q ? "" : `<button class="icon-btn" data-act="actQueue" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="aq-${a.id}" title="${L("เพิ่มเข้าคิวงาน", "Add to queue")}" aria-label="${L("เพิ่มเข้าคิวงาน", "Add to queue")}">📋</button>`}
+      <button class="icon-btn" data-act="actDel" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ad-${a.id}" aria-label="${L("ลบกิจกรรม", "Delete activity")}">✕</button>
+    </li>`;
+    }
+    function queueAct(p, s, a, date, start, dur) {
+      const t = { id: uid(), title: a.title, date, start: start ?? toMin(suggestStart(date)), dur: dur || 60, projectId: p.id, stepId: s.id, actId: a.id, priority: "main", done: !!a.done, bookmark: "" };
+      state.tasks.push(t); a.taskId = t.id; if (!a.date) a.date = date;
+      if (s.status === "todo") s.status = "doing";
+      return t;
+    }
+    function driveLabel(url) {
+      const m = [[/docs\.google\.com\/document/, "📝 Google Docs"], [/docs\.google\.com\/spreadsheets/, "📊 Google Sheets"], [/docs\.google\.com\/presentation/, "📽️ Google Slides"], [/docs\.google\.com\/forms/, "🧾 Google Forms"], [/drive\.google\.com\/drive\/(u\/\d+\/)?folders/, "📁 Google Drive Folder"], [/drive\.google\.com/, "📄 Google Drive"]].find(([r]) => r.test(url));
+      return m ? m[1] : url.replace(/^https?:\/\//, "").slice(0, 48);
+    }
+    function linkIcon(l) {
+      const s = (l.mime || "") + " " + (l.url || "");
+      if (/folder/.test(s)) return "📁"; if (/spreadsheet/.test(s)) return "📊"; if (/presentation/.test(s)) return "📽️";
+      if (/document/.test(s)) return "📝"; if (/pdf/.test(s)) return "📕"; if (/image/.test(s)) return "🖼️"; if (/video/.test(s)) return "🎬"; return "📄";
+    }
+
+    /* ---------- 🔗 Google (Calendar push + Drive Picker) ---------- */
+    const G_SCOPES = { cal: "https://www.googleapis.com/auth/calendar.events", drive: "https://www.googleapis.com/auth/drive.file" };
+    class GErr extends Error { constructor(code, status, msg) { super(msg || code); this.code = code; this.status = status; } }
+    const gTok = () => { try { return JSON.parse(sessionStorage.getItem("fr.gtok") || "null"); } catch { return null; } };
+    function gTokenValid(kind) { const t = gTok(); if (!t || t.exp < Date.now()) return null; if (kind && !t.scopes?.includes(G_SCOPES[kind])) return null; return t.token; }
+    async function googleToken(kinds = ["cal"]) {
+      const need = kinds.map(k => G_SCOPES[k]), c = gTok();
+      if (c && c.exp > Date.now() && need.every(s => c.scopes?.includes(s))) return c.token;
+      if (!fb || !fb.auth?.currentUser || state.user?.demo) { toast(L("⚙️ โหมดสาธิต: ต้องล็อกอินด้วยบัญชี Google จริงเพื่อเชื่อม Calendar/Drive", "⚙️ Demo mode: sign in with a real Google account to connect Calendar/Drive")); throw new Error("demo"); }
+      const prov = new fb.GoogleAuthProvider(), all = Object.values(G_SCOPES);
+      all.forEach(s => prov.addScope(s));
+      prov.setCustomParameters({ login_hint: fb.auth.currentUser.email || "", prompt: "consent" });
+      const res = await fb.reauthenticateWithPopup(fb.auth.currentUser, prov);
+      const cred = fb.GoogleAuthProvider.credentialFromResult(res);
+      if (!cred?.accessToken) throw new GErr("no-token");
+      sessionStorage.setItem("fr.gtok", JSON.stringify({ token: cred.accessToken, exp: Date.now() + 55 * 60e3, scopes: all }));
+      return cred.accessToken;
+    }
+    async function gFetch(url, opts = {}, kind = "cal") {
+      const token = await googleToken([kind]);
+      const r = await fetch(url, { ...opts, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
+      if (r.status === 401) { sessionStorage.removeItem("fr.gtok"); throw new GErr("auth", 401); }
+      if (r.status === 403) {
+        const j = await r.json().catch(() => ({})), txt = JSON.stringify(j);
+        if (/accessNotConfigured|SERVICE_DISABLED|has not been used/i.test(txt)) throw new GErr("disabled", 403);
+        if (/insufficient/i.test(txt)) { sessionStorage.removeItem("fr.gtok"); throw new GErr("scope", 403); }
+        throw new GErr("forbidden", 403, j?.error?.message);
+      }
+      return r;
+    }
+    function gErrToast(e) {
+      if (e?.message === "demo") return;
+      const c = e?.code || "";
+      console.warn("Google error", e);
+      if (c === "disabled") toast(L("❌ ยังไม่ได้เปิดใช้ Google Calendar API ในโปรเจค — แจ้งผู้ดูแลระบบ", "❌ Google Calendar API isn't enabled for this project yet"));
+      else if (c === "auth" || c === "scope") toast(L("🔑 สิทธิ์หมดอายุหรือไม่ครบ — กด “เชื่อมต่อบัญชี Google” แล้วติ๊กอนุญาตทุกข้อ", "🔑 Permission expired or missing — tap “Connect Google” and allow all"));
+      else if (c === "auth/popup-blocked") toast(L("เบราว์เซอร์บล็อกป๊อปอัป — อนุญาตป๊อปอัปแล้วลองใหม่", "Popup blocked — allow popups and try again"));
+      else if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") toast(L("ยกเลิกการเชื่อมต่อ Google", "Google connection cancelled"));
+      else if (c === "auth/user-mismatch") toast(L("กรุณาเลือกบัญชี Google เดียวกับที่ใช้ล็อกอิน", "Please choose the same Google account you signed in with"));
+      else toast(L("เชื่อมต่อ Google ไม่สำเร็จ: ", "Google request failed: ") + (e?.message || c || "error"));
+    }
+    const GCAL = () => `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent((state.gcal.calendarId || "primary").trim() || "primary")}/events`;
+    const GCOLOR = { todo: "8", doing: "5", waiting: "7", done: "10" };
+    function evStep(p, s) {
+      const start = s.start || s.end, end = s.end && s.end >= start ? s.end : start;
+      const acts = (s.activities || []).map(a => `${a.done ? "✓" : "•"} ${a.title}${a.date ? " (" + fmtDate(a.date) + ")" : ""}`).join("\n");
+      return { summary: `🧭 ${p.title} › ${s.title}`, description: `${L("สถานะ", "Status")}: ${STEP[s.status][0]}\n${acts ? L("กิจกรรมย่อย", "Activities") + ":\n" + acts + "\n" : ""}\n⚡ FlowRecover • https://flowrecover.web.app`, start: { date: start }, end: { date: addDays(end, 1) }, colorId: GCOLOR[s.status], transparency: "transparent", status: "confirmed", extendedProperties: { private: { flowrecover: `step:${s.id}` } } };
+    }
+    function evAct(p, s, a) {
+      return { summary: `${a.done ? "✅" : "🔹"} ${a.title}`, description: `🗂️ ${p.title} › ${s.title}\n⚡ FlowRecover`, start: { date: a.date }, end: { date: addDays(a.date, 1) }, colorId: a.done ? "10" : "9", transparency: "transparent", status: "confirmed", extendedProperties: { private: { flowrecover: `act:${a.id}` } } };
+    }
+    function evTask(t) {
+      const p = proj(t.projectId), d = parseD(t.date), st = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, t.start), en = new Date(st.getTime() + t.dur * 60e3);
+      const ty = taskType(t);
+      return { summary: `${t.done ? "✅ " : ty === "sleep" ? "🌙 " : ty === "break" ? "☕ " : "⚡ "}${t.title.replace(/^(☕|🌙)\s*/, "")}`, description: `${p ? "🗂️ " + p.title + "\n" : ""}${TYPES()[ty][0]}${t.bookmark ? "\n📌 " + t.bookmark : ""}\n⚡ FlowRecover`, start: { dateTime: st.toISOString() }, end: { dateTime: en.toISOString() }, colorId: t.done ? "10" : ty === "secondary" ? "8" : ty === "break" ? "2" : ty === "sleep" ? "1" : "6", status: "confirmed", extendedProperties: { private: { flowrecover: `task:${t.id}` } } };
+    }
+    async function gUpsert(obj, body) {
+      if (obj.gcalId) {
+        const r = await gFetch(`${GCAL()}/${encodeURIComponent(obj.gcalId)}`, { method: "PUT", body: JSON.stringify(body) });
+        if (r.ok) return;
+        if (r.status !== 404 && r.status !== 410) throw new GErr("http", r.status, (await r.json().catch(() => ({})))?.error?.message);
+      }
+      const r = await gFetch(GCAL(), { method: "POST", body: JSON.stringify(body) });
+      if (!r.ok) throw new GErr("http", r.status, (await r.json().catch(() => ({})))?.error?.message);
+      obj.gcalId = (await r.json()).id;
+    }
+    async function syncItems(pairs, tasks = []) {
+      let n = 0;
+      for (const [p, s] of pairs) {
+        if (s.start || s.end) { await gUpsert(s, evStep(p, s)); n++; }
+        for (const a of s.activities || []) if (a.date && !taskQueued(a.taskId)) { await gUpsert(a, evAct(p, s, a)); n++; }
+      }
+      for (const t of tasks) { await gUpsert(t, evTask(t)); n++; }
+      state.gcal.lastSync = Date.now(); save();
+      return n;
+    }
+    function runSync(pairs, tasks = []) {
+      if (!pairs.length && !tasks.length) { toast(L("ไม่มีรายการที่มีวันที่ให้ส่ง — กำหนดวันเริ่ม/สิ้นสุดของขั้นตอนก่อน", "Nothing dated to push — set step start/end dates first")); return; }
+      googleToken(["cal"]).then(async () => {
+        toast(L("📆 กำลังส่งเข้า Google Calendar…", "📆 Pushing to Google Calendar…"));
+        const n = await syncItems(pairs, tasks);
+        renderView();
+        toast(n ? L(`✅ ส่ง ${n} รายการเข้า Google Calendar แล้ว`, `✅ Pushed ${n} items to Google Calendar`) : L("ไม่มีรายการที่มีวันที่ — กำหนดวันเริ่ม/สิ้นสุดก่อน", "Nothing dated — set start/end dates first"));
+      }).catch(e => { save(); gErrToast(e); });
+    }
+    function autoSync(p, s) { if (p && s?.gcal && s.gcalId && gTokenValid("cal")) syncItems([[p, s]]).catch(() => { }); }
+    function googlePanel() {
+      const on = !!gTokenValid("cal");
+      const linked = state.projects.reduce((n, p) => n + p.steps.filter(s => s.gcal).length, 0);
+      return `<article class="card g-panel" id="g-panel">
+      <div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><b>🔗 Google Calendar & Google Drive</b><span class="g-status ${on ? "on" : ""}">${on ? "● " + L("เชื่อมต่อแล้ว", "Connected") : "○ " + L("ยังไม่เชื่อมต่อ", "Not connected")}</span></div>
+      <p class="muted sm" style="margin:6px 0 10px">${L("ส่งขั้นตอน กิจกรรมย่อย และคิวงาน ไปลงปฏิทิน Google ของคุณ (ทางเดียว FlowRecover → Calendar) • แนบไฟล์จาก Google Drive เข้าโปรเจค", "Push steps, activities and queue tasks to your Google Calendar (one-way FlowRecover → Calendar) • attach files from Google Drive")}</p>
+      <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-sm" data-act="gConnect" id="btn-g-connect"><span class="link-ico">${GOOGLE_SVG}</span>${on ? L("เชื่อมต่อใหม่", "Reconnect") : L("เชื่อมต่อบัญชี Google", "Connect Google")}</button>
+        <button class="btn btn-sm btn-emerald" data-act="gcalSyncAll" id="btn-gcal-all">📆 ${L(`ส่งขั้นตอนที่เชื่อมไว้ (${linked})`, `Push linked steps (${linked})`)}</button>
+        <label class="row" style="gap:6px;align-items:center;flex:1;min-width:210px"><span class="muted sm">📅 Calendar ID</span><input class="input grow" id="gcal-id" data-bind="gcal.calendarId" value="${esc(state.gcal.calendarId)}" placeholder="primary" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"></label>
+      </div>
+      ${state.gcal.lastSync ? `<p class="muted sm" style="margin-top:6px">✓ ${L("ส่งล่าสุด", "Last push")} ${fmtDT(state.gcal.lastSync)}</p>` : ""}
+    </article>`;
+    }
+    let gapiReady = null;
+    function loadPicker() {
+      return gapiReady ||= new Promise((res, rej) => {
+        const go = () => window.gapi.load("picker", { callback: res, onerror: () => rej(new Error("picker load failed")) });
+        if (window.gapi?.load) return go();
+        const sc = document.createElement("script"); sc.src = "https://apis.google.com/js/api.js"; sc.async = true; sc.onload = go;
+        sc.onerror = () => { gapiReady = null; rej(new Error("Google API script blocked")); };
+        document.head.appendChild(sc);
+      });
+    }
+    function drivePick(pid) {
+      Promise.all([googleToken(["drive"]), loadPicker()]).then(([token]) => {
+        const G = window.google.picker;
+        const docs = new G.DocsView(G.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(true);
+        new G.PickerBuilder()
+          .addView(docs).addView(new G.DocsUploadView())
+          .enableFeature(G.Feature.MULTISELECT_ENABLED)
+          .setOAuthToken(token).setDeveloperKey(FIREBASE_CONFIG.apiKey).setAppId(FIREBASE_CONFIG.messagingSenderId)
+          .setLocale(LANG === "th" ? "th" : "en").setTitle(L("เลือกไฟล์แนบโปรเจค", "Attach files to project"))
+          .setCallback(data => {
+            if (data[G.Response.ACTION] !== G.Action.PICKED) return;
+            const p = proj(pid); if (!p) return;
+            const arr = data[G.Response.DOCUMENTS] || []; let n = 0;
+            arr.forEach(d => { const url = d[G.Document.URL]; if (!url || p.links.some(l => l.url === url)) return; p.links.push({ id: uid(), label: d[G.Document.NAME] || driveLabel(url), url, mime: d[G.Document.MIME_TYPE] || "" }); n++; });
+            rerender(); toast(L(`📎 แนบ ${n} ไฟล์จาก Google Drive แล้ว`, `📎 Attached ${n} file(s) from Google Drive`));
+          }).build().setVisible(true);
+      }).catch(gErrToast);
+    }
+
+    /* ---------- 📆 Gantt timeline ---------- */
+    function ganttView() {
+      const zoom = state.ganttZoom, today = dkey();
+      const rows = [];
+      state.projects.forEach(p => { rows.push({ p, r: projRange(p) }); p.steps.filter(s => s.start || s.end).forEach(s => rows.push({ p, s })); });
+      const dates = [today];
+      rows.forEach(x => { if (x.r) dates.push(...x.r); if (x.s) { dates.push(x.s.start || x.s.end, x.s.end || x.s.start); (x.s.activities || []).forEach(a => a.date && dates.push(a.date)); } });
+      dates.sort();
+      const floorU = k => { const d = parseD(k); if (zoom === "week") d.setDate(d.getDate() - (d.getDay() + 6) % 7); else if (zoom === "month") d.setDate(1); else if (zoom === "quarter") { d.setDate(1); d.setMonth(Math.floor(d.getMonth() / 3) * 3); } else { d.setMonth(0, 1); } return dkey(d); };
+      const stepU = (k, n = 1) => zoom === "week" ? addDays(k, 7 * n) : addMonths(k, n * (zoom === "month" ? 1 : zoom === "quarter" ? 3 : 12));
+      const units = []; let u = stepU(floorU(dates[0]), -1); const maxD = dates.at(-1);
+      while (units.length < 420) { units.push(u); if (u > maxD && units.length >= { week: 16, month: 14, quarter: 12, year: 10 }[zoom]) break; u = stepU(u); }
+      const ends = units.map(x => stepU(x)); const cw = { week: 64, month: 84, quarter: 96, year: 120 }[zoom], W = units.length * cw;
+      const X = k => { let i = units.findIndex((s, j) => k >= s && k < ends[j]); if (i < 0) return k < units[0] ? 0 : W; const span = (parseD(ends[i]) - parseD(units[i])) / 864e5; return (i + (parseD(k) - parseD(units[i])) / 864e5 / span) * cw; };
+      const uLabel = k => { const d = parseD(k), y = String(yearLabel(d.getFullYear())); if (zoom === "week") return `${d.getDate()} ${MONTHS[LANG][d.getMonth()]}`; if (zoom === "month") return `${MONTHS[LANG][d.getMonth()]} ${y.slice(-2)}`; if (zoom === "quarter") return `Q${Math.floor(d.getMonth() / 3) + 1} ${y.slice(-2)}`; return y; };
+      const xt = X(today); let first = true;
+      const todayLine = () => { const s = `<div class="g-today" style="left:${xt}px" data-l="${first ? L("วันนี้", "Today") : ""}"></div>`; first = false; return s; };
+      const zooms = [["week", L("สัปดาห์", "Week")], ["month", L("เดือน", "Month")], ["quarter", L("ไตรมาส", "Quarter")], ["year", L("ปี", "Year")]];
+      const hasDated = rows.some(x => x.s);
+      const body = rows.map(x => {
+        if (!x.s) {
+          const r = x.r; const bar = r ? `<div class="g-bar" style="left:${X(r[0])}px;width:${Math.max(8, X(addDays(r[1], 1)) - X(r[0]))}px" title="${esc(x.p.title)}"></div>` : "";
+          return `<div class="g-row g-proj" style="--w:${W}px"><div class="g-label"><span>🗂️ ${esc(x.p.title)}</span>${r ? "" : `<small class="muted">· ${L("ยังไม่กำหนดวัน", "no dates")}</small>`}</div><div class="g-track" style="--cw:${cw}px">${bar}${todayLine()}</div></div>`;
+        }
+        const s = x.s, a = s.start || s.end, b = s.end && s.end >= a ? s.end : a, left = X(a), w = Math.max(10, X(addDays(b, 1)) - left);
+        const dots = (s.activities || []).filter(v => v.date).map(v => `<div class="g-dot ${v.done ? "done" : ""}" style="left:${X(v.date) + Math.max(2, cw / 60)}px" title="🔹 ${esc(v.title)} • ${fmtDate(v.date)}"></div>`).join("");
+        return `<div class="g-row" style="--w:${W}px"><div class="g-label" title="${esc(s.title)}"><i style="width:8px;height:8px;border-radius:50%;background:${STEP_HEX[s.status]};flex:none"></i><span>${esc(s.title)}</span></div>
+          <div class="g-track" style="--cw:${cw}px"><div class="g-bar" style="left:${left}px;width:${w}px;--bc:${STEP_HEX[s.status]}" data-act="openStepIn" data-pid="${x.p.id}" data-sid="${s.id}" title="${esc(s.title)} • ${fmtShort(a)} → ${fmtShort(b)}">${w > 70 ? esc(s.title) : ""}</div>${dots}${todayLine()}</div></div>`;
+      }).join("");
+      setTimeout(() => { const w = document.getElementById("gantt-wrap"); if (w && !w.dataset.scrolled) { w.scrollLeft = Math.max(0, xt - 140); w.dataset.scrolled = "1"; } }, 0);
+      const projOpts = state.projects.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join("");
+      return `<div class="grid">
+    <article class="card"><div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+      <div><h3 style="margin:0">📆 ${L("Timeline แผนงานระยะยาว (Gantt)", "Long-range timeline (Gantt)")}</h3><p class="muted sm">${L("ซูมดูได้ตั้งแต่รายสัปดาห์จนถึงหลายปี • แตะแถบเพื่อเปิดรายละเอียดขั้นตอน • ◆ = กิจกรรมย่อย", "Zoom from weeks to years • tap a bar to open the step • ◆ = activity")}</p></div>
+      <div class="seg" role="tablist">${zooms.map(([k, l]) => `<button class="${zoom === k ? "on" : ""}" data-act="ganttZoom" data-v="${k}" id="gz-${k}">${l}</button>`).join("")}</div></div>
+      ${state.projects.length ? `<div class="gantt-wrap" id="gantt-wrap" style="margin-top:12px"><div class="gantt">
+        <div class="g-row g-head" style="--w:${W}px"><div class="g-label">${L("โปรเจค / ขั้นตอน", "Project / step")}</div><div class="g-units">${units.map(k => `<div class="g-unit" style="width:${cw}px">${uLabel(k)}</div>`).join("")}</div></div>
+        ${body}</div></div>` : `<p class="empty">${L("สร้างโปรเจคก่อน", "Create a project first")}</p>`}
+      ${state.projects.length && !hasDated ? `<div class="warn-box" style="margin-top:10px">💡 ${L("ยังไม่มีขั้นตอนที่กำหนดวัน — เพิ่มด้วยฟอร์มด้านล่าง หรือแตะชื่อขั้นตอนในหน้า “รายการ” เพื่อกำหนดวันเริ่ม–สิ้นสุด", "No dated steps yet — add one below, or open a step in the List tab and set its dates")}</div>` : ""}
+      <div class="legend">${STEP_ORDER.map(k => `<span><i style="background:${STEP_HEX[k]}"></i>${STEP[k][0]}</span>`).join("")}<span><i style="background:var(--rose)"></i>${L("วันนี้", "Today")}</span></div>
+    </article>
+    ${state.projects.length ? `<article class="card"><h3>＋ ${L("วางแผนขั้นตอนลง Timeline", "Plan a step on the timeline")}</h3>
+      <form class="form-grid" data-form="ganttStep" id="form-gantt-step" autocomplete="off">
+        <label class="field"><span>🗂️ ${L("โปรเจค", "Project")}</span><select class="input" name="pid" id="gs-proj">${projOpts}</select></label>
+        <label class="field"><span>${L("ชื่อขั้นตอน", "Step name")}</span><input class="input" name="title" required id="gs-title" placeholder="${L("เช่น เฟส 2: ขยายตลาด", "e.g. Phase 2: expansion")}"></label>
+        <label class="field"><span>🚀 ${L("วันเริ่ม", "Start")}</span><input class="input" type="date" name="start" required id="gs-start" value="${today}"></label>
+        <label class="field"><span>⏳ ${L("ระยะเวลา", "Length")}</span><select class="input" name="span" id="gs-span">${[["w2", L("2 สัปดาห์", "2 weeks")], ["m1", L("1 เดือน", "1 month")], ["m3", L("3 เดือน", "3 months")], ["m6", L("6 เดือน", "6 months")], ["y1", L("1 ปี", "1 year")], ["y2", L("2 ปี", "2 years")], ["y3", L("3 ปี", "3 years")], ["y5", L("5 ปี", "5 years")]].map(([v, l]) => `<option value="${v}" ${v === "m3" ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        <button class="btn btn-amber full" type="submit" id="gs-add">＋ ${L("เพิ่มลง Timeline", "Add to timeline")}</button>
+      </form></article>` : ""}
+  </div>`;
+    }
+    const spanEnd = (start, v) => { const n = Number(v.slice(1)); const e = v[0] === "w" ? addDays(start, 7 * n) : addMonths(start, v[0] === "m" ? n : 12 * n); return addDays(e, -1); };
+
+    /* ---------- 🕸️ Relationship map: Flowchart / Mind map / Columns ---------- */
+    function mapView() {
+      const m = state.mapMode;
+      const seg = `<div class="seg" style="margin-bottom:12px" role="tablist"><button class="${m === "flow" ? "on" : ""}" data-act="mapMode" data-v="flow" id="mm-flow">🔀 Flowchart</button><button class="${m === "mind" ? "on" : ""}" data-act="mapMode" data-v="mind" id="mm-mind">🧠 Mind map</button><button class="${m === "cols" ? "on" : ""}" data-act="mapMode" data-v="cols" id="mm-cols">🕸️ ${L("ภาพรวม 4 ชั้น", "4-tier overview")}</button></div>`;
+      if (!state.projects.length) return seg + mapColumns();
+      return seg + (m === "flow" ? flowView() : m === "mind" ? mindView() : mapColumns());
+    }
+    function projSelect(cur, allowAll) {
+      return `<select class="input" id="map-proj" data-act-change="mapProject" style="width:auto;max-width:100%" aria-label="${L("เลือกโปรเจค", "Choose project")}">${allowAll ? `<option value="">🌐 ${L("ทุกโปรเจค (ภาพรวมชีวิต)", "All projects")}</option>` : ""}${state.projects.map(p => `<option value="${p.id}" ${p.id === cur ? "selected" : ""}>🗂️ ${esc(p.title)}</option>`).join("")}</select>`;
+    }
+    const effDeps = (p) => { const any = p.steps.some(s => (s.deps || []).length); return s => any ? (s.deps || []).filter(id => p.steps.some(x => x.id === id)) : (p.steps.indexOf(s) > 0 ? [p.steps[p.steps.indexOf(s) - 1].id] : []); };
+    function flowView() {
+      const p = proj(state.mapProject) || state.projects[0], steps = p.steps, isLight = state.theme === "light";
+      const head = `<div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><div><h3 style="margin:0">🔀 Flowchart</h3><p class="muted sm">${L("ลำดับขั้นตอนตั้งแต่เริ่มจนจบ • แตะกล่องเพื่อเปิดขั้นตอน • ขั้นตอนที่อยู่แถวเดียวกันทำคู่ขนานได้", "Start-to-finish flow • tap a box to open the step • boxes on the same row can run in parallel")}</p></div>${projSelect(p.id, false)}</div>`;
+      if (!steps.length) return `<article class="card">${head}<p class="empty">${L("โปรเจคนี้ยังไม่มีขั้นตอน — เพิ่มในหน้า “รายการ”", "No steps yet — add some in the List tab")}</p></article>`;
+      const deps = effDeps(p), any = steps.some(s => (s.deps || []).length);
+      const lvl = {}, vis = {};
+      const getL = s => { if (lvl[s.id] != null) return lvl[s.id]; if (vis[s.id]) return 0; vis[s.id] = 1; const ds = deps(s).map(id => steps.find(x => x.id === id)).filter(Boolean); lvl[s.id] = ds.length ? 1 + Math.max(...ds.map(getL)) : 0; vis[s.id] = 0; return lvl[s.id]; };
+      steps.forEach(getL);
+      const byL = []; steps.forEach(s => (byL[lvl[s.id]] ||= []).push(s));
+      const NW = 196, NH = 60, GX = 28, GY = 54, TH = 38, top = 16;
+      const maxRow = Math.max(...byL.map(r => r?.length || 0));
+      const W = Math.max(560, maxRow * (NW + GX) + GX), cx = W / 2, pos = {};
+      byL.forEach((row, li) => { if (!row) return; const rw = row.length * NW + (row.length - 1) * GX, x0 = (W - rw) / 2; row.forEach((s, j) => pos[s.id] = { x: x0 + j * (NW + GX), y: top + TH + GY + li * (NH + GY) }); });
+      const endY = top + TH + GY + byL.length * (NH + GY), H = endY + TH + top;
+      const fg = isLight ? "#0f172a" : "#e5e7eb", mut = isLight ? "#5b6b82" : "#94a3b8", bg = isLight ? "#ffffff" : "#1e222d";
+      const path = (x1, y1, x2, y2, c, dash) => { const my = y1 + (y2 - y1) / 2; return `<path d="M${x1} ${y1} V${my} H${x2} V${y2 - 4}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" ${dash ? 'stroke-dasharray="5 5"' : ""} marker-end="url(#fc-arr)"/>`; };
+      const usedAsDep = new Set(steps.flatMap(s => deps(s)));
+      let edges = "";
+      steps.forEach(s => {
+        const b = pos[s.id], ds = deps(s);
+        if (!ds.length) edges += path(cx, top + TH, b.x + NW / 2, b.y, mut, true);
+        ds.forEach(id => { const a = pos[id]; if (a) edges += path(a.x + NW / 2, a.y + NH, b.x + NW / 2, b.y, STEP_HEX[steps.find(x => x.id === id).status], false); });
+        if (!usedAsDep.has(s.id)) edges += path(b.x + NW / 2, b.y + NH, cx, endY, mut, true);
+      });
+      const term = (y, label, c) => `<g><rect x="${cx - 90}" y="${y}" width="180" height="${TH}" rx="${TH / 2}" fill="${c}" opacity=".16"/><rect x="${cx - 90}" y="${y}" width="180" height="${TH}" rx="${TH / 2}" fill="none" stroke="${c}" stroke-width="1.5"/><text x="${cx}" y="${y + TH / 2 + 5}" text-anchor="middle" font-size="14" font-weight="700" fill="${fg}">${label}</text></g>`;
+      const nodes = steps.map(s => { const q = pos[s.id], c = STEP_HEX[s.status], acts = s.activities || [];
+        const sub = `${STEP[s.status][0]}${s.end ? " • " + fmtShort(s.end) : ""}${acts.length ? ` • 🔹${acts.filter(a => a.done).length}/${acts.length}` : ""}`;
+        return `<g data-act="openStepIn" data-pid="${p.id}" data-sid="${s.id}" style="cursor:pointer"><title>${esc(s.title)}</title><rect x="${q.x}" y="${q.y}" width="${NW}" height="${NH}" rx="12" fill="${bg}" stroke="${c}" stroke-width="2"/><rect x="${q.x}" y="${q.y}" width="6" height="${NH}" rx="3" fill="${c}"/><text x="${q.x + 16}" y="${q.y + 25}" font-size="13" font-weight="700" fill="${fg}">${esc(trunc(s.title, 22))}</text><text x="${q.x + 16}" y="${q.y + 45}" font-size="11" fill="${mut}">${esc(sub)}</text></g>`; }).join("");
+      const svg = `<svg viewBox="0 0 ${W} ${H}" style="width:${W}px;min-width:${W}px;max-width:none;height:auto;margin:0 auto;display:block" role="img" aria-label="Flowchart ${esc(p.title)}"><defs><marker id="fc-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${mut}"/></marker></defs>${edges}${term(top, "▶ " + L("เริ่มโปรเจค", "Start"), "#f59e0b")}${nodes}${term(endY, `🏁 ${L("เสร็จสิ้น", "Finish")} • ${prog(p)}%`, "#10b981")}</svg>`;
+      const links = steps.flatMap(s => (s.deps || []).map(id => [steps.find(x => x.id === id), s])).filter(([a]) => a);
+      const opts = steps.map(s => `<option value="${s.id}">${esc(trunc(s.title, 40))}</option>`).join("");
+      return `<article class="card">${head}<div class="map-wrap">${svg}</div>
+      <div class="legend">${STEP_ORDER.map(k => `<span><i style="background:${STEP_HEX[k]}"></i>${STEP[k][0]}</span>`).join("")}</div></article>
+    <article class="card" style="margin-top:14px"><h3>🔗 ${L("เชื่อมโยงขั้นตอน", "Connect steps")}</h3>
+      <p class="muted sm">${any ? L("กำหนดว่าขั้นตอนไหนต้องทำก่อน–หลัง เพื่อสร้างงานคู่ขนานหรือแตกสาขา", "Define which step must come before another to create parallel branches") : L("ตอนนี้แสดงตามลำดับในรายการ — เมื่อเชื่อมครั้งแรก ระบบจะสร้างลำดับเดิมให้ แล้วเพิ่มเส้นใหม่ของคุณ", "Currently shown in list order — your first link keeps that order and adds your new connection")}</p>
+      <form class="row" data-form="addDep" data-pid="${p.id}" id="form-add-dep" style="gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center" autocomplete="off">
+        <select class="input" name="from" id="dep-from" style="flex:1;min-width:140px" aria-label="${L("จากขั้นตอน", "From step")}">${opts}</select><b>→</b>
+        <select class="input" name="to" id="dep-to" style="flex:1;min-width:140px" aria-label="${L("ไปยังขั้นตอน", "To step")}">${opts}</select>
+        <button class="btn btn-amber" type="submit" id="btn-add-dep">🔗 ${L("เชื่อม", "Link")}</button>
+      </form>
+      ${links.length ? `<ul class="rows" style="margin-top:10px">${links.map(([a, b]) => `<li class="row-item"><div>${esc(a.title)} <b class="amber">→</b> ${esc(b.title)}</div><button class="icon-btn" data-act="delDep" data-pid="${p.id}" data-sid="${b.id}" data-dep="${a.id}" id="dd-${a.id}-${b.id}" aria-label="${L("ลบเส้นเชื่อม", "Remove link")}">✕</button></li>`).join("")}</ul>` : ""}
+    </article>`;
+    }
+    function mindView() {
+      const p = proj(state.mapProject), isLight = state.theme === "light";
+      const fg = isLight ? "#0f172a" : "#e5e7eb", mut = isLight ? "#5b6b82" : "#94a3b8", bg = isLight ? "#ffffff" : "#1e222d";
+      const center = p ? p.title : (state.user?.name ? L("ชีวิตของ ", "") + state.user.name.split(" ")[0] : L("ฉัน", "Me"));
+      const ring1 = p ? p.steps.map((s, i) => ({ id: s.id, label: s.title, sub: STEP[s.status][0], c: STEP_HEX[s.status], act: `data-act="openStepIn" data-pid="${p.id}" data-sid="${s.id}"`, kids: (s.activities || []).map(a => ({ label: (a.done ? "✓ " : "") + a.title, done: a.done })) }))
+        : state.projects.map((q, i) => ({ id: q.id, label: q.title, sub: prog(q) + "%", c: PALETTE[i % PALETTE.length], act: `data-act="mapProjectGo" data-v="${q.id}"`, kids: q.steps.map(s => ({ label: (s.status === "done" ? "✓ " : "") + s.title, done: s.status === "done" })) }));
+      const head = `<div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px"><div><h3 style="margin:0">🧠 Mind map</h3><p class="muted sm">${p ? L("ศูนย์กลาง = โปรเจค • กิ่ง = ขั้นตอน • ใบ = กิจกรรมย่อย (แตะกิ่งเพื่อเปิดขั้นตอน)", "Centre = project • branches = steps • leaves = activities (tap a branch to open it)") : L("ศูนย์กลาง = คุณ • กิ่ง = โปรเจค • ใบ = ขั้นตอน (แตะโปรเจคเพื่อเจาะลึก)", "Centre = you • branches = projects • leaves = steps (tap a project to drill in)")}</p></div>${projSelect(p?.id || "", true)}</div>`;
+      if (!ring1.length) return `<article class="card">${head}<p class="empty">${L("ยังไม่มีข้อมูลให้แสดง", "Nothing to show yet")}</p></article>`;
+      const n1 = ring1.length, kidsTotal = ring1.reduce((s, x) => s + Math.min(x.kids.length, 8), 0);
+      const R1 = Math.max(150, n1 * 30), R2 = R1 + Math.max(130, kidsTotal * 7);
+      const W = 2 * (R2 + 190), H = 2 * (R2 + 50), cx = W / 2, cy = H / 2;
+      let lines = "", nodes = "", leaves = "";
+      ring1.forEach((x, i) => {
+        const ang = -Math.PI / 2 + i * 2 * Math.PI / n1, x1 = cx + R1 * Math.cos(ang), y1 = cy + R1 * Math.sin(ang);
+        lines += `<path d="M${cx} ${cy} Q${cx + R1 * .5 * Math.cos(ang - .25)} ${cy + R1 * .5 * Math.sin(ang - .25)} ${x1} ${y1}" fill="none" stroke="${x.c}" stroke-width="3" stroke-opacity=".7"/>`;
+        const kids = x.kids.slice(0, 8), more = x.kids.length - kids.length, sector = Math.min(2 * Math.PI / n1 * .8, .32 * Math.max(1, kids.length));
+        kids.concat(more > 0 ? [{ label: L(`+${more} อื่นๆ`, `+${more} more`), more: true }] : []).forEach((k, j, arr) => {
+          const a2 = ang + (arr.length > 1 ? (j / (arr.length - 1) - .5) * sector : 0), x2 = cx + R2 * Math.cos(a2), y2 = cy + R2 * Math.sin(a2), right = Math.cos(a2) >= 0;
+          lines += `<path d="M${x1} ${y1} Q${cx + (R1 + R2) / 2 * Math.cos(ang)} ${cy + (R1 + R2) / 2 * Math.sin(ang)} ${x2} ${y2}" fill="none" stroke="${x.c}" stroke-width="1.5" stroke-opacity=".45"/>`;
+          leaves += `<g><circle cx="${x2}" cy="${y2}" r="5" fill="${k.done ? "#10b981" : x.c}"/><text x="${x2 + (right ? 10 : -10)}" y="${y2 + 4}" text-anchor="${right ? "start" : "end"}" font-size="12" fill="${k.more ? mut : fg}" ${k.done ? 'opacity=".65"' : ""}>${esc(trunc(k.label, 26))}</text></g>`;
+        });
+        nodes += `<g ${x.act} style="cursor:pointer"><title>${esc(x.label)}</title><rect x="${x1 - 78}" y="${y1 - 22}" width="156" height="44" rx="22" fill="${bg}" stroke="${x.c}" stroke-width="2"/><text x="${x1}" y="${y1 - 2}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${fg}">${esc(trunc(x.label, 18))}</text><text x="${x1}" y="${y1 + 14}" text-anchor="middle" font-size="10.5" fill="${mut}">${esc(x.sub)}</text></g>`;
+      });
+      const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Mind map">${lines}${leaves}${nodes}<g ${p ? `data-act="mapProjectGo" data-v=""` : ""} style="${p ? "cursor:pointer" : ""}"><circle cx="${cx}" cy="${cy}" r="62" fill="url(#mm-g)"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="14" font-weight="800" fill="#0b1220">${esc(trunc(center, 16))}</text>${p ? `<text x="${cx}" y="${cy + 24}" text-anchor="middle" font-size="10" fill="#0b1220">${prog(p)}% • ↩︎</text>` : ""}</g><defs><radialGradient id="mm-g"><stop offset="0" stop-color="#fde68a"/><stop offset="1" stop-color="#f59e0b"/></radialGradient></defs></svg>`;
+      return `<article class="card">${head}<div class="map-wrap">${svg}</div></article>`;
+    }
+    function reachable(p, fromId, targetId) { // does `fromId` (transitively) depend on `targetId`?
+      const seen = new Set(), st = [fromId];
+      while (st.length) { const id = st.pop(); if (id === targetId) return true; if (seen.has(id)) continue; seen.add(id); (p.steps.find(s => s.id === id)?.deps || []).forEach(d => st.push(d)); }
+      return false;
+    }
+
+    /* ---------- ↕️ Drag & drop sorting (mouse + finger) ---------- */
+    let drag = null;
+    document.addEventListener("pointerdown", e => {
+      const h = e.target.closest?.(".drag-handle"); if (!h) return;
+      const item = h.closest("[data-sort-id]"), list = item?.parentElement;
+      if (!item || !list?.dataset.sort) return;
+      e.preventDefault();
+      drag = { item, list, id: e.pointerId, lastY: e.clientY, moved: false };
+      drag.timer = setInterval(() => { if (!drag) return; const y = drag.lastY; if (y < 90) scrollBy(0, -14); else if (y > innerHeight - 130) scrollBy(0, 14); }, 16);
+      item.classList.add("dragging"); document.body.classList.add("is-dragging");
+      try { h.setPointerCapture(e.pointerId); } catch { }
+      vibrate(15);
+    });
+    document.addEventListener("pointermove", e => {
+      if (!drag || e.pointerId !== drag.id) return;
+      e.preventDefault();
+      const y = drag.lastY = e.clientY;
+      const sibs = [...drag.list.children].filter(c => c !== drag.item && c.dataset.sortId);
+      let before = null;
+      for (const s of sibs) { const r = s.getBoundingClientRect(); if (y < r.top + r.height / 2) { before = s; break; } }
+      if (before) { if (drag.item.nextElementSibling !== before) { drag.list.insertBefore(drag.item, before); drag.moved = true; } }
+      else if (drag.list.lastElementChild !== drag.item) { drag.list.appendChild(drag.item); drag.moved = true; }
+    }, { passive: false });
+    const endDrag = e => {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      const { item, list, moved, timer } = drag; drag = null; clearInterval(timer);
+      item.classList.remove("dragging"); document.body.classList.remove("is-dragging");
+      if (moved) applySort(list.dataset.sort, [...list.children].map(c => c.dataset.sortId).filter(Boolean));
+    };
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
+    function applySort(kind, ids) {
+      const [k, a, b] = kind.split(":");
+      const order = arr => ids.map(id => arr.find(x => x.id === id)).filter(Boolean).concat(arr.filter(x => !ids.includes(x.id)));
+      if (k === "projects") state.projects = order(state.projects);
+      else if (k === "steps") { const p = proj(a); if (p) p.steps = order(p.steps); }
+      else if (k === "acts") { const [, s] = findStep(a, b); if (s) s.activities = order(s.activities || []); }
+      else if (k === "queue") {
+        const list = ids.map(id => state.tasks.find(t => t.id === id && t.date === a)).filter(Boolean);
+        const slots = list.map(t => t.start).sort((x, y) => x - y); let prevEnd = -1;
+        list.forEach((t, i) => { t.start = Math.max(slots[i], prevEnd); prevEnd = t.start + t.dur; });
+      }
+      rerender(); vibrate(20);
+      toast(k === "queue" ? L("↕️ จัดคิวใหม่แล้ว — ปรับเวลาเริ่มให้อัตโนมัติ", "↕️ Queue reordered — start times re-slotted") : L("↕️ จัดลำดับใหม่แล้ว", "↕️ Reordered"));
+    }
+
+    /* ---------- 📊 Progress report ---------- */
+    function repRange() {
+      const R = state.report, base = R.date || dkey(), d = parseD(base);
+      if (R.range === "day") return [base, base];
+      if (R.range === "month") return [dkey(new Date(d.getFullYear(), d.getMonth(), 1)), dkey(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+      return [`${d.getFullYear()}-01-01`, `${d.getFullYear()}-12-31`];
+    }
+    function repTitle() {
+      const R = state.report, d = parseD(R.date || dkey()), y = yearLabel(d.getFullYear());
+      if (R.range === "day") return `${fmtDate(R.date)} ${y}`;
+      if (R.range === "month") return `${MONTHS[LANG][d.getMonth()]} ${y}`;
+      return L(`ปี ${y}`, `${y}`);
+    }
+    function repData() {
+      const R = state.report, [a, b] = repRange(), inR = d => !!d && d >= a && d <= b, tsIn = ms => !!ms && inR(dkey(new Date(ms)));
+      const pf = R.project, tf = R.type;
+      const matchP = t => pf === "all" || (pf === "none" ? !t.projectId : t.projectId === pf);
+      const tasks = state.tasks.filter(t => inR(t.date) && matchP(t) && (tf === "all" || taskType(t) === tf));
+      const done = tasks.filter(t => t.done);
+      const focusMin = done.filter(t => ["main", "secondary"].includes(taskType(t))).reduce((s, t) => s + t.dur, 0);
+      const logs = state.focus.log.filter(l => inR(l.date) && !String(l.reason || "").startsWith("☕"));
+      let rIns = 0; state.routines.forEach(r => Object.entries(r.log || {}).forEach(([d, v]) => { if (v && inR(d)) rIns++; }));
+      let stepsDone = 0, actsDone = 0;
+      state.projects.filter(p => pf === "all" || p.id === pf).forEach(p => p.steps.forEach(s => { if (s.status === "done" && tsIn(s.doneAt)) stepsDone++; (s.activities || []).forEach(x => { if (x.done && tsIn(x.doneAt)) actsDone++; }); }));
+      const sl = (P().sleeps || []).filter(s => inR(s.date)), avgSleep = sl.length ? (sl.reduce((s, x) => s + (Number(x.hours) || 0), 0) / sl.length).toFixed(1) : "–";
+      return { a, b, tasks, done, pct: tasks.length ? Math.round(done.length / tasks.length * 100) : 0, focusMin, logs, lost: logs.reduce((s, l) => s + (l.mins || 0), 0), rIns, stepsDone, actsDone, avgSleep };
+    }
+    function hbars(groups) {
+      const rows = groups.filter(g => g.t);
+      if (!rows.length) return `<p class="empty">${L("ไม่มีข้อมูลในช่วงนี้", "No data in this period")}</p>`;
+      return rows.map(g => `<div class="hbar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(g.l)}">${esc(g.l)}</span><div class="bar"><i style="width:${Math.round(g.d / g.t * 100)}%;background:${g.c}"></i></div><span class="mono sm"><b>${g.d}</b>/${g.t}${g.x ? ` <span class="muted">${g.x}</span>` : ""}</span></div>`).join("");
+    }
+    function renderReport() {
+      const R = state.report; R.date ||= dkey();
+      const D = repData(), T = TYPES();
+      const kpi = (v, l, c = "") => `<div class="kpi"><b class="${c}">${v}</b><span>${l}</span></div>`;
+      let chart;
+      if (R.range === "day") {
+        chart = D.tasks.length ? `<ul class="rows">${[...D.tasks].sort((x, y) => x.start - y.start).map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} <span class="mono muted">${fmt(t.start)}</span> ${esc(t.title)} <span class="chip" style="margin-left:4px">${T[taskType(t)][0]}</span></div></li>`).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานในวันนี้", "No tasks on this day")}</p>`;
+      } else {
+        const bk = [];
+        if (R.range === "month") for (let d = D.a; d <= D.b; d = addDays(d, 1)) bk.push({ l: String(parseD(d).getDate()), f: t => t.date === d, off: isOffDay(d) });
+        else for (let m = 0; m < 12; m++) { const pre = D.a.slice(0, 5) + pad(m + 1); bk.push({ l: MONTHS[LANG][m], f: t => t.date.startsWith(pre) }); }
+        bk.forEach(x => { const ts = D.tasks.filter(x.f); x.t = ts.length; x.d = ts.filter(t => t.done).length; });
+        const mx = Math.max(1, ...bk.map(x => x.t)), Wc = 640, Hc = 210, pb = 22, ch = Hc - pb - 8, bw = Wc / bk.length, step = R.range === "month" ? Math.ceil(bk.length / 16) : 1;
+        chart = `<svg viewBox="0 0 ${Wc} ${Hc}" role="img" aria-label="${L("กราฟงานเสร็จ", "Completed tasks chart")}"><defs><linearGradient id="rep-g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+          ${[.25, .5, .75, 1].map(g => `<line x1="0" x2="${Wc}" y1="${8 + ch * (1 - g)}" y2="${8 + ch * (1 - g)}" style="stroke:var(--border)" stroke-dasharray="3 4"/>`).join("")}
+          ${bk.map((x, i) => { const h1 = ch * x.t / mx, h2 = ch * x.d / mx, X0 = i * bw + bw * .17, w = bw * .66; return `<g><title>${x.l}: ${x.d}/${x.t}</title>${x.off ? `<rect x="${i * bw}" y="8" width="${bw}" height="${ch}" fill="rgba(16,185,129,.07)"/>` : ""}<rect x="${X0}" y="${8 + ch - h1}" width="${w}" height="${h1}" rx="3" fill="rgba(148,163,184,.28)"/><rect x="${X0}" y="${8 + ch - h2}" width="${w}" height="${h2}" rx="3" fill="url(#rep-g)"/>${i % step === 0 ? `<text x="${X0 + w / 2}" y="${Hc - 6}" text-anchor="middle" font-size="10" fill="#94a3b8">${x.l}</text>` : ""}</g>`; }).join("")}
+        </svg><div class="legend"><span><i style="background:#10b981"></i>${L("เสร็จแล้ว", "Done")}</span><span><i style="background:rgba(148,163,184,.5)"></i>${L("ทั้งหมด", "Planned")}</span>${R.range === "month" ? `<span><i style="background:rgba(16,185,129,.25)"></i>${L("วันหยุด", "Day off")}</span>` : ""}</div>`;
+      }
+      const byP = [{ id: null, title: L("📌 งานทั่วไป", "📌 General") }, ...state.projects].map((p, i) => { const ts = D.tasks.filter(t => (t.projectId || null) === p.id); const pp = p.id ? proj(p.id) : null; return { l: (p.id ? "🗂️ " : "") + p.title, t: ts.length, d: ts.filter(t => t.done).length, c: p.id ? PALETTE[i % PALETTE.length] : "#94a3b8", x: pp ? `• ${prog(pp)}%` : "" }; });
+      const byT = Object.entries(T).map(([k, [l, c]]) => { const ts = D.tasks.filter(t => taskType(t) === k); return { l, t: ts.length, d: ts.filter(t => t.done).length, c, x: ts.length ? `• ${minLabel(ts.filter(t => t.done).reduce((s, t) => s + t.dur, 0))}` : "" }; });
+      const ranges = [["day", L("รายวัน", "Daily")], ["month", L("รายเดือน", "Monthly")], ["year", L("รายปี", "Yearly")]];
+      $("#view-report").innerHTML = `
+    <div class="view-head"><div><h1>📊 ${L("สรุปความคืบหน้า", "Progress report")}</h1><p>${L("รายวัน • รายเดือน • รายปี — แยกตามโปรเจคและประเภทงาน", "Daily • monthly • yearly — by project and task type")}</p></div></div>
+    <div class="grid">
+      <article class="card"><div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="seg" role="tablist">${ranges.map(([k, l]) => `<button class="${R.range === k ? "on" : ""}" data-act="repRange" data-v="${k}" id="rr-${k}">${l}</button>`).join("")}</div>
+        <div class="row" style="gap:6px;align-items:center"><button class="icon-btn" data-act="repNav" data-v="-1" id="rep-prev" aria-label="${L("ก่อนหน้า", "Previous")}">‹</button><b style="min-width:120px;text-align:center">${repTitle()}</b><button class="icon-btn" data-act="repNav" data-v="1" id="rep-next" aria-label="${L("ถัดไป", "Next")}">›</button><button class="btn btn-sm" data-act="repToday" id="rep-today">${L("ปัจจุบัน", "Now")}</button></div></div>
+        <div class="rep-filters" style="margin-top:12px">
+          <label class="field"><span>🗂️ ${L("โปรเจค", "Project")}</span><select class="input" id="rep-proj" data-bind="report.project" data-rr="1"><option value="all">${L("ทุกโปรเจค + งานทั่วไป", "All projects + general")}</option><option value="none" ${R.project === "none" ? "selected" : ""}>📌 ${L("เฉพาะงานทั่วไป", "General tasks only")}</option>${state.projects.map(p => `<option value="${p.id}" ${R.project === p.id ? "selected" : ""}>🗂️ ${esc(p.title)}</option>`).join("")}</select></label>
+          <label class="field"><span>🏷️ ${L("ประเภทงาน", "Task type")}</span><select class="input" id="rep-type" data-bind="report.type" data-rr="1"><option value="all">${L("ทุกประเภท", "All types")}</option>${Object.entries(T).map(([k, [l]]) => `<option value="${k}" ${R.type === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+        </div></article>
+      <div class="kpis">
+        ${kpi(`${D.done.length}/${D.tasks.length}`, L(`งานเสร็จ (${D.pct}%)`, `Tasks done (${D.pct}%)`), "emerald")}
+        ${kpi(minLabel(D.focusMin), L("เวลาโฟกัสที่ทำสำเร็จ", "Focused time completed"), "amber")}
+        ${kpi(`${D.logs.length}`, L(`ครั้งที่ถูกแทรก (${D.lost} นาที)`, `Interruptions (${D.lost} min)`), "rose")}
+        ${kpi(`${D.stepsDone}`, L("ขั้นตอนโปรเจคที่เสร็จ", "Project steps done"), "violet")}
+        ${kpi(`${D.actsDone}`, L("กิจกรรมย่อยที่เสร็จ", "Activities done"), "sky")}
+        ${kpi(`${D.rIns}`, L("เช็กอินกิจวัตร", "Routine check-ins"))}
+        ${kpi(D.avgSleep === "–" ? "–" : D.avgSleep + L(" ชม.", "h"), L("นอนเฉลี่ย", "Avg sleep"))}
+      </div>
+      <article class="card"><h3>📈 ${R.range === "day" ? L("งานในวันนี้", "Tasks this day") : R.range === "month" ? L("งานเสร็จรายวัน", "Completed per day") : L("งานเสร็จรายเดือน", "Completed per month")}</h3><div class="chart-wrap" style="margin-top:8px">${chart}</div></article>
+      <div class="grid grid-2">
+        <article class="card"><h3>🗂️ ${L("แยกตามโปรเจค", "By project")}</h3><p class="muted sm" style="margin-bottom:6px">${L("งานเสร็จ/ทั้งหมด • % ความคืบหน้าโปรเจค", "Done/total • project progress %")}</p>${hbars(byP)}</article>
+        <article class="card"><h3>🏷️ ${L("แยกตามประเภทงาน", "By task type")}</h3><p class="muted sm" style="margin-bottom:6px">${L("งานเสร็จ/ทั้งหมด • เวลาที่ทำเสร็จ", "Done/total • time completed")}</p>${hbars(byT)}</article>
+      </div>
+      <button class="btn" data-act="copyReport" id="btn-copy-report">📋 ${L("คัดลอกสรุปเป็นข้อความ (ส่งต่อทีม/หัวหน้า)", "Copy summary as text (share with your team)")}</button>
+    </div>`;
+    }
+    function reportText() {
+      const D = repData(), T = TYPES(), lines = [`📊 FlowRecover — ${L("สรุปความคืบหน้า", "Progress report")} ${repTitle()}`];
+      lines.push(`✅ ${L("งานเสร็จ", "Tasks done")}: ${D.done.length}/${D.tasks.length} (${D.pct}%)`, `⏱️ ${L("เวลาโฟกัส", "Focus time")}: ${minLabel(D.focusMin)}`, `⚡ ${L("ถูกแทรก", "Interruptions")}: ${D.logs.length} (${D.lost} ${L("นาที", "min")})`, `🧭 ${L("ขั้นตอนเสร็จ", "Steps done")}: ${D.stepsDone} • 🔹 ${L("กิจกรรมเสร็จ", "Activities done")}: ${D.actsDone}`);
+      state.projects.forEach(p => { const ts = D.tasks.filter(t => t.projectId === p.id); if (ts.length) lines.push(`🗂️ ${p.title}: ${ts.filter(t => t.done).length}/${ts.length} • ${prog(p)}%`); });
+      Object.entries(T).forEach(([k, [l]]) => { const ts = D.tasks.filter(t => taskType(t) === k); if (ts.length) lines.push(`${l}: ${ts.filter(t => t.done).length}/${ts.length}`); });
+      return lines.join("\n");
+    }
+
+    /* ---------- 📔 Planner guide ---------- */
+    const PG = {
+      cg: { k: "C/G", i: "🌟", t: ["เป้าหมาย & ตารางวัน", "Goals & daily plan"], d: ["เป้าหมาย 5 มิติ • โฟกัสรายเดือน • ตาราง 24 ชม. • Dream Board", "5-dimension goals • monthly focus • 24h plan • dream board"],
+        how: [["ให้คะแนนความพึงพอใจ 1–5 ดาว ใน 5 มิติชีวิต (พัฒนาตัวเอง สุขภาพ การเงิน ความสัมพันธ์ งานอดิเรก) กราฟเรดาร์จะบอกว่าด้านไหนยังขาด", "Rate each of the 5 life dimensions 1–5 stars — the radar shows which area needs love"], ["เขียนเป้าหมายที่วัดผลได้ในแต่ละมิติ แล้วเลือก 1–3 เรื่องเป็น Monthly Focus", "Write a measurable goal per dimension, then pick 1–3 as your Monthly Focus"], ["เลือกวันที่ใน Daily 24h Plan แล้ววางแผนรายชั่วโมง", "Pick a date in the Daily 24h Plan and plan hour by hour"], ["เขียน Dream Board ให้เห็นภาพปลายทาง เพื่อเป็นแรงจูงใจทุกวัน", "Fill the Dream Board to keep the destination in sight"]],
+        ex: [["💚 สุขภาพ ⭐⭐ → เป้าหมาย: วิ่ง 3 ครั้ง/สัปดาห์ ลด 2 กก. ใน 1 เดือน", "💚 Health ⭐⭐ → Goal: run 3×/week, lose 2 kg in a month"], ["💰 การเงิน → Monthly Focus: ปิดงานลูกค้า 2 ราย รายได้ +20,000฿", "💰 Wealth → Monthly Focus: close 2 clients, +20,000฿"], ["🕘 06:00 วิ่ง • 09:00 Deep work • 13:00 ประชุม • 21:00 อ่านหนังสือ", "🕘 06:00 run • 09:00 deep work • 13:00 meetings • 21:00 read"]] },
+      hm: { k: "H/M", i: "🔥", t: ["นิสัย & อารมณ์", "Habits & mood"], d: ["Habit Tracker • Tiny Habit • อารมณ์รายวัน • Level Up", "Habit tracker • tiny habits • daily mood • Level Up"],
+        how: [["เพิ่มนิสัยที่อยากสร้าง แล้วติ๊กทุกวันที่ทำได้ (+5 แต้ม/ช่อง)", "Add habits and tick each day you do them (+5 pts per check)"], ["ใช้สูตร Tiny Habit: “หลังจาก ___ ฉันจะ ___” ผูกนิสัยใหม่กับสิ่งที่ทำอยู่แล้ว", "Use the Tiny Habit formula: “After ___, I will ___”"], ["บันทึกอารมณ์วันละครั้ง เพื่อดูรูปแบบพลังงานของตัวเอง", "Log your mood once a day to spot energy patterns"], ["สะสมแต้มจากงาน กิจวัตร นิสัย และการนอน เพื่อไต่ Level Up Mountain", "Earn points from tasks, routines, habits and sleep to climb the Level Up Mountain"]],
+        ex: [["🌱 หลังจาก “แปรงฟันตอนเช้า” ฉันจะ “ดื่มน้ำ 1 แก้ว”", "🌱 After “brushing my teeth” I will “drink a glass of water”"], ["🧱 อุปสรรค: เล่นมือถือก่อนนอน → ทางแก้: ชาร์จมือถือนอกห้องนอน", "🧱 Obstacle: phone before bed → Solution: charge it outside the bedroom"], ["😊 สังเกตว่าวันที่นอนครบ 7 ชม. อารมณ์ “สดใส” บ่อยกว่า", "😊 Notice you feel “Great” more often after 7h of sleep"]] },
+      f: { k: "F", i: "💰", t: ["การเงิน", "Finance"], d: ["รายรับ • รายจ่ายรายวัน • งบเดือน • เป้าออม", "Income • daily expenses • monthly budget • savings goal"],
+        how: [["ใส่รายรับต่อเดือนและเป้าหมายเงินออม", "Enter your monthly income and savings goal"], ["บันทึกรายจ่ายทุกวัน (อาหาร เดินทาง อื่นๆ) ใช้เวลาไม่ถึง 10 วินาที", "Log daily spending (food, transport, other) in under 10 seconds"], ["ดูสรุปงบเดือนว่าเหลือเท่าไร แล้วกดปุ่ม 🐷 เพื่อเพิ่มเงินออม", "Check the monthly summary and tap 🐷 to add savings"]],
+        ex: [["🎯 เป้าออม 50,000฿ • ออมทุกสิ้นเดือน 5,000฿ → ครบใน 10 เดือน", "🎯 Save 50,000฿ • 5,000฿ each month → done in 10 months"], ["🧾 วันนี้: อาหาร 180 • เดินทาง 60 • กาแฟ 65 = 305฿", "🧾 Today: food 180 • transport 60 • coffee 65 = 305฿"], ["📉 เห็นค่ากาแฟเดือนละ 1,950฿ → ลดเหลือวันเว้นวัน ประหยัด ~1,000฿", "📉 Coffee costs 1,950฿/month → every other day saves ~1,000฿"]] },
+      wl: { k: "W/L", i: "💪", t: ["สุขภาพ & ไลฟ์สไตล์", "Wellness & lifestyle"], d: ["การนอน • ออกกำลังกาย • อาหาร • ทริป • หนังสือ/หนัง", "Sleep • workouts • meals • trips • books/movies"],
+        how: [["ใช้โหมด 🌙 เข้านอนในหน้าโฟกัส ระบบจะบันทึกชั่วโมงนอนให้อัตโนมัติ หรือกรอกเองที่นี่", "Use 🌙 Sleep mode on the Focus tab to log sleep automatically, or add it here"], ["บันทึกการออกกำลังกายและน้ำหนัก เพื่อดูพัฒนาการ", "Log workouts and weight to see progress"], ["จดมื้ออาหารและแคลอรี วางแผนทริป และเก็บรายการหนังสือ/หนังที่อยากดู", "Track meals & calories, plan trips and keep a book/movie list"]],
+        ex: [["🛌 นอน 7.5 ชม. ⭐⭐⭐⭐ “นอนก่อน 5 ทุ่ม ตื่นมาสดชื่น”", "🛌 Slept 7.5h ⭐⭐⭐⭐ “in bed before 11 PM, woke up fresh”"], ["🏃 วิ่ง 30 นาที • น้ำหนัก 68.5 กก.", "🏃 Run 30 min • weight 68.5 kg"], ["✈️ เชียงใหม่ ธ.ค. งบ 8,000฿ • 📚 Atomic Habits ⭐⭐⭐⭐⭐", "✈️ Chiang Mai in Dec, 8,000฿ • 📚 Atomic Habits ⭐⭐⭐⭐⭐"]] }
+    };
+    function plannerGuide(sec) {
+      const g = PG[sec] || PG.cg;
+      return `<details class="card pg-guide" id="planner-guide" ${state.plannerGuideOpen ? "open" : ""}>
+      <summary>💡 ${L("คำแนะนำ & ตัวอย่างการใช้ Life Planner", "Life Planner guide & examples")}</summary>
+      <div class="pg-body">
+        <p class="muted sm">${L("Life Planner คือสมุดวางแผนชีวิตดิจิทัล แบ่งเป็น 4 หมวด — เริ่มจากตั้งเป้าหมาย (C/G) → สร้างนิสัย (H/M) → ดูแลการเงิน (F) → ดูแลสุขภาพและไลฟ์สไตล์ (W/L) ทุกอย่างบันทึกอัตโนมัติและซิงก์ทุกเครื่อง", "Life Planner is your digital life notebook in 4 sections — set goals (C/G) → build habits (H/M) → manage money (F) → care for health & lifestyle (W/L). Everything autosaves and syncs across devices.")}</p>
+        <div class="pg-secs">${Object.entries(PG).map(([k, x]) => `<button class="pg-sec ${k === sec ? "on" : ""}" data-act="psec" data-v="${k}" id="pgs-${k}"><b>${x.i} ${x.k} · ${L(x.t[0], x.t[1])}</b>${L(x.d[0], x.d[1])}</button>`).join("")}</div>
+        <div class="grid grid-2">
+          <div><b>🧭 ${L(`วิธีใช้หมวด ${g.k}`, `How to use ${g.k}`)}</b><ol style="margin-top:8px">${g.how.map(h => `<li>${L(h[0], h[1])}</li>`).join("")}</ol></div>
+          <div><b>✨ ${L("ตัวอย่างการใช้งาน", "Examples")}</b><ul class="pg-ex" style="margin-top:8px">${g.ex.map(h => `<li>${L(h[0], h[1])}</li>`).join("")}</ul></div>
+        </div>
+      </div>
+    </details>`;
+    }
+    document.addEventListener("toggle", e => { if (e.target?.id === "planner-guide") { state.plannerGuideOpen = e.target.open; save(); } }, true);
+
+    /* ---------- 📖 Guide topics for the new features ---------- */
+    GUIDE.th.push(
+      { t: "โปรเจคระยะยาว • กิจกรรมย่อย • Google Calendar & Drive", i: "📆", s: [
+        ["แตะชื่อขั้นตอนในโปรเจค", "กำหนดวันเริ่ม–สิ้นสุด หรือกดปุ่มลัด +1 เดือน / +6 เดือน / +1 ปี เพื่อวางแผนระยะยาวหลายปี"],
+        ["แยกเป็นกิจกรรมย่อย", "เพิ่มกิจกรรมพร้อมวัน–เวลา ติ๊ก “เพิ่มเข้าคิวงานทันที” ระบบจะสร้างงานในหน้าคิวงานให้เลย"],
+        ["ดูภาพรวมที่แท็บ 📆 Timeline", "ซูมได้ทั้งรายสัปดาห์ เดือน ไตรมาส และปี (Gantt) แตะแถบเพื่อเปิดขั้นตอน"],
+        ["เชื่อม Google Calendar", "กด “เชื่อมต่อบัญชี Google” → เปิดสวิตช์ 📆 ในขั้นตอน → กดส่งเข้า Calendar (ส่งทางเดียว FlowRecover → Google Calendar)"],
+        ["แนบไฟล์ Google Drive", "กด “เลือกไฟล์จาก Google Drive” หรือคัดลอกลิงก์มาวาง ระบบตั้งชื่อ Docs/Sheets/Slides ให้อัตโนมัติ"],
+        ["Flowchart & Mind map", "แท็บ 🕸️ แผนภูมิ: เชื่อมขั้นตอนก่อน–หลังเป็น Flowchart หรือดูแบบ Mind map รอบตัวคุณ"]] },
+      { t: "ลากจัดคิว • วันหยุด • แจ้งเตือนล่วงหน้า • สรุปผล", i: "📊", s: [
+        ["ใช้นิ้วลากที่ ⠿", "จัดลำดับคิวงาน โปรเจค ขั้นตอน และกิจกรรมได้ คิวงานจะปรับเวลาเริ่มให้อัตโนมัติ"],
+        ["ตั้งวันหยุด", "การ์ด 🏖️ ในหน้าโฟกัส: เลือกวันหยุดประจำสัปดาห์ หรือวันลา/พักร้อนเป็นช่วง วันหยุดไม่มีการเตือน และ “ไปพรุ่งนี้” ข้ามวันหยุดให้"],
+        ["ตั้งเวลาเตือน", "เตือนก่อนเริ่มงาน 5–60 นาที และเปิด “แจ้งคิวงานวันถัดไป” เลือกช่วงบ่าย เย็น หลังปิดคิว หรือกำหนดเวลาเอง"],
+        ["ดูสรุปความคืบหน้า", "แท็บ 📊 สรุปผล: เลือกรายวัน/รายเดือน/รายปี กรองตามโปรเจคและประเภทงาน แล้วคัดลอกสรุปส่งทีมได้"]] }
+    );
+    GUIDE.en.push(
+      { t: "Long-range projects • activities • Google Calendar & Drive", i: "📆", s: [
+        ["Tap a step in a project", "Set start/end dates or use +1 month / +6 months / +1 year to plan years ahead"],
+        ["Break it into activities", "Add activities with a date & time — tick “Add to the queue now” to create queue tasks instantly"],
+        ["See it on 📆 Timeline", "Zoom by week, month, quarter or year (Gantt); tap a bar to open the step"],
+        ["Connect Google Calendar", "Tap “Connect Google” → switch on 📆 for a step → push to Calendar (one-way FlowRecover → Google Calendar)"],
+        ["Attach Google Drive files", "Tap “Pick from Google Drive” or paste a link — Docs/Sheets/Slides get named automatically"],
+        ["Flowchart & mind map", "🕸️ Map tab: link steps into a flowchart, or view a mind map around you"]] },
+      { t: "Drag to reorder • days off • advance alerts • reports", i: "📊", s: [
+        ["Drag ⠿ with your finger", "Reorder queue tasks, projects, steps and activities — queue times re-slot automatically"],
+        ["Set days off", "🏖️ card on Focus: weekly days off or leave/vacation ranges. No alerts on days off, and “tomorrow” skips them"],
+        ["Set reminders", "Remind 5–60 min before a task, and turn on the next-day queue preview: afternoon, evening, after your last task, or a custom time"],
+        ["Check your progress", "📊 Report tab: daily/monthly/yearly, filter by project and task type, then copy a summary for your team"]] }
+    );
+    GUIDE_GO.push({ tab: "projects" }, { tab: "report" });
+
+    /* ---------- Change hooks ---------- */
+    const CHANGE = {
+      queueDate: el => { state.queueDate = el.value || dkey(); renderView(); },
+      mapProject: el => { state.mapProject = el.value; rerender(); },
+      stepDeps: el => { const [, s] = findStep(el.dataset.pid, el.dataset.sid); if (!s) return; const p = proj(el.dataset.pid); const sel = [...el.selectedOptions].map(o => o.value).filter(id => !reachable(p, id, s.id)); if (sel.length < el.selectedOptions.length) toast(L("⚠️ ข้ามบางเส้นที่จะทำให้เกิดวงวน", "⚠️ Skipped links that would create a loop")); s.deps = sel; rerender(); }
+    };
+
+    /* ---------- Actions ---------- */
+    const _toggleTask = A.toggleTask;
+    Object.assign(A, {
+      toggleTask: d => {
+        _toggleTask(d);
+        const t = state.tasks.find(x => x.id === d.id);
+        if (t?.actId) { const [p, s, a] = findAct(t.projectId, t.stepId, t.actId); if (a) { a.done = t.done; a.doneAt = t.done ? Date.now() : null; save(); autoSync(p, s); } }
+      },
+      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = nextWorkDay(t.date); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
+      moveSecondary: d => {
+        const cur = currentTask(), to = nextWorkDay(d.date); let n = 0;
+        state.tasks.forEach(t => { if (t.date === d.date && !t.done && t.priority === "secondary" && t !== cur) { t.date = to; n++; } });
+        rerender(); toast(n ? L(`📦 ย้ายงานรอง ${n} งานไป ${fmtDate(to)} แล้ว`, `📦 Moved ${n} secondary tasks to ${fmtDate(to)}`) : L("ไม่มีงานรองให้ย้าย", "No secondary tasks to move"));
+      },
+      moveAllRemainingTomorrow: () => {
+        const today = dkey(), to = nextWorkDay(today); let n = 0;
+        state.tasks.forEach(t => { if (t.date === today && !t.done && !t.isSleep) { t.date = to; n++; } });
+        rerender();
+        toast(n ? L(`📦 เลื่อนงานที่ค้าง ${n} งานไป ${fmtDate(to)} เรียบร้อย คืนนี้นอนหลับให้สบายใจนะครับ!`, `📦 Moved ${n} pending tasks to ${fmtDate(to)}. Sleep peacefully tonight!`) : L("ไม่มีงานที่ค้างในวันนี้แล้วครับ", "No pending tasks left today"));
+      },
+      toggleWeekday: d => { const w = Number(d.v), W = state.offDays.weekdays, i = W.indexOf(w); i < 0 ? W.push(w) : W.splice(i, 1); rerender(); toast(i < 0 ? L(`🏖️ หยุดทุกวัน${DAYS.th[w]}`, `🏖️ Every ${DAYS.en[w]} is now a day off`) : L(`💼 วัน${DAYS.th[w]}เป็นวันทำงาน`, `💼 ${DAYS.en[w]} is a work day again`)); },
+      toggleOffDate: d => {
+        const O = state.offDays, k = d.date;
+        if (isOffDay(k)) { delete O.dates[k]; if (isOffDay(k)) O.work[k] = true; } else { delete O.work[k]; if (!isOffDay(k)) O.dates[k] = true; }
+        rerender(); toast(isOffDay(k) ? L(`🏖️ ${fmtDate(k)} เป็นวันหยุดแล้ว`, `🏖️ ${fmtDate(k)} is now a day off`) : L(`💼 ${fmtDate(k)} เป็นวันทำงาน`, `💼 ${fmtDate(k)} is a work day`));
+      },
+      workToday: d => { delete state.offDays.dates[d.date]; state.offDays.work[d.date] = true; rerender(); toast(L("💼 วันนี้เป็นวันทำงาน — ลุยกันเลย!", "💼 Working today — let's go!")); },
+      moveOffDayTasks: d => { const to = nextWorkDay(d.date); let n = 0; state.tasks.forEach(t => { if (t.date === d.date && !t.done && !t.isSleep) { t.date = to; n++; } }); rerender(); toast(L(`📦 ย้าย ${n} งานไป ${fmtDate(to)} แล้ว — พักผ่อนให้เต็มที่`, `📦 Moved ${n} tasks to ${fmtDate(to)} — enjoy your day off`)); },
+      testDigest: () => { const el = $("#digest-preview"), txt = digestText(); if (el) { el.hidden = false; el.textContent = txt; } fireAlert(L("🗓️ แจ้งคิวงานล่วงหน้า (ตัวอย่าง)", "🗓️ Upcoming queue (preview)"), txt); },
+      qdateGo: d => { state.queueDate = d.v; state.tab = "queue"; rerender(); scrollTo({ top: 0, behavior: "smooth" }); },
+      openStep: d => { state.openStep = state.openStep === d.sid ? null : d.sid; renderView(); },
+      openStepIn: d => {
+        state.projSub = "list"; state.openProject = d.pid; state.openStep = d.sid || null; rerender();
+        setTimeout(() => document.getElementById(d.sid ? `so-${d.sid}` : `ph-${d.pid}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+      },
+      stepSpan: d => { const [p, s] = findStep(d.pid, d.sid); if (!s) return; s.start ||= dkey(); s.end = spanEnd(s.start, d.v); rerender(); autoSync(p, s); toast(L(`📆 ${fmtShort(s.start)} → ${fmtShort(s.end)}`, `📆 ${fmtShort(s.start)} → ${fmtShort(s.end)}`)); },
+      stepCycle: d => { const [p, s] = findStep(d.pid, d.sid); if (!s) return; s.status = STEP_ORDER[(STEP_ORDER.indexOf(s.status) + 1) % 4]; if (s.status === "done") s.doneAt = Date.now(); else delete s.doneAt; rerender(); autoSync(p, s); },
+      delStep: d => {
+        const p = proj(d.pid); if (!p) return;
+        const s = p.steps.find(x => x.id === d.sid);
+        if ((s?.activities || []).length && !confirm(L("ลบขั้นตอนนี้พร้อมกิจกรรมย่อย?", "Delete this step and its activities?"))) return;
+        p.steps = p.steps.filter(x => x.id !== d.sid);
+        p.steps.forEach(x => { if (x.deps) x.deps = x.deps.filter(i => i !== d.sid); });
+        state.tasks.forEach(t => { if (t.stepId === d.sid) { delete t.stepId; delete t.actId; } });
+        rerender();
+      },
+      actToggle: d => {
+        const [p, s, a] = findAct(d.pid, d.sid, d.aid); if (!a) return;
+        a.done = !a.done; a.doneAt = a.done ? Date.now() : null;
+        const t = state.tasks.find(x => x.id === a.taskId); if (t) t.done = a.done;
+        if (a.done && s.activities.every(x => x.done) && s.status !== "done" && confirm(L("กิจกรรมครบแล้ว — ปิดขั้นตอนนี้เป็น Done?", "All activities done — mark this step Done?"))) { s.status = "done"; s.doneAt = Date.now(); }
+        rerender(); autoSync(p, s); if (a.done) { vibrate(40); toast(L("✅ กิจกรรมเสร็จแล้ว!", "✅ Activity done!")); }
+      },
+      actQueue: d => { const [p, s, a] = findAct(d.pid, d.sid, d.aid); if (!a) return; const date = a.date && a.date >= dkey() ? a.date : dkey(); const t = queueAct(p, s, a, date); rerender(); toast(L(`📋 เพิ่ม "${trunc(a.title, 22)}" เข้าคิว ${fmtDate(date)} ${fmt(t.start)}`, `📋 Queued "${trunc(a.title, 22)}" for ${fmtDate(date)} ${fmt(t.start)}`)); },
+      actDel: d => { const [, s] = findStep(d.pid, d.sid); if (!s) return; s.activities = (s.activities || []).filter(a => a.id !== d.aid); state.tasks.forEach(t => { if (t.actId === d.aid) delete t.actId; }); rerender(); },
+      ganttZoom: d => { state.ganttZoom = d.v; rerender(); },
+      mapMode: d => { state.mapMode = d.v; rerender(); },
+      mapProjectGo: d => { state.mapProject = d.v; rerender(); },
+      delDep: d => { const [, s] = findStep(d.pid, d.sid); if (!s) return; s.deps = (s.deps || []).filter(x => x !== d.dep); rerender(); },
+      repRange: d => { state.report.range = d.v; rerender(); },
+      repNav: d => { const R = state.report, n = Number(d.v), b = R.date || dkey(); R.date = R.range === "day" ? addDays(b, n) : addMonths(b, R.range === "month" ? n : 12 * n); rerender(); },
+      repToday: () => { state.report.date = dkey(); rerender(); },
+      copyReport: async () => { const txt = reportText(); try { await navigator.clipboard.writeText(txt); toast(L("📋 คัดลอกสรุปแล้ว", "📋 Summary copied")); } catch { prompt(L("คัดลอกข้อความนี้", "Copy this text"), txt); } },
+      pasteLink: async d => { try { const txt = (await navigator.clipboard.readText()).trim(); const inp = document.getElementById(`flu-${d.pid}`); if (inp) { inp.value = txt; inp.focus(); } if (!/^https?:\/\//i.test(txt)) toast(L("คลิปบอร์ดไม่มีลิงก์ — กดค้างที่ช่องแล้วเลือกวาง", "No link in clipboard — long-press the field and paste")); } catch { document.getElementById(`flu-${d.pid}`)?.focus(); toast(L("กดค้างที่ช่องลิงก์แล้วเลือก “วาง”", "Long-press the link field and choose Paste")); } },
+      drivePick: d => drivePick(d.pid),
+      gConnect: () => { sessionStorage.removeItem("fr.gtok"); googleToken(["cal", "drive"]).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive แล้ว", "✅ Google Calendar & Drive connected")); renderView(); }).catch(gErrToast); },
+      gcalSyncAll: () => { const pairs = state.projects.flatMap(p => p.steps.filter(s => s.gcal).map(s => [p, s])); if (!pairs.length) { toast(L("ยังไม่มีขั้นตอนที่เชื่อม — เปิดสวิตช์ 📆 ในรายละเอียดขั้นตอน", "No linked steps yet — switch on 📆 inside a step")); return; } runSync(pairs); },
+      gcalSyncProject: d => { const p = proj(d.id); if (!p) return; const pairs = p.steps.filter(s => s.start || s.end || (s.activities || []).some(a => a.date)).map(s => (s.gcal = true, [p, s])); runSync(pairs, state.tasks.filter(t => t.projectId === p.id && t.date >= dkey())); },
+      gcalSyncStep: d => { const [p, s] = findStep(d.pid, d.sid); if (!s) return; s.gcal = true; runSync([[p, s]], state.tasks.filter(t => t.stepId === s.id && t.date >= dkey())); },
+      gcalSyncDay: d => runSync([], state.tasks.filter(t => t.date === d.date))
+    });
+    Object.assign(FORMS, {
+      addStep: (fd, f) => {
+        const p = proj(f.dataset.pid), title = (fd.title || "").trim(); if (!p || !title) return;
+        const s = { id: uid(), title, status: "todo", activities: [], deps: [] };
+        if (fd.start) s.start = fd.start; if (fd.end) s.end = fd.end >= (fd.start || "") ? fd.end : fd.start;
+        p.steps.push(s); rerender(); document.getElementById(`fsi-${p.id}`)?.focus();
+      },
+      addLink: (fd, f) => {
+        const p = proj(f.dataset.pid), url = (fd.url || "").trim();
+        if (!p || !/^https?:\/\//i.test(url)) { toast(L("ลิงก์ต้องขึ้นต้นด้วย https://", "Link must start with https://")); return; }
+        if (p.links.some(l => l.url === url)) { toast(L("ลิงก์นี้แนบไว้แล้ว", "This link is already attached")); return; }
+        p.links.push({ id: uid(), label: (fd.label || "").trim() || driveLabel(url), url }); rerender(); toast(L("📎 แนบลิงก์แล้ว", "📎 Link attached"));
+      },
+      addAct: (fd, f) => {
+        const [p, s] = findStep(f.dataset.pid, f.dataset.sid), title = (fd.title || "").trim(); if (!s || !title) return;
+        s.activities ||= [];
+        const a = { id: uid(), title, date: fd.date || "", done: false }; s.activities.push(a);
+        let t = null; if (fd.queue) { const date = fd.date || dkey(); t = queueAct(p, s, a, date, toMin(fd.time || suggestStart(date)), Number(fd.dur) || 60); }
+        rerender(); toast(t ? L(`📋 เพิ่มกิจกรรม + เข้าคิว ${fmtDate(t.date)} ${fmt(t.start)} แล้ว`, `📋 Activity added & queued for ${fmtDate(t.date)} ${fmt(t.start)}`) : L("🔹 เพิ่มกิจกรรมแล้ว", "🔹 Activity added"));
+        setTimeout(() => document.getElementById(`fat-${s.id}`)?.focus(), 40);
+      },
+      projTask: (fd, f) => {
+        const p = proj(f.dataset.pid), title = (fd.title || "").trim(); if (!p || !title) return;
+        const date = fd.date || dkey(), t = { id: uid(), title, date, start: toMin(fd.start || suggestStart(date)), dur: Number(fd.dur) || 60, projectId: p.id, priority: fd.priority || "main", done: false, bookmark: "" };
+        if (fd.step) t.stepId = fd.step;
+        state.tasks.push(t); rerender();
+        toast(isOffDay(date) ? L(`📋 เพิ่มเข้าคิว ${fmtDate(date)} แล้ว (⚠️ วันนั้นเป็นวันหยุด)`, `📋 Queued for ${fmtDate(date)} (⚠️ that's a day off)`) : L(`📋 เพิ่มเข้าคิว ${fmtDate(date)} ${fmt(t.start)} แล้ว`, `📋 Queued for ${fmtDate(date)} ${fmt(t.start)}`));
+      },
+      ganttStep: fd => {
+        const p = proj(fd.pid), title = (fd.title || "").trim(); if (!p || !title || !fd.start) return;
+        p.steps.push({ id: uid(), title, status: "todo", start: fd.start, end: spanEnd(fd.start, fd.span || "m3"), activities: [], deps: [] });
+        rerender(); toast(L(`📆 เพิ่ม "${trunc(title, 24)}" ลง Timeline แล้ว`, `📆 Added "${trunc(title, 24)}" to the timeline`));
+      },
+      addDep: (fd, f) => {
+        const p = proj(f.dataset.pid); if (!p) return;
+        const from = fd.from, to = p.steps.find(s => s.id === fd.to);
+        if (!to || from === to.id) { toast(L("เลือกขั้นตอนต้นทางและปลายทางที่ต่างกัน", "Choose two different steps")); return; }
+        if (!p.steps.some(s => (s.deps || []).length)) p.steps.forEach((s, i) => { s.deps = i ? [p.steps[i - 1].id] : []; });
+        if (reachable(p, from, to.id)) { toast(L("⚠️ เชื่อมไม่ได้ — จะทำให้เกิดวงวน", "⚠️ Can't link — that would create a loop")); return; }
+        to.deps ||= []; if (!to.deps.includes(from)) to.deps.push(from);
+        rerender(); toast(L("🔗 เชื่อมขั้นตอนแล้ว", "🔗 Steps linked"));
+      },
+      addOffDate: fd => {
+        const O = state.offDays, a = fd.date; if (!a) return;
+        const b = fd.to && fd.to >= a ? fd.to : a; let n = 0;
+        for (let d = a; d <= b && n < 400; d = addDays(d, 1), n++) { delete O.work[d]; O.dates[d] = true; }
+        rerender(); toast(L(`🏖️ เพิ่มวันหยุด ${n} วันแล้ว`, `🏖️ Added ${n} day(s) off`));
+      }
+    });
+
     /* ===================== Event delegation ===================== */
     document.addEventListener("click", e => {
       const el = e.target.closest("[data-act]"); if (!el) return;
@@ -4019,6 +4991,7 @@
     document.addEventListener("change", e => {
       const el = e.target;
       if (el.dataset.actChange === "plannerDate") { state.plannerDate = el.value || dkey(); renderView(); return; }
+      if (el.dataset.actChange && CHANGE[el.dataset.actChange]) { CHANGE[el.dataset.actChange](el); return; }
       if (el.dataset.bind === "alerts.notify" && el.checked && "Notification" in window) {
         Notification.requestPermission().then(p => { if (p !== "granted") { state.alerts.notify = false; el.checked = false; save(); toast(L("เบราว์เซอร์ไม่อนุญาตการแจ้งเตือน", "Notifications were blocked by the browser")); } else toast(L("🔔 เปิดแจ้งเตือนเบราว์เซอร์แล้ว", "🔔 Browser notifications on")); });
       }
@@ -4063,7 +5036,7 @@
       ]);
       const a = app.initializeApp(FIREBASE_CONFIG);
       fb = {
-        auth: auth.getAuth(a), db: fs.getFirestore(a), GoogleAuthProvider: auth.GoogleAuthProvider, signInWithPopup: auth.signInWithPopup, signOut: auth.signOut,
+        auth: auth.getAuth(a), db: fs.getFirestore(a), GoogleAuthProvider: auth.GoogleAuthProvider, signInWithPopup: auth.signInWithPopup, signOut: auth.signOut, reauthenticateWithPopup: auth.reauthenticateWithPopup,
         doc: fs.doc, getDoc: fs.getDoc, setDoc: fs.setDoc, onSnapshot: fs.onSnapshot, serverTimestamp: fs.serverTimestamp
       };
       let unsub = null;
@@ -4099,7 +5072,7 @@
       if (!state.user || $("#app").hidden) return;
       tick++;
       if (state.tab === "focus") {
-        const cur = currentTask(), key = state.focus.interrupt ? "int" : state.focus.sleep ? "sleep" : state.focus.rest ? "rest" : cur ? cur.id : "none:" + (nextTask()?.id || "");
+        const key = cockpitKey();
         if (key !== lastCockpitKey && !document.activeElement?.closest?.("#view-focus input, #view-focus textarea, #view-focus select")) renderView();
         else tickCockpit();
       }
