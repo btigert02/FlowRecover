@@ -3461,7 +3461,7 @@
         }
       });
 
-      // 2. Monthly Focus (focus & tell)
+      // 2. Monthly Focus (focus & tell + topic groups)
       if (mk) {
         P().monthly[mk] ||= {};
         const M = P().monthly[mk];
@@ -3469,6 +3469,12 @@
           M.focusItems = splitLines(M.focus).map(text => ({ id: uid(), text, done: false }));
           if (M.focus) M.focus = "";
           changed = true;
+        }
+        if (!Array.isArray(M.focusGroups)) {
+          M.focusGroups = [];
+          changed = true;
+        } else {
+          M.focusGroups.forEach(g => { g.items ||= []; });
         }
         if (!Array.isArray(M.tellItems)) {
           M.tellItems = splitLines(M.tell).map(text => ({ id: uid(), text, done: false }));
@@ -3512,6 +3518,12 @@
       ensureCgItems(date, mk);
       if (sec === "goal") return (P().goals[key] ||= { items: [] }).items ||= [];
       if (sec === "mfocus") return (P().monthly[key] ||= { focusItems: [] }).focusItems ||= [];
+      if (sec === "mfgrp") {
+        const M = (P().monthly[key] ||= { focusItems: [], focusGroups: [] });
+        M.focusGroups ||= [];
+        const g = M.focusGroups.find(x => x.id === sub);
+        return g ? (g.items ||= []) : [];
+      }
       if (sec === "mtell") return (P().monthly[key] ||= { tellItems: [] }).tellItems ||= [];
       if (sec === "hour") {
         P().daily[key] ||= {};
@@ -3528,7 +3540,8 @@
     function cgItemRow(sec, key, sub, it, timeStr = "", darkBg = false) {
       const ds = `data-sec="${esc(sec)}" data-key="${esc(key)}" data-sub="${esc(sub)}" data-id="${esc(it.id)}"`;
       const bgStyle = darkBg ? "background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.18);color:#fff" : "background:var(--surface);border:1px solid var(--border)";
-      return `<li class="row" style="gap:6px;padding:6px 8px;border-radius:10px;${bgStyle};align-items:center">
+      return `<li class="row" data-sort-id="${esc(it.id)}" style="gap:6px;padding:6px 8px;border-radius:10px;${bgStyle};align-items:center">
+        <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ/ย้ายหมวด", "Drag to reorder / move")}" style="width:20px;min-height:24px;font-size:.92rem">⠿</span>
         <button type="button" class="check" data-act="cgToggle" ${ds} style="width:22px;height:22px;margin:0;border-radius:6px;font-size:.75rem;flex:none;${it.done ? "background:var(--emerald);border-color:var(--emerald);color:#04150f" : ""}" aria-label="${L("สลับสถานะ", "Toggle done")}">${it.done ? "✓" : ""}</button>
         <span class="grow sm" style="min-width:0;word-break:break-word;${it.done ? "text-decoration:line-through;opacity:.6" : ""}">${esc(it.text)}</span>
         <div class="row" style="gap:2px;flex:none">
@@ -3549,7 +3562,7 @@
         return `<div class="hour" style="align-items:start;grid-template-columns:58px 1fr">
           <b style="margin-top:2px">${tStr}</b>
           <div style="display:grid;gap:6px;min-width:0">
-            ${items.length ? `<ul style="list-style:none;display:grid;gap:4px">${items.map(it => cgItemRow("hour", date, k, it, tStr)).join("")}</ul>` : ""}
+            ${items.length ? `<ul data-sort="cg:hour:${date}:${k}" style="list-style:none;display:grid;gap:4px">${items.map(it => cgItemRow("hour", date, k, it, tStr)).join("")}</ul>` : ""}
             <form class="row" data-form="cgAdd" data-sec="hour" data-key="${date}" data-sub="${k}" style="gap:6px" autocomplete="off">
               <input class="input grow" name="text" id="hr-${k}" placeholder="${items.length ? L("＋ เพิ่มรายการในชั่วโมงนี้…", "＋ Add another item…") : L("พิมพ์แผนงานชั่วโมงนี้ แล้วกด ＋ หรือ Enter…", "Add plan for this hour…")}" style="min-height:36px;padding:6px 10px;font-size:.86rem">
               <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px;padding:0 10px" title="${L("เพิ่มรายการ", "Add item")}">＋</button>
@@ -3558,10 +3571,11 @@
         </div>`;
       };
       const focusItems = getCgList("mfocus", mk);
+      const focusGroups = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] }).focusGroups ||= [];
       const tellItems = getCgList("mtell", mk);
       return `<div class="grid">
-    <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3><span class="chip chip-emerald">${L("＋ เพิ่มได้หลายรายการในแต่ละหมวด", "＋ Multi-item per category")}</span></div>
-      <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ (เพิ่มได้หลายรายการ ติ๊ก ✓ เมื่อทำสำเร็จ แก้ไข ✏️ หรือกด 🔁 ตั้งเป็นกิจวัตรทำซ้ำได้รายข้อ) แล้วให้คะแนนความพึงพอใจ 1-5 ดาว", "Add multiple goals in each dimension (check off ✓, edit ✏️, or turn any item into a recurring routine 🔁) and rate your satisfaction 1–5 stars.")}</p></div>
+    <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3><span class="chip chip-emerald">${L("＋ เพิ่มได้หลายรายการ • ⠿ ลากจัดลำดับได้", "＋ Multi-item • ⠿ Drag to reorder")}</span></div>
+      <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ (เพิ่มได้หลายรายการ ลาก ⠿ จัดลำดับ ติ๊ก ✓ เมื่อทำสำเร็จ แก้ไข ✏️ หรือกด 🔁 ตั้งเป็นกิจวัตรทำซ้ำได้รายข้อ) แล้วให้คะแนนความพึงพอใจ 1-5 ดาว", "Add multiple goals in each dimension (drag ⠿ to reorder, check off ✓, edit ✏️, or turn any item into a recurring routine 🔁) and rate your satisfaction 1–5 stars.")}</p></div>
       <div class="dims" style="margin-top:12px">${DIMS.map(d => {
         const items = getCgList("goal", d.k);
         return `<div class="dim" style="--dc:${d.c}">
@@ -3569,7 +3583,7 @@
             <div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}${items.length ? ` • ${items.filter(x => x.done).length}/${items.length} ${L("รายการ", "items")}` : ""}</small></div>
             <div class="row" style="gap:4px;align-items:center">${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}</div>
           </div>
-          ${items.length ? `<ul style="list-style:none;display:grid;gap:6px;margin-top:2px">${items.map(it => cgItemRow("goal", d.k, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 2px">${L(`ยังไม่มีรายการเป้าหมายด้าน${d.th}`, `No ${d.en.toLowerCase()} goals yet`)}</p>`}
+          ${items.length ? `<ul data-sort="cg:goal:${d.k}:" style="list-style:none;display:grid;gap:6px;margin-top:2px">${items.map(it => cgItemRow("goal", d.k, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 2px">${L(`ยังไม่มีรายการเป้าหมายด้าน${d.th}`, `No ${d.en.toLowerCase()} goals yet`)}</p>`}
           <form class="row" data-form="cgAdd" data-sec="goal" data-key="${d.k}" style="gap:6px;margin-top:4px" autocomplete="off">
             <input class="input grow" name="text" id="goal-${d.k}" placeholder="${L(`＋ เพิ่มเป้าหมายด้าน${d.th}…`, `＋ Add ${d.en.toLowerCase()} goal…`)}" style="min-height:38px;font-size:.88rem">
             <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
@@ -3577,18 +3591,64 @@
         </div>`;
       }).join("")}</div></article>
     <div class="grid grid-2b">
-      <article class="card"><h3>🎯 Monthly Focus • ${monthLabel()}</h3>
+      <article class="card">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+          <h3 style="margin:0">🎯 Monthly Focus • ${monthLabel()}</h3>
+          <span class="sort-hint">⠿ ${L("ใช้นิ้วลากย้ายหมวด/จัดลำดับได้", "Drag ⠿ to reorder or move between topics")}</span>
+        </div>
         <div class="field">
-          <span>What to focus? (${L("สิ่งที่โฟกัสเดือนนี้ — เพิ่มได้หลายข้อ", "Monthly focus items")})</span>
-          ${focusItems.length ? `<ul style="list-style:none;display:grid;gap:6px;margin:6px 0">${focusItems.map(it => cgItemRow("mfocus", mk, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 0">${L("ยังไม่มีรายการโฟกัสเดือนนี้", "No focus items yet")}</p>`}
-          <form class="row" data-form="cgAdd" data-sec="mfocus" data-key="${mk}" style="gap:6px;margin-top:4px" autocomplete="off">
-            <input class="input grow" name="text" id="m-focus" placeholder="${L("＋ เพิ่มสิ่งที่จะโฟกัสในเดือนนี้…", "＋ Add what to focus on this month…")}" style="min-height:38px;font-size:.88rem">
-            <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
+          <span>What to focus? (${L("จัดกลุ่มตามหัวข้อ & ลากจัดลำดับรายการได้", "Group by topics & drag to organize")})</span>
+
+          <form class="row" data-form="mfAddGroup" data-mk="${mk}" style="gap:6px;margin:8px 0" autocomplete="off">
+            <input class="input grow" name="title" id="mf-group-title" placeholder="${L("📁 ＋ สร้างหัวข้อ/หมวดหมู่ใหม่ (เช่น ช่อง YouTube, งานกราฟิก, สินค้า Digital)…", "📁 ＋ New topic/group (e.g. YouTube, Graphics, Digital Products)…")}" style="min-height:38px;font-size:.86rem">
+            <button class="btn btn-sm btn-amber" type="submit" style="min-height:38px;white-space:nowrap">📁 ＋ ${L("เพิ่มหัวข้อ", "Add Topic")}</button>
           </form>
+
+          <div data-sort="mfgroups:${mk}" style="display:grid;gap:10px;margin:6px 0">
+            ${focusGroups.map((g, gi) => {
+              const gItems = g.items || [];
+              const gDone = gItems.filter(x => x.done).length;
+              const col = PALETTE[gi % PALETTE.length];
+              return `<div class="mf-group" data-sort-id="${esc(g.id)}" style="padding:10px 12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);border-left:4px solid ${col};display:grid;gap:8px">
+                <div class="row" style="justify-content:space-between;align-items:center;gap:6px">
+                  <div class="row" style="gap:6px;align-items:center;min-width:0;flex:1">
+                    <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อเรียงลำดับหัวข้อ", "Drag to reorder topic")}">⠿</span>
+                    <b style="font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📁 ${esc(g.title)}</b>
+                    <span class="chip" style="padding:1px 7px;font-size:.7rem">${gDone}/${gItems.length}</span>
+                  </div>
+                  <div class="row" style="gap:2px;flex:none">
+                    <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="editItem" data-kind="mfGroup" data-key="${mk}" data-id="${esc(g.id)}" title="${L("แก้ไขชื่อหัวข้อ", "Edit topic name")}" aria-label="${L("แก้ไขชื่อหัวข้อ", "Edit topic name")}">✏️</button>
+                    <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="mfGroupDel" data-mk="${mk}" data-id="${esc(g.id)}" title="${L("ลบหัวข้อ", "Delete topic")}" aria-label="${L("ลบหัวข้อ", "Delete topic")}">🗑️</button>
+                  </div>
+                </div>
+                <ul data-sort="cg:mfgrp:${mk}:${esc(g.id)}" data-drop-group="mfocus:${mk}" style="list-style:none;display:grid;gap:6px;min-height:36px;padding:4px;border-radius:10px;background:var(--surface-3);border:1px dashed var(--border)">
+                  ${gItems.length ? gItems.map(it => cgItemRow("mfgrp", mk, g.id, it)).join("") : `<li class="muted sm center" data-empty-hint="1" style="padding:6px;pointer-events:none">${L("ลากรายการมาวางในหัวข้อนี้ หรือพิมพ์เพิ่มด้านล่าง", "Drag items here or add below")}</li>`}
+                </ul>
+                <form class="row" data-form="cgAdd" data-sec="mfgrp" data-key="${mk}" data-sub="${esc(g.id)}" style="gap:6px" autocomplete="off">
+                  <input class="input grow" name="text" placeholder="${L(`＋ เพิ่มรายการใน "${g.title}"…`, `＋ Add item to "${g.title}"…`)}" style="min-height:36px;font-size:.85rem">
+                  <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px">＋ ${L("เพิ่ม", "Add")}</button>
+                </form>
+              </div>`;
+            }).join("")}
+          </div>
+
+          <div style="padding:10px 12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);margin-top:4px;display:grid;gap:8px">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:6px">
+              <b class="sm">📌 ${focusGroups.length ? L("รายการโฟกัสทั่วไป (ลากเข้าหัวข้อด้านบนได้)", "General focus items (drag into any topic above)") : L("รายการโฟกัสเดือนนี้", "Monthly focus items")}</b>
+              <span class="chip" style="padding:1px 7px;font-size:.7rem">${focusItems.filter(x => x.done).length}/${focusItems.length}</span>
+            </div>
+            <ul data-sort="cg:mfocus:${mk}:" data-drop-group="mfocus:${mk}" style="list-style:none;display:grid;gap:6px;min-height:36px;padding:4px;border-radius:10px;background:var(--surface-3);border:1px dashed var(--border)">
+              ${focusItems.length ? focusItems.map(it => cgItemRow("mfocus", mk, "", it)).join("") : `<li class="muted sm center" data-empty-hint="1" style="padding:6px;pointer-events:none">${L("ยังไม่มีรายการในหมวดทั่วไป — พิมพ์เพิ่มด้านล่าง หรือลากรายการมาวางที่นี่", "No general items — add below or drag items here")}</li>`}
+            </ul>
+            <form class="row" data-form="cgAdd" data-sec="mfocus" data-key="${mk}" style="gap:6px" autocomplete="off">
+              <input class="input grow" name="text" id="m-focus" placeholder="${L("＋ เพิ่มสิ่งที่จะโฟกัสในเดือนนี้…", "＋ Add what to focus on this month…")}" style="min-height:38px;font-size:.88rem">
+              <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
+            </form>
+          </div>
         </div>
         <div class="field" style="margin-top:14px">
-          <span>What to tell yourself? (${L("ประโยคเตือนใจตัวเอง — เพิ่มได้หลายข้อ", "Self reminders")})</span>
-          ${tellItems.length ? `<ul style="list-style:none;display:grid;gap:6px;margin:6px 0">${tellItems.map(it => cgItemRow("mtell", mk, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 0">${L("ยังไม่มีประโยคเตือนใจตัวเอง", "No reminders yet")}</p>`}
+          <span>What to tell yourself? (${L("ประโยคเตือนใจตัวเอง — เพิ่มได้หลายข้อ & ลากเรียงได้", "Self reminders")})</span>
+          ${tellItems.length ? `<ul data-sort="cg:mtell:${mk}:" style="list-style:none;display:grid;gap:6px;margin:6px 0">${tellItems.map(it => cgItemRow("mtell", mk, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 0">${L("ยังไม่มีประโยคเตือนใจตัวเอง", "No reminders yet")}</p>`}
           <form class="row" data-form="cgAdd" data-sec="mtell" data-key="${mk}" style="gap:6px;margin-top:4px" autocomplete="off">
             <input class="input grow" name="text" id="m-tell" placeholder="${L("＋ เพิ่มประโยคเตือนใจตัวเอง…", "＋ Add a reminder to yourself…")}" style="min-height:38px;font-size:.88rem">
             <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
@@ -3604,7 +3664,7 @@
       const dItems = getCgList("dream", d.k);
       return `<div class="dream-tile" style="background:${d.g}">
         <div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div>
-        ${dItems.length ? `<ul style="list-style:none;display:grid;gap:5px;margin:4px 0">${dItems.map(it => cgItemRow("dream", d.k, "", it, "", true)).join("")}</ul>` : ""}
+        ${dItems.length ? `<ul data-sort="cg:dream:${d.k}:" style="list-style:none;display:grid;gap:5px;margin:4px 0">${dItems.map(it => cgItemRow("dream", d.k, "", it, "", true)).join("")}</ul>` : ""}
         <form class="row" data-form="cgAdd" data-sec="dream" data-key="${d.k}" style="gap:6px;margin-top:auto" autocomplete="off">
           <input class="input grow" name="text" id="dream-${d.k}" placeholder="${L("＋ เพิ่มความฝันของคุณ…", "＋ Add your dream…")}" style="min-height:36px;font-size:.86rem;background:rgba(15,23,42,.35);border-color:rgba(255,255,255,.22);color:#fff">
           <button class="btn btn-sm" type="submit" style="min-height:36px;background:rgba(255,255,255,.22);color:#fff;border:none">＋</button>
@@ -5537,14 +5597,14 @@
       return false;
     }
 
-    /* ---------- ↕️ Drag & drop sorting (mouse + finger) ---------- */
+    /* ---------- ↕️ Drag & drop sorting (mouse + finger + cross-group move) ---------- */
     let drag = null;
     document.addEventListener("pointerdown", e => {
       const h = e.target.closest?.(".drag-handle"); if (!h) return;
       const item = h.closest("[data-sort-id]"), list = item?.parentElement;
       if (!item || !list?.dataset.sort) return;
       e.preventDefault();
-      drag = { item, list, id: e.pointerId, lastY: e.clientY, moved: false };
+      drag = { item, list, originList: list, dropGroup: list.dataset.dropGroup || "", id: e.pointerId, lastY: e.clientY, moved: false };
       drag.timer = setInterval(() => { if (!drag) return; const y = drag.lastY; if (y < 90) scrollBy(0, -14); else if (y > innerHeight - 130) scrollBy(0, 14); }, 16);
       item.classList.add("dragging"); document.body.classList.add("is-dragging");
       try { h.setPointerCapture(e.pointerId); } catch { }
@@ -5554,33 +5614,73 @@
       if (!drag || e.pointerId !== drag.id) return;
       e.preventDefault();
       const y = drag.lastY = e.clientY;
+      if (drag.dropGroup) {
+        const candidates = [...document.querySelectorAll(`[data-drop-group="${drag.dropGroup}"]`)];
+        for (const cand of candidates) {
+          const rect = cand.getBoundingClientRect();
+          if (y >= rect.top - 14 && y <= rect.bottom + 14) {
+            if (drag.list !== cand) {
+              drag.list = cand;
+              const hint = cand.querySelector("[data-empty-hint]");
+              if (hint) hint.hidden = true;
+            }
+            break;
+          }
+        }
+      }
       const sibs = [...drag.list.children].filter(c => c !== drag.item && c.dataset.sortId);
       let before = null;
       for (const s of sibs) { const r = s.getBoundingClientRect(); if (y < r.top + r.height / 2) { before = s; break; } }
-      if (before) { if (drag.item.nextElementSibling !== before) { drag.list.insertBefore(drag.item, before); drag.moved = true; } }
-      else if (drag.list.lastElementChild !== drag.item) { drag.list.appendChild(drag.item); drag.moved = true; }
+      if (before) { if (drag.item.nextElementSibling !== before || drag.item.parentElement !== drag.list) { drag.list.insertBefore(drag.item, before); drag.moved = true; } }
+      else if (drag.list.lastElementChild !== drag.item || drag.item.parentElement !== drag.list) { drag.list.appendChild(drag.item); drag.moved = true; }
     }, { passive: false });
     const endDrag = e => {
       if (!drag || (e && e.pointerId !== drag.id)) return;
-      const { item, list, moved, timer } = drag; drag = null; clearInterval(timer);
+      const { item, list, originList, moved, timer } = drag; drag = null; clearInterval(timer);
       item.classList.remove("dragging"); document.body.classList.remove("is-dragging");
-      if (moved) applySort(list.dataset.sort, [...list.children].map(c => c.dataset.sortId).filter(Boolean));
+      if (moved) {
+        applySort(list.dataset.sort, [...list.children].map(c => c.dataset.sortId).filter(Boolean), originList?.dataset.sort, item.dataset.sortId);
+      }
     };
     document.addEventListener("pointerup", endDrag);
     document.addEventListener("pointercancel", endDrag);
-    function applySort(kind, ids) {
-      const [k, a, b] = kind.split(":");
+    function applySort(kind, ids, originKind = "", movedId = "") {
+      const [k, a, b, c] = kind.split(":");
       const order = arr => ids.map(id => arr.find(x => x.id === id)).filter(Boolean).concat(arr.filter(x => !ids.includes(x.id)));
       if (k === "projects") state.projects = order(state.projects);
       else if (k === "steps") { const p = proj(a); if (p) p.steps = order(p.steps); }
       else if (k === "acts") { const [, s] = findStep(a, b); if (s) s.activities = order(s.activities || []); }
+      else if (k === "mfgroups") {
+        const M = (P().monthly[a] ||= { focusItems: [], focusGroups: [] });
+        M.focusGroups = order(M.focusGroups || []);
+      }
+      else if (k === "cg") {
+        if (originKind && originKind !== kind && movedId) {
+          const [, oa, ob, oc] = originKind.split(":");
+          const srcArr = getCgList(oa, ob, oc);
+          const dstArr = getCgList(a, b, c);
+          const idx = srcArr.findIndex(x => x.id === movedId);
+          if (idx >= 0) {
+            const [movedItem] = srcArr.splice(idx, 1);
+            dstArr.push(movedItem);
+          }
+          const reordered = order(dstArr);
+          dstArr.length = 0;
+          dstArr.push(...reordered);
+        } else {
+          const arr = getCgList(a, b, c);
+          const reordered = order(arr);
+          arr.length = 0;
+          arr.push(...reordered);
+        }
+      }
       else if (k === "queue") {
         const list = ids.map(id => state.tasks.find(t => t.id === id && t.date === a)).filter(Boolean);
         const slots = list.map(t => t.start).sort((x, y) => x - y); let prevEnd = -1;
         list.forEach((t, i) => { t.start = Math.max(slots[i], prevEnd); prevEnd = t.start + t.dur; });
       }
       rerender(); vibrate(20);
-      toast(k === "queue" ? L("↕️ จัดคิวใหม่แล้ว — ปรับเวลาเริ่มให้อัตโนมัติ", "↕️ Queue reordered — start times re-slotted") : L("↕️ จัดลำดับใหม่แล้ว", "↕️ Reordered"));
+      toast(k === "queue" ? L("↕️ จัดคิวใหม่แล้ว — ปรับเวลาเริ่มให้อัตโนมัติ", "↕️ Queue reordered — start times re-slotted") : (originKind && originKind !== kind ? L("📁 ย้ายรายการเข้าหัวข้อและจัดลำดับแล้ว", "📁 Moved to topic & reordered") : L("↕️ จัดลำดับใหม่แล้ว", "↕️ Reordered")));
     }
 
     /* ---------- 📊 Progress report ---------- */
@@ -6774,8 +6874,29 @@
         const it = list.find(x => x.id === d.id);
         if (!it) return;
         headTitle = L("แก้ไขรายการ", "Edit Item");
+        let groupMoveHtml = "";
+        if (d.sec === "mfocus" || d.sec === "mfgrp") {
+          const mk = d.key || dkey().slice(0, 7);
+          const groups = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] }).focusGroups ||= [];
+          if (groups.length) {
+            const curGrp = d.sec === "mfgrp" ? (d.sub || "") : "";
+            groupMoveHtml = `<label class="field full"><span>📁 ${L("หัวข้อ / หมวดหมู่", "Topic / Group")}</span><select class="input" name="targetGroup">
+              <option value="" ${!curGrp ? "selected" : ""}>📌 ${L("รายการโฟกัสทั่วไป (ไม่มีหัวข้อ)", "General focus items")}</option>
+              ${groups.map(g => `<option value="${esc(g.id)}" ${curGrp === g.id ? "selected" : ""}>📁 ${esc(g.title)}</option>`).join("")}
+            </select></label>`;
+          }
+        }
         bodyHtml = `
-          <label class="field full"><span>✏️ ${L("รายละเอียดรายการ", "Item text")}</span><input class="input" id="ei-title" name="text" required value="${esc(it.text)}"></label>`;
+          <label class="field full"><span>✏️ ${L("รายละเอียดรายการ", "Item text")}</span><input class="input" id="ei-title" name="text" required value="${esc(it.text)}"></label>
+          ${groupMoveHtml}`;
+      } else if (kind === "mfGroup") {
+        const mk = d.key || dkey().slice(0, 7);
+        const groups = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] }).focusGroups ||= [];
+        const g = groups.find(x => x.id === d.id);
+        if (!g) return;
+        headTitle = L("แก้ไขชื่อหัวข้อ Monthly Focus", "Edit Topic Name");
+        bodyHtml = `
+          <label class="field full"><span>📁 ${L("ชื่อหัวข้อ / หมวดหมู่", "Topic / Group name")}</span><input class="input" id="ei-title" name="title" required value="${esc(g.title)}"></label>`;
       } else {
         return;
       }
@@ -6835,6 +6956,22 @@
           list.splice(idx, 1);
           rerender();
         }
+      },
+      mfGroupDel: d => {
+        const mk = d.mk || dkey().slice(0, 7);
+        const M = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] });
+        M.focusGroups ||= [];
+        const g = M.focusGroups.find(x => x.id === d.id);
+        if (!g) return;
+        const cnt = (g.items || []).length;
+        if (!confirm(cnt ? L(`ลบหัวข้อ "${g.title}"? (รายการข้างใน ${cnt} ข้อจะถูกย้ายกลับไปที่รายการโฟกัสทั่วไป)`, `Delete topic "${g.title}"? (${cnt} items inside will move back to General focus)`) : L(`ลบหัวข้อ "${g.title}"?`, `Delete topic "${g.title}"?`))) return;
+        if (cnt) {
+          M.focusItems ||= [];
+          M.focusItems.push(...g.items);
+        }
+        M.focusGroups = M.focusGroups.filter(x => x.id !== d.id);
+        rerender();
+        toast(L("🗑️ ลบหัวข้อแล้ว", "🗑️ Topic deleted"));
       },
       rDayToggle: (d, btn) => {
         const prefix = d.prefix;
@@ -7123,14 +7260,41 @@
           st.note = (fd.note || "").trim();
         } else if (kind === "cgItem") {
           const list = getCgList(f.dataset.sec, f.dataset.key, f.dataset.sub);
-          const it = list.find(x => x.id === id);
+          const idx = list.findIndex(x => x.id === id);
+          const it = idx >= 0 ? list[idx] : null;
           const text = (fd.text || "").trim();
           if (!it || !text) return;
           it.text = text;
+          if (fd.targetGroup !== undefined && (f.dataset.sec === "mfocus" || f.dataset.sec === "mfgrp")) {
+            const curGrp = f.dataset.sec === "mfgrp" ? (f.dataset.sub || "") : "";
+            const newGrp = fd.targetGroup || "";
+            if (curGrp !== newGrp) {
+              list.splice(idx, 1);
+              const dst = newGrp ? getCgList("mfgrp", f.dataset.key, newGrp) : getCgList("mfocus", f.dataset.key, "");
+              dst.push(it);
+            }
+          }
+        } else if (kind === "mfGroup") {
+          const mk = f.dataset.key || dkey().slice(0, 7);
+          const groups = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] }).focusGroups ||= [];
+          const g = groups.find(x => x.id === id);
+          const title = (fd.title || "").trim();
+          if (!g || !title) return;
+          g.title = title;
         }
         $("#edit-item-dlg")?.close();
         rerender();
         toast(L("✏️ บันทึกการแก้ไขเรียบร้อยแล้ว", "✏️ Changes saved"));
+      },
+      mfAddGroup: (fd, f) => {
+        const title = (fd.title || "").trim();
+        if (!title) return;
+        const mk = f.dataset.mk || dkey().slice(0, 7);
+        const M = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] });
+        M.focusGroups ||= [];
+        M.focusGroups.push({ id: uid(), title, items: [] });
+        rerender();
+        toast(L(`📁 สร้างหัวข้อ "${title}" แล้ว — ลากรายการเข้ามาวางหรือพิมพ์เพิ่มได้เลย`, `📁 Topic "${title}" created`));
       },
       cgAdd: (fd, f) => {
         const text = (fd.text || "").trim();
