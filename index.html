@@ -2466,6 +2466,9 @@
   <dialog id="edit-item-dlg" closedby="any" aria-labelledby="edit-item-dlg-title">
     <form class="dlg-body" data-form="editItem" id="edit-item-form" autocomplete="off"></form>
   </dialog>
+  <dialog id="drive-dlg" closedby="any" aria-labelledby="drive-dlg-title" style="width:min(680px,95vw)">
+    <div class="dlg-body" id="drive-dlg-body"></div>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -4877,32 +4880,72 @@
       if (/document/.test(s)) return "📝"; if (/pdf/.test(s)) return "📕"; if (/image/.test(s)) return "🖼️"; if (/video/.test(s)) return "🎬"; return "📄";
     }
 
-    /* ---------- 🔗 Google (Calendar push + Drive Picker) ---------- */
-    const G_SCOPES = { cal: "https://www.googleapis.com/auth/calendar.events", drive: "https://www.googleapis.com/auth/drive.file" };
+    /* ---------- 🔗 Google (Calendar push + Built-in Drive File Browser & Uploader) ---------- */
+    const G_SCOPES = {
+      cal: "https://www.googleapis.com/auth/calendar.events",
+      drive: "https://www.googleapis.com/auth/drive.file",
+      driveRead: "https://www.googleapis.com/auth/drive.readonly"
+    };
     class GErr extends Error { constructor(code, status, msg) { super(msg || code); this.code = code; this.status = status; } }
-    const gTok = () => { try { return JSON.parse(sessionStorage.getItem("fr.gtok") || "null"); } catch { return null; } };
-    function gTokenValid(kind) { const t = gTok(); if (!t || t.exp < Date.now()) return null; if (kind && !t.scopes?.includes(G_SCOPES[kind])) return null; return t.token; }
-    async function googleToken(kinds = ["cal"]) {
-      const need = kinds.map(k => G_SCOPES[k]), c = gTok();
-      if (c && c.exp > Date.now() && need.every(s => c.scopes?.includes(s))) return c.token;
+    const gTok = () => {
+      try {
+        const raw = localStorage.getItem("fr.gtok") || sessionStorage.getItem("fr.gtok");
+        if (!raw) return null;
+        if (!localStorage.getItem("fr.gtok")) localStorage.setItem("fr.gtok", raw);
+        const parsed = JSON.parse(raw);
+        if (parsed?.uid && state.user?.uid && parsed.uid !== state.user.uid) return null;
+        return parsed;
+      } catch { return null; }
+    };
+    function saveGTok(token, scopes) {
+      const obj = { token, exp: Date.now() + 55 * 60e3, scopes: scopes || Object.values(G_SCOPES), uid: state.user?.uid || "" };
+      try {
+        localStorage.setItem("fr.gtok", JSON.stringify(obj));
+        sessionStorage.setItem("fr.gtok", JSON.stringify(obj));
+        localStorage.setItem("fr.gconsented", "1");
+      } catch {}
+      if (state.gcal) { state.gcal.consented = true; save(); }
+      return obj;
+    }
+    function clearGTok() {
+      try { localStorage.removeItem("fr.gtok"); sessionStorage.removeItem("fr.gtok"); } catch {}
+    }
+    function gTokenValid(kind) {
+      const t = gTok();
+      if (!t || t.exp < Date.now()) return null;
+      if (kind === "drive") {
+        if (!t.scopes?.includes(G_SCOPES.drive) && !t.scopes?.includes(G_SCOPES.driveRead)) return null;
+      } else if (kind && !t.scopes?.includes(G_SCOPES[kind])) return null;
+      return t.token;
+    }
+    const isGoogleConsented = () => !!(gTokenValid("cal") || state.gcal?.consented || localStorage.getItem("fr.gconsented"));
+    async function googleToken(kinds = ["cal"], forceConsent = false) {
+      const c = gTok();
+      if (!forceConsent && c && c.exp > Date.now()) {
+        const hasAll = kinds.every(k => k === "drive" ? (c.scopes?.includes(G_SCOPES.drive) || c.scopes?.includes(G_SCOPES.driveRead)) : c.scopes?.includes(G_SCOPES[k]));
+        if (hasAll) return c.token;
+      }
       if (!fb || !fb.auth?.currentUser || state.user?.demo) { toast(L("⚙️ โหมดสาธิต: ต้องล็อกอินด้วยบัญชี Google จริงเพื่อเชื่อม Calendar/Drive", "⚙️ Demo mode: sign in with a real Google account to connect Calendar/Drive")); throw new Error("demo"); }
       const prov = new fb.GoogleAuthProvider(), all = Object.values(G_SCOPES);
       all.forEach(s => prov.addScope(s));
-      prov.setCustomParameters({ login_hint: fb.auth.currentUser.email || "", prompt: "consent" });
+      const consented = !forceConsent && !!(state.gcal?.consented || localStorage.getItem("fr.gconsented"));
+      const params = { login_hint: fb.auth.currentUser.email || "" };
+      if (!consented) params.prompt = "consent";
+      prov.setCustomParameters(params);
       const res = await fb.reauthenticateWithPopup(fb.auth.currentUser, prov);
       const cred = fb.GoogleAuthProvider.credentialFromResult(res);
       if (!cred?.accessToken) throw new GErr("no-token");
-      sessionStorage.setItem("fr.gtok", JSON.stringify({ token: cred.accessToken, exp: Date.now() + 55 * 60e3, scopes: all }));
+      saveGTok(cred.accessToken, all);
       return cred.accessToken;
     }
     async function gFetch(url, opts = {}, kind = "cal") {
       const token = await googleToken([kind]);
       const r = await fetch(url, { ...opts, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
-      if (r.status === 401) { sessionStorage.removeItem("fr.gtok"); throw new GErr("auth", 401); }
+      if (r.status === 401) { clearGTok(); throw new GErr("auth", 401); }
       if (r.status === 403) {
         const j = await r.json().catch(() => ({})), txt = JSON.stringify(j);
-        if (/accessNotConfigured|SERVICE_DISABLED|has not been used/i.test(txt)) throw new GErr("disabled", 403);
-        if (/insufficient/i.test(txt)) { sessionStorage.removeItem("fr.gtok"); throw new GErr("scope", 403); }
+        if (/accessNotConfigured|SERVICE_DISABLED|has not been used/i.test(txt)) throw new GErr("disabled", 403, txt);
+        if (/insufficient/i.test(txt)) { clearGTok(); throw new GErr("scope", 403); }
         throw new GErr("forbidden", 403, j?.error?.message);
       }
       return r;
@@ -4911,8 +4954,8 @@
       if (e?.message === "demo") return;
       const c = e?.code || "";
       console.warn("Google error", e);
-      if (c === "disabled") toast(L("❌ ยังไม่ได้เปิดใช้ Google Calendar API ในโปรเจค — แจ้งผู้ดูแลระบบ", "❌ Google Calendar API isn't enabled for this project yet"));
-      else if (c === "auth" || c === "scope") toast(L("🔑 สิทธิ์หมดอายุหรือไม่ครบ — กด “เชื่อมต่อบัญชี Google” แล้วติ๊กอนุญาตทุกข้อ", "🔑 Permission expired or missing — tap “Connect Google” and allow all"));
+      if (c === "disabled") toast(L("❌ ยังไม่ได้กด Enable Google Drive API หรือ Calendar API ใน Google Cloud Console", "❌ Please enable Google Drive API / Calendar API in Google Cloud Console"));
+      else if (c === "auth" || c === "scope") toast(L("🔑 สิทธิ์ยังไม่ครบ — กดปุ่มเชื่อมต่อ Google แล้วติ๊กอนุญาตสิทธิ์", "🔑 Permission missing — tap Connect Google and allow permissions"));
       else if (c === "auth/popup-blocked") toast(L("เบราว์เซอร์บล็อกป๊อปอัป — อนุญาตป๊อปอัปแล้วลองใหม่", "Popup blocked — allow popups and try again"));
       else if (c === "auth/popup-closed-by-user" || c === "auth/cancelled-popup-request") toast(L("ยกเลิกการเชื่อมต่อ Google", "Google connection cancelled"));
       else if (c === "auth/user-mismatch") toast(L("กรุณาเลือกบัญชี Google เดียวกับที่ใช้ล็อกอิน", "Please choose the same Google account you signed in with"));
@@ -4964,46 +5007,229 @@
     }
     function autoSync(p, s) { if (p && s?.gcal && s.gcalId && gTokenValid("cal")) syncItems([[p, s]]).catch(() => { }); }
     function googlePanel() {
-      const on = !!gTokenValid("cal");
+      const on = !!gTokenValid("cal") || isGoogleConsented();
       const linked = state.projects.reduce((n, p) => n + p.steps.filter(s => s.gcal).length, 0);
       return `<article class="card g-panel" id="g-panel">
-      <div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><b>🔗 Google Calendar & Google Drive</b><span class="g-status ${on ? "on" : ""}">${on ? "● " + L("เชื่อมต่อแล้ว", "Connected") : "○ " + L("ยังไม่เชื่อมต่อ", "Not connected")}</span></div>
-      <p class="muted sm" style="margin:6px 0 10px">${L("ส่งขั้นตอน กิจกรรมย่อย และคิวงาน ไปลงปฏิทิน Google ของคุณ (ทางเดียว FlowRecover → Calendar) • แนบไฟล์จาก Google Drive เข้าโปรเจค", "Push steps, activities and queue tasks to your Google Calendar (one-way FlowRecover → Calendar) • attach files from Google Drive")}</p>
+      <div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center"><b>🔗 Google Calendar & Google Drive</b><span class="g-status ${on ? "on" : ""}">${on ? "● " + L("เชื่อมต่อแล้ว (จำสิทธิ์อัตโนมัติ)", "Connected (Auto-saved)") : "○ " + L("ยังไม่เชื่อมต่อ", "Not connected")}</span></div>
+      <p class="muted sm" style="margin:6px 0 10px">${L("อนุญาตสิทธิ์เพียงครั้งเดียว ระบบจะจดจำการเชื่อมต่อให้อัตโนมัติ • ส่งคิวงาน/โปรเจคเข้าปฏิทิน Google และเลือกไฟล์จาก Google Drive เข้าโปรเจคได้ทันที", "Authorize once and stay connected automatically • push tasks/steps to Google Calendar and attach files from Google Drive")}</p>
       <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
-        <button class="btn btn-sm" data-act="gConnect" id="btn-g-connect"><span class="link-ico">${GOOGLE_SVG}</span>${on ? L("เชื่อมต่อใหม่", "Reconnect") : L("เชื่อมต่อบัญชี Google", "Connect Google")}</button>
+        <button class="btn btn-sm" data-act="gConnect" id="btn-g-connect"><span class="link-ico">${GOOGLE_SVG}</span>${on ? L("ซิงก์ / ต่ออายุสิทธิ์อัตโนมัติ", "Sync / Refresh connection") : L("เชื่อมต่อบัญชี Google (ครั้งเดียว)", "Connect Google (One-time)")}</button>
         <button class="btn btn-sm btn-emerald" data-act="gcalSyncAll" id="btn-gcal-all">📆 ${L(`ส่งขั้นตอนที่เชื่อมไว้ (${linked})`, `Push linked steps (${linked})`)}</button>
         <label class="row" style="gap:6px;align-items:center;flex:1;min-width:210px"><span class="muted sm">📅 Calendar ID</span><input class="input grow" id="gcal-id" data-bind="gcal.calendarId" value="${esc(state.gcal.calendarId)}" placeholder="primary" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"></label>
       </div>
       ${state.gcal.lastSync ? `<p class="muted sm" style="margin-top:6px">✓ ${L("ส่งล่าสุด", "Last push")} ${fmtDT(state.gcal.lastSync)}</p>` : ""}
     </article>`;
     }
-    let gapiReady = null;
-    function loadPicker() {
-      return gapiReady ||= new Promise((res, rej) => {
-        const go = () => window.gapi.load("picker", { callback: res, onerror: () => rej(new Error("picker load failed")) });
-        if (window.gapi?.load) return go();
-        const sc = document.createElement("script"); sc.src = "https://apis.google.com/js/api.js"; sc.async = true; sc.onload = go;
-        sc.onerror = () => { gapiReady = null; rej(new Error("Google API script blocked")); };
-        document.head.appendChild(sc);
-      });
+
+    const driveBrowser = { pid: null, q: "", mime: "all", folderId: "", stack: [], items: [], sel: {}, loading: false, err: "", uploading: false };
+    function driveFileUrl(f) {
+      if (f.webViewLink) return f.webViewLink;
+      if (f.mimeType === "application/vnd.google-apps.folder") return `https://drive.google.com/drive/folders/${f.id}`;
+      return `https://drive.google.com/file/d/${f.id}/view`;
+    }
+    async function loadDriveFiles(forceFullScope = false) {
+      driveBrowser.loading = true;
+      driveBrowser.err = "";
+      renderDriveDlg();
+      try {
+        const token = await googleToken(forceFullScope ? ["cal", "drive", "driveRead"] : ["drive"], forceFullScope);
+        const clauses = ["trashed = false"];
+        if (driveBrowser.folderId) {
+          clauses.push(`'${driveBrowser.folderId.replace(/'/g, "\\'")}' in parents`);
+        }
+        const qTxt = (driveBrowser.q || "").trim();
+        if (qTxt) {
+          clauses.push(`name contains '${qTxt.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`);
+        }
+        const m = driveBrowser.mime;
+        if (m === "folder") clauses.push("mimeType = 'application/vnd.google-apps.folder'");
+        else if (m === "doc") clauses.push("mimeType = 'application/vnd.google-apps.document'");
+        else if (m === "sheet") clauses.push("mimeType = 'application/vnd.google-apps.spreadsheet'");
+        else if (m === "slide") clauses.push("mimeType = 'application/vnd.google-apps.presentation'");
+        else if (m === "pdf") clauses.push("mimeType = 'application/pdf'");
+        else if (m === "image") clauses.push("mimeType contains 'image/'");
+
+        const params = new URLSearchParams({
+          pageSize: "60",
+          q: clauses.join(" and "),
+          fields: "files(id,name,mimeType,webViewLink,modifiedTime,size,iconLink)",
+          orderBy: "folder,modifiedTime desc",
+          supportsAllDrives: "true",
+          includeItemsFromAllDrives: "true"
+        });
+        const r = await fetch(`https://www.googleapis.com/drive/v3/files?${params}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          const msg = j?.error?.message || `HTTP ${r.status}`;
+          if (r.status === 401) { clearGTok(); }
+          throw new Error(msg);
+        }
+        const data = await r.json();
+        driveBrowser.items = data.files || [];
+      } catch (e) {
+        console.warn("Drive load error", e);
+        driveBrowser.err = e?.message || "ไม่สามารถโหลดรายการไฟล์จาก Google Drive ได้";
+      } finally {
+        driveBrowser.loading = false;
+        renderDriveDlg();
+      }
+    }
+    async function uploadToDriveAndAttach(fileList) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+      driveBrowser.uploading = true;
+      renderDriveDlg();
+      try {
+        const token = await googleToken(["drive"]);
+        const p = proj(driveBrowser.pid);
+        let uploadedCount = 0;
+        for (const file of files) {
+          const meta = { name: file.name };
+          if (driveBrowser.folderId) meta.parents = [driveBrowser.folderId];
+          const form = new FormData();
+          form.append("metadata", new Blob([JSON.stringify(meta)], { type: "application/json" }));
+          form.append("file", file);
+          const r = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,webViewLink", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: form
+          });
+          if (!r.ok) {
+            const j = await r.json().catch(() => ({}));
+            throw new Error(j?.error?.message || `Upload failed (${r.status})`);
+          }
+          const d = await r.json();
+          const url = driveFileUrl(d);
+          if (p && url && !p.links.some(l => l.url === url)) {
+            p.links.push({ id: uid(), label: d.name || file.name, url, mime: d.mimeType || file.type || "" });
+            uploadedCount++;
+          }
+        }
+        rerender();
+        toast(L(`☁️ อัปโหลดและแนบ ${uploadedCount} ไฟล์เข้าโปรเจคเรียบร้อยแล้ว!`, `☁️ Uploaded & attached ${uploadedCount} file(s)!`));
+        await loadDriveFiles(false);
+      } catch (e) {
+        gErrToast(e);
+      } finally {
+        driveBrowser.uploading = false;
+        renderDriveDlg();
+      }
+    }
+    function renderDriveDlg() {
+      const box = $("#drive-dlg-body");
+      if (!box) return;
+      const p = proj(driveBrowser.pid);
+      const tok = gTok();
+      const hasFullRead = !!tok?.scopes?.includes(G_SCOPES.driveRead);
+      const selCount = Object.keys(driveBrowser.sel).length;
+      const filters = [
+        ["all", L("ทั้งหมด", "All")],
+        ["folder", "📁 " + L("โฟลเดอร์", "Folders")],
+        ["doc", "📝 Docs"],
+        ["sheet", "📊 Sheets"],
+        ["slide", "📽️ Slides"],
+        ["pdf", "📕 PDF"],
+        ["image", "🖼️ " + L("รูปภาพ", "Images")]
+      ];
+      box.innerHTML = `
+        <div class="dlg-head">
+          <div class="row" style="gap:8px;align-items:center">
+            <span class="link-ico">${DRIVE_SVG}</span>
+            <div>
+              <h2 id="drive-dlg-title" style="font-size:1.15rem">${L("เลือกไฟล์จาก Google Drive", "Pick from Google Drive")}</h2>
+              <p class="muted sm">${p ? `🗂️ ${esc(p.title)}` : ""}</p>
+            </div>
+          </div>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="drive-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+
+        <div class="row" style="gap:8px;flex-wrap:wrap;justify-content:space-between;align-items:center">
+          <form class="row grow" data-form="driveSearch" style="gap:6px;flex:1;min-width:200px" autocomplete="off">
+            <input class="input grow" name="q" id="drive-q" value="${esc(driveBrowser.q)}" placeholder="${L("🔍 ค้นหาชื่อไฟล์หรือโฟลเดอร์ใน Drive…", "🔍 Search files or folders in Drive…")}" style="min-height:38px;flex:1">
+            <button class="btn btn-sm" type="submit">${L("ค้นหา", "Search")}</button>
+            ${driveBrowser.q ? `<button class="btn btn-sm" type="button" data-act="driveClearQ">✕</button>` : ""}
+          </form>
+          <label class="btn btn-sm btn-emerald" style="cursor:pointer;margin:0">
+            ${driveBrowser.uploading ? `⏳ ${L("กำลังอัปโหลด…", "Uploading…")}` : `☁️ ${L("อัปโหลดไฟล์ใหม่เข้า Drive", "Upload to Drive")}`}
+            <input type="file" id="drive-upload-input" multiple hidden ${driveBrowser.uploading ? "disabled" : ""}>
+          </label>
+        </div>
+
+        <div class="chips" style="gap:6px;margin-top:2px">
+          ${filters.map(([k, l]) => `<button type="button" class="chip ${driveBrowser.mime === k ? "chip-amber" : ""}" style="cursor:pointer;border:none" data-act="driveFilter" data-v="${k}">${l}</button>`).join("")}
+        </div>
+
+        ${driveBrowser.stack.length ? `
+          <div class="row sm" style="gap:6px;align-items:center;padding:6px 10px;border-radius:10px;background:var(--surface-2);flex-wrap:wrap">
+            <button type="button" class="link sm" data-act="driveFolderRoot">🏠 My Drive</button>
+            ${driveBrowser.stack.map((f, i) => `<span>›</span><button type="button" class="link sm" data-act="driveFolderJump" data-i="${i}">📁 ${esc(trunc(f.name, 22))}</button>`).join("")}
+          </div>
+        ` : ""}
+
+        ${!hasFullRead ? `
+          <div class="row" style="justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.35);flex-wrap:wrap">
+            <div class="sm">💡 ${L("หากยังไม่เห็นไฟล์เก่าที่มีอยู่ใน Google Drive กดปุ่มนี้เพียงครั้งเดียวเพื่อซิงก์รายชื่อไฟล์ทั้งหมดครับ", "Don't see your existing Drive files yet? Tap once to grant read access to your Drive file list.")}</div>
+            <button type="button" class="btn btn-sm btn-amber" data-act="driveGrantFull">🔓 ${L("ซิงก์ไฟล์ทั้งหมดใน Drive (ครั้งเดียว)", "Load all Drive files (One-time)")}</button>
+          </div>
+        ` : ""}
+
+        <div style="max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:14px;padding:8px;background:var(--surface-2)">
+          ${driveBrowser.loading ? `<p class="empty">⏳ ${L("กำลังโหลดไฟล์จาก Google Drive…", "Loading files from Google Drive…")}</p>` :
+            driveBrowser.err ? `<div class="empty"><p class="rose">⚠️ ${esc(driveBrowser.err)}</p><p class="muted sm" style="margin:6px 0">${L("ตรวจสอบว่าเปิดใช้ Google Drive API ใน Google Cloud Console แล้ว หรือกดรีเฟรชด้านล่าง", "Make sure Google Drive API is enabled in Google Cloud Console, or tap retry below.")}</p><button type="button" class="btn btn-sm btn-amber" data-act="driveGrantFull">🔄 ${L("เชื่อมต่อและลองใหม่", "Reconnect & Retry")}</button></div>` :
+            driveBrowser.items.length ? `<ul class="rows">${driveBrowser.items.map(f => {
+              const isFolder = f.mimeType === "application/vnd.google-apps.folder";
+              const checked = !!driveBrowser.sel[f.id];
+              const ico = linkIcon({ url: driveFileUrl(f), mime: f.mimeType });
+              return `<li class="row-item" style="padding:8px 10px;gap:8px">
+                <div class="row" style="gap:8px;align-items:center;min-width:0;flex:1">
+                  <button type="button" class="check ${checked ? "done" : ""}" data-act="driveToggleSel" data-id="${f.id}" aria-label="${L("เลือกไฟล์", "Select file")}">${checked ? "✓" : ""}</button>
+                  <span style="flex:none">${ico}</span>
+                  <div style="min-width:0;flex:1">
+                    ${isFolder ? `<button type="button" class="link" style="text-align:left;font-weight:700;color:var(--text)" data-act="driveOpenFolder" data-id="${f.id}" data-name="${esc(f.name)}">${esc(f.name)}</button>` : `<b style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(f.name)}</b>`}
+                    <small class="muted">${isFolder ? L("โฟลเดอร์ • แตะชื่อเพื่อเปิดดูข้างใน", "Folder • tap name to open") : (f.modifiedTime ? fmtDT(new Date(f.modifiedTime).getTime()) : "")}</small>
+                  </div>
+                </div>
+                <div class="row" style="gap:4px;flex:none">
+                  ${isFolder ? `<button type="button" class="btn btn-sm" data-act="driveOpenFolder" data-id="${f.id}" data-name="${esc(f.name)}">📂 ${L("เปิด", "Open")}</button>` : ""}
+                  <button type="button" class="btn btn-sm btn-emerald" data-act="driveAttachOne" data-id="${f.id}">＋ ${L("แนบ", "Attach")}</button>
+                </div>
+              </li>`;
+            }).join("")}</ul>` :
+            `<div class="empty">
+              <p>${L("ไม่พบไฟล์ในหมวดนี้", "No files found")}</p>
+              ${!hasFullRead ? `<button type="button" class="btn btn-sm btn-amber" style="margin-top:8px" data-act="driveGrantFull">🔓 ${L("กดเพื่อดึงไฟล์ทั้งหมดที่มีใน Google Drive", "Tap to load all existing files from Google Drive")}</button>` : `<p class="muted sm" style="margin-top:4px">${L("ลองค้นหาด้วยคำอื่น หรือกดปุ่ม “☁️ อัปโหลดไฟล์ใหม่เข้า Drive” ด้านบน", "Try another search or tap “☁️ Upload to Drive” above")}</p>`}
+            </div>`}
+        </div>
+
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="muted sm">${selCount ? L(`เลือกไว้ ${selCount} รายการ`, `${selCount} item(s) selected`) : L("ติ๊กเลือกหลายไฟล์ หรือกด “＋ แนบ” ที่ไฟล์ได้เลย", "Select multiple files or tap “＋ Attach” on any file")}</span>
+          <div class="row" style="gap:8px">
+            ${selCount ? `<button type="button" class="btn btn-emerald" data-act="driveAttachSel">📎 ${L(`แนบไฟล์ที่เลือก (${selCount})`, `Attach selected (${selCount})`)}</button>` : ""}
+            <button type="button" class="btn" data-act="closeDlg" data-id="drive-dlg">${L("ปิด", "Close")}</button>
+          </div>
+        </div>`;
+
+      const upInp = $("#drive-upload-input");
+      if (upInp) {
+        upInp.onchange = e => {
+          if (e.target.files?.length) uploadToDriveAndAttach(e.target.files);
+        };
+      }
     }
     function drivePick(pid) {
-      Promise.all([googleToken(["drive"]), loadPicker()]).then(([token]) => {
-        const G = window.google.picker;
-        const docs = new G.DocsView(G.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(true);
-        new G.PickerBuilder()
-          .addView(docs).addView(new G.DocsUploadView())
-          .enableFeature(G.Feature.MULTISELECT_ENABLED)
-          .setOAuthToken(token).setDeveloperKey(FIREBASE_CONFIG.apiKey).setAppId(FIREBASE_CONFIG.messagingSenderId)
-          .setLocale(LANG === "th" ? "th" : "en").setTitle(L("เลือกไฟล์แนบโปรเจค", "Attach files to project"))
-          .setCallback(data => {
-            if (data[G.Response.ACTION] !== G.Action.PICKED) return;
-            const p = proj(pid); if (!p) return;
-            const arr = data[G.Response.DOCUMENTS] || []; let n = 0;
-            arr.forEach(d => { const url = d[G.Document.URL]; if (!url || p.links.some(l => l.url === url)) return; p.links.push({ id: uid(), label: d[G.Document.NAME] || driveLabel(url), url, mime: d[G.Document.MIME_TYPE] || "" }); n++; });
-            rerender(); toast(L(`📎 แนบ ${n} ไฟล์จาก Google Drive แล้ว`, `📎 Attached ${n} file(s) from Google Drive`));
-          }).build().setVisible(true);
-      }).catch(gErrToast);
+      driveBrowser.pid = pid;
+      driveBrowser.q = "";
+      driveBrowser.mime = "all";
+      driveBrowser.folderId = "";
+      driveBrowser.stack = [];
+      driveBrowser.sel = {};
+      const dlg = $("#drive-dlg");
+      if (dlg && !dlg.open) dlg.showModal();
+      const tok = gTok();
+      const needFull = !tok?.scopes?.includes(G_SCOPES.driveRead);
+      loadDriveFiles(needFull);
     }
 
     /* ---------- 📆 Gantt timeline ---------- */
@@ -5413,7 +5639,66 @@
       copyReport: async () => { const txt = reportText(); try { await navigator.clipboard.writeText(txt); toast(L("📋 คัดลอกสรุปแล้ว", "📋 Summary copied")); } catch { prompt(L("คัดลอกข้อความนี้", "Copy this text"), txt); } },
       pasteLink: async d => { try { const txt = (await navigator.clipboard.readText()).trim(); const inp = document.getElementById(`flu-${d.pid}`); if (inp) { inp.value = txt; inp.focus(); } if (!/^https?:\/\//i.test(txt)) toast(L("คลิปบอร์ดไม่มีลิงก์ — กดค้างที่ช่องแล้วเลือกวาง", "No link in clipboard — long-press the field and paste")); } catch { document.getElementById(`flu-${d.pid}`)?.focus(); toast(L("กดค้างที่ช่องลิงก์แล้วเลือก “วาง”", "Long-press the link field and choose Paste")); } },
       drivePick: d => drivePick(d.pid),
-      gConnect: () => { sessionStorage.removeItem("fr.gtok"); googleToken(["cal", "drive"]).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive แล้ว", "✅ Google Calendar & Drive connected")); renderView(); }).catch(gErrToast); },
+      driveFilter: d => { driveBrowser.mime = d.v || "all"; loadDriveFiles(false); },
+      driveClearQ: () => { driveBrowser.q = ""; loadDriveFiles(false); },
+      driveOpenFolder: d => {
+        if (!d.id) return;
+        driveBrowser.stack.push({ id: d.id, name: d.name || "Folder" });
+        driveBrowser.folderId = d.id;
+        loadDriveFiles(false);
+      },
+      driveFolderRoot: () => {
+        driveBrowser.stack = [];
+        driveBrowser.folderId = "";
+        loadDriveFiles(false);
+      },
+      driveFolderJump: d => {
+        const idx = Number(d.i);
+        if (isNaN(idx) || idx < 0) return;
+        driveBrowser.stack = driveBrowser.stack.slice(0, idx + 1);
+        driveBrowser.folderId = driveBrowser.stack.at(-1)?.id || "";
+        loadDriveFiles(false);
+      },
+      driveGrantFull: () => {
+        loadDriveFiles(true);
+      },
+      driveToggleSel: d => {
+        const f = driveBrowser.items.find(x => x.id === d.id);
+        if (!f) return;
+        if (driveBrowser.sel[f.id]) delete driveBrowser.sel[f.id];
+        else driveBrowser.sel[f.id] = f;
+        renderDriveDlg();
+      },
+      driveAttachOne: d => {
+        const f = driveBrowser.items.find(x => x.id === d.id);
+        const p = proj(driveBrowser.pid);
+        if (!f || !p) return;
+        const url = driveFileUrl(f);
+        if (p.links.some(l => l.url === url)) {
+          toast(L("ไฟล์นี้แนบไว้ในโปรเจคแล้ว", "This file is already attached"));
+          return;
+        }
+        p.links.push({ id: uid(), label: f.name || driveLabel(url), url, mime: f.mimeType || "" });
+        rerender();
+        toast(L(`📎 แนบ “${trunc(f.name, 26)}” เข้าโปรเจคแล้ว`, `📎 Attached “${trunc(f.name, 26)}”`));
+      },
+      driveAttachSel: () => {
+        const p = proj(driveBrowser.pid);
+        const arr = Object.values(driveBrowser.sel);
+        if (!p || !arr.length) return;
+        let n = 0;
+        arr.forEach(f => {
+          const url = driveFileUrl(f);
+          if (!url || p.links.some(l => l.url === url)) return;
+          p.links.push({ id: uid(), label: f.name || driveLabel(url), url, mime: f.mimeType || "" });
+          n++;
+        });
+        driveBrowser.sel = {};
+        $("#drive-dlg")?.close();
+        rerender();
+        toast(L(`📎 แนบ ${n} ไฟล์จาก Google Drive เข้าโปรเจคเรียบร้อยแล้ว!`, `📎 Attached ${n} file(s) from Google Drive!`));
+      },
+      gConnect: () => { googleToken(["cal", "drive", "driveRead"], !isGoogleConsented()).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive เรียบร้อยแล้ว (จำสิทธิ์อัตโนมัติ)", "✅ Google Calendar & Drive connected")); renderView(); }).catch(gErrToast); },
       gcalSyncAll: () => { const pairs = state.projects.flatMap(p => p.steps.filter(s => s.gcal).map(s => [p, s])); if (!pairs.length) { toast(L("ยังไม่มีขั้นตอนที่เชื่อม — เปิดสวิตช์ 📆 ในรายละเอียดขั้นตอน", "No linked steps yet — switch on 📆 inside a step")); return; } runSync(pairs); },
       gcalSyncProject: d => { const p = proj(d.id); if (!p) return; const pairs = p.steps.filter(s => s.start || s.end || (s.activities || []).some(a => a.date)).map(s => (s.gcal = true, [p, s])); runSync(pairs, state.tasks.filter(t => t.projectId === p.id && t.date >= dkey())); },
       gcalSyncStep: d => { const [p, s] = findStep(d.pid, d.sid); if (!s) return; s.gcal = true; runSync([[p, s]], state.tasks.filter(t => t.stepId === s.id && t.date >= dkey())); },
@@ -6360,7 +6645,7 @@
         if (t.gcalId) gSyncChanges(true).then(n => { if (n) toast(L("🗑️ ลบออกจาก Google Calendar แล้ว", "🗑️ Removed from Google Calendar")); })
           .catch(e => { if (e?.message !== "demo") toast(L("⏳ จะลบใน Google Calendar ให้อัตโนมัติเมื่อเชื่อมต่อครั้งถัดไป", "⏳ It will be removed from Google Calendar next time you connect")); });
       },
-      gConnect: () => { sessionStorage.removeItem("fr.gtok"); googleToken(["cal", "drive"]).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive แล้ว", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast); },
+      gConnect: () => { googleToken(["cal", "drive", "driveRead"], !isGoogleConsented()).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive เรียบร้อยแล้ว (จำสิทธิ์อัตโนมัติ)", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast); },
       gcalPull: d => {
         const a = d.a || state.queueDate || dkey(), b = d.b || a;
         if (b > a && !confirm(L(`ดึงนัดหมายจาก Google Calendar ช่วง ${fmtShort(a)} – ${fmtShort(b)} เข้าคิวงาน?`, `Pull Google Calendar events from ${fmtShort(a)} – ${fmtShort(b)} into the queue?`))) return;
@@ -6584,6 +6869,10 @@
         toast(L(`➕ บันทึกรายรับ "${note}" ${money(amount)} ฿ แล้ว`, `➕ Income "${note}" ${money(amount)} ฿ saved`));
         setTimeout(() => $("#minc-note")?.focus(), 40);
       },
+      driveSearch: fd => {
+        driveBrowser.q = (fd.q || "").trim();
+        loadDriveFiles(false);
+      },
       addTxn: fd => {
         const amount = Number(fd.amount); if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
         const type = fd.type === "inc" ? "inc" : "exp";
@@ -6634,7 +6923,13 @@
     function showApp() { $("#auth-screen").hidden = true; $("#app").hidden = false; seed(); renderAll(); }
     async function login() {
       if (fb) {
-        try { await fb.signInWithPopup(fb.auth, new fb.GoogleAuthProvider()); }
+        try {
+          const prov = new fb.GoogleAuthProvider(), all = Object.values(G_SCOPES);
+          all.forEach(s => prov.addScope(s));
+          const res = await fb.signInWithPopup(fb.auth, prov);
+          const cred = fb.GoogleAuthProvider.credentialFromResult?.(res);
+          if (cred?.accessToken) saveGTok(cred.accessToken, all);
+        }
         catch (e) {
           console.error(e);
           if (e.code === "auth/unauthorized-domain") {
