@@ -3446,25 +3446,171 @@
       <div class="shortcuts" role="tablist" aria-label="Life Planner">${tabs.map(([k, l, d]) => `<button class="${sec === k ? "on" : ""}" data-act="psec" data-v="${k}" id="psec-${k}" title="${d}" role="tab" aria-selected="${sec === k}">${l}</button>`).join("")}</div></div>
     ${body}`;
     }
+    function ensureCgItems(date, mk) {
+      let changed = false;
+      const splitLines = str => String(str || "").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+      // 1. 5-Dimension Goals
+      DIMS.forEach(d => {
+        P().goals[d.k] ||= {};
+        const G = P().goals[d.k];
+        if (!Array.isArray(G.items)) {
+          G.items = splitLines(G.goal).map(text => ({ id: uid(), text, done: false }));
+          if (G.goal) G.goal = "";
+          changed = true;
+        }
+      });
+
+      // 2. Monthly Focus (focus & tell)
+      if (mk) {
+        P().monthly[mk] ||= {};
+        const M = P().monthly[mk];
+        if (!Array.isArray(M.focusItems)) {
+          M.focusItems = splitLines(M.focus).map(text => ({ id: uid(), text, done: false }));
+          if (M.focus) M.focus = "";
+          changed = true;
+        }
+        if (!Array.isArray(M.tellItems)) {
+          M.tellItems = splitLines(M.tell).map(text => ({ id: uid(), text, done: false }));
+          if (M.tell) M.tell = "";
+          changed = true;
+        }
+      }
+
+      // 3. Daily 24h Plan
+      if (date) {
+        P().daily[date] ||= {};
+        const D = P().daily[date];
+        D.planItems ||= {};
+        for (let h = 0; h < 24; h++) {
+          const hk = `h${pad(h)}`;
+          if (!Array.isArray(D.planItems[hk])) {
+            const legacy = D.plan?.[hk];
+            D.planItems[hk] = splitLines(legacy).map(text => ({ id: uid(), text, done: false }));
+            if (D.plan && D.plan[hk]) D.plan[hk] = "";
+            if (legacy) changed = true;
+          }
+        }
+      }
+
+      // 4. Dream Board
+      DREAM.forEach(d => {
+        P().dreamItems ||= {};
+        if (!Array.isArray(P().dreamItems[d.k])) {
+          const legacy = P().dream?.[d.k];
+          P().dreamItems[d.k] = splitLines(legacy).map(text => ({ id: uid(), text, done: false }));
+          if (P().dream && P().dream[d.k]) P().dream[d.k] = "";
+          if (legacy) changed = true;
+        }
+      });
+
+      if (changed) save();
+    }
+
+    function getCgList(sec, key, sub = "") {
+      const mk = dkey().slice(0, 7), date = state.plannerDate || dkey();
+      ensureCgItems(date, mk);
+      if (sec === "goal") return (P().goals[key] ||= { items: [] }).items ||= [];
+      if (sec === "mfocus") return (P().monthly[key] ||= { focusItems: [] }).focusItems ||= [];
+      if (sec === "mtell") return (P().monthly[key] ||= { tellItems: [] }).tellItems ||= [];
+      if (sec === "hour") {
+        P().daily[key] ||= {};
+        P().daily[key].planItems ||= {};
+        return P().daily[key].planItems[sub] ||= [];
+      }
+      if (sec === "dream") {
+        P().dreamItems ||= {};
+        return P().dreamItems[key] ||= [];
+      }
+      return [];
+    }
+
+    function cgItemRow(sec, key, sub, it, timeStr = "", darkBg = false) {
+      const ds = `data-sec="${esc(sec)}" data-key="${esc(key)}" data-sub="${esc(sub)}" data-id="${esc(it.id)}"`;
+      const bgStyle = darkBg ? "background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.18);color:#fff" : "background:var(--surface);border:1px solid var(--border)";
+      return `<li class="row" style="gap:6px;padding:6px 8px;border-radius:10px;${bgStyle};align-items:center">
+        <button type="button" class="check" data-act="cgToggle" ${ds} style="width:22px;height:22px;margin:0;border-radius:6px;font-size:.75rem;flex:none;${it.done ? "background:var(--emerald);border-color:var(--emerald);color:#04150f" : ""}" aria-label="${L("สลับสถานะ", "Toggle done")}">${it.done ? "✓" : ""}</button>
+        <span class="grow sm" style="min-width:0;word-break:break-word;${it.done ? "text-decoration:line-through;opacity:.6" : ""}">${esc(it.text)}</span>
+        <div class="row" style="gap:2px;flex:none">
+          <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="editItem" data-kind="cgItem" ${ds} title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>
+          ${rBtn(`cg-${sec}-${it.id}`, it.text, timeStr)}
+          <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="cgDel" ${ds} title="${L("ลบ", "Delete")}" aria-label="${L("ลบ", "Delete")}">✕</button>
+        </div>
+      </li>`;
+    }
+
     function plannerCG() {
-      const mk = dkey().slice(0, 7), date = state.plannerDate || dkey(), D = P().daily[date] || {};
-      const hour = h => { const k = `h${pad(h)}`; return `<div class="hour"><b>${pad(h)}:00</b><input class="input" id="hr-${k}" data-bind="planner.daily.${date}.plan.${k}" value="${esc(D.plan?.[k])}" placeholder="…">${rBtn("h-" + k, "", `${pad(h)}:00`, `hr-${k}`)}</div>`; };
+      const mk = dkey().slice(0, 7), date = state.plannerDate || dkey();
+      ensureCgItems(date, mk);
+      const D = P().daily[date] || {};
+      const hour = h => {
+        const k = `h${pad(h)}`, tStr = `${pad(h)}:00`;
+        const items = getCgList("hour", date, k);
+        return `<div class="hour" style="align-items:start;grid-template-columns:58px 1fr">
+          <b style="margin-top:2px">${tStr}</b>
+          <div style="display:grid;gap:6px;min-width:0">
+            ${items.length ? `<ul style="list-style:none;display:grid;gap:4px">${items.map(it => cgItemRow("hour", date, k, it, tStr)).join("")}</ul>` : ""}
+            <form class="row" data-form="cgAdd" data-sec="hour" data-key="${date}" data-sub="${k}" style="gap:6px" autocomplete="off">
+              <input class="input grow" name="text" id="hr-${k}" placeholder="${items.length ? L("＋ เพิ่มรายการในชั่วโมงนี้…", "＋ Add another item…") : L("พิมพ์แผนงานชั่วโมงนี้ แล้วกด ＋ หรือ Enter…", "Add plan for this hour…")}" style="min-height:36px;padding:6px 10px;font-size:.86rem">
+              <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px;padding:0 10px" title="${L("เพิ่มรายการ", "Add item")}">＋</button>
+            </form>
+          </div>
+        </div>`;
+      };
+      const focusItems = getCgList("mfocus", mk);
+      const tellItems = getCgList("mtell", mk);
       return `<div class="grid">
-    <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3></div>
-      <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ แล้วให้คะแนนความพึงพอใจ 1-5 ดาว เพื่อเห็นสมดุลชีวิตของคุณในกราฟ", "Set a goal for each dimension and rate your satisfaction 1–5 stars to see your life balance on the chart.")}</p></div>
-      <div class="dims" style="margin-top:12px">${DIMS.map(d => `<div class="dim" style="--dc:${d.c}"><div class="dim-head"><div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}</small></div><div class="row" style="gap:4px;align-items:center">${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}${rBtn("g-" + d.k, "", "", `goal-${d.k}`)}</div></div>
-        <textarea class="input" rows="2" id="goal-${d.k}" data-bind="planner.goals.${d.k}.goal" placeholder="${L(`เป้าหมายด้าน${d.th}…`, `Your ${d.en.toLowerCase()} goal…`)}">${esc(P().goals[d.k]?.goal)}</textarea></div>`).join("")}</div></article>
+    <article class="card"><div class="card-head"><h3>🌟 5-Dimension Goal Board</h3><span class="chip chip-emerald">${L("＋ เพิ่มได้หลายรายการในแต่ละหมวด", "＋ Multi-item per category")}</span></div>
+      <div class="grid grid-2b" style="align-items:center"><div class="center">${radar()}</div><p class="muted sm">${L("ตั้งเป้าหมายในแต่ละมิติ (เพิ่มได้หลายรายการ ติ๊ก ✓ เมื่อทำสำเร็จ แก้ไข ✏️ หรือกด 🔁 ตั้งเป็นกิจวัตรทำซ้ำได้รายข้อ) แล้วให้คะแนนความพึงพอใจ 1-5 ดาว", "Add multiple goals in each dimension (check off ✓, edit ✏️, or turn any item into a recurring routine 🔁) and rate your satisfaction 1–5 stars.")}</p></div>
+      <div class="dims" style="margin-top:12px">${DIMS.map(d => {
+        const items = getCgList("goal", d.k);
+        return `<div class="dim" style="--dc:${d.c}">
+          <div class="dim-head">
+            <div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}${items.length ? ` • ${items.filter(x => x.done).length}/${items.length} ${L("รายการ", "items")}` : ""}</small></div>
+            <div class="row" style="gap:4px;align-items:center">${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}</div>
+          </div>
+          ${items.length ? `<ul style="list-style:none;display:grid;gap:6px;margin-top:2px">${items.map(it => cgItemRow("goal", d.k, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 2px">${L(`ยังไม่มีรายการเป้าหมายด้าน${d.th}`, `No ${d.en.toLowerCase()} goals yet`)}</p>`}
+          <form class="row" data-form="cgAdd" data-sec="goal" data-key="${d.k}" style="gap:6px;margin-top:4px" autocomplete="off">
+            <input class="input grow" name="text" id="goal-${d.k}" placeholder="${L(`＋ เพิ่มเป้าหมายด้าน${d.th}…`, `＋ Add ${d.en.toLowerCase()} goal…`)}" style="min-height:38px;font-size:.88rem">
+            <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
+          </form>
+        </div>`;
+      }).join("")}</div></article>
     <div class="grid grid-2b">
       <article class="card"><h3>🎯 Monthly Focus • ${monthLabel()}</h3>
-        <label class="field"><span>What to focus?</span><textarea class="input" id="m-focus" data-bind="planner.monthly.${mk}.focus" placeholder="${L("เดือนนี้จะโฟกัสอะไร", "What will you focus on this month?")}">${esc(P().monthly[mk]?.focus)}</textarea></label>
-        <label class="field" style="margin-top:10px"><span>What to tell yourself?</span><textarea class="input" id="m-tell" data-bind="planner.monthly.${mk}.tell" placeholder="${L("ประโยคเตือนใจตัวเอง", "A reminder to yourself")}">${esc(P().monthly[mk]?.tell)}</textarea></label></article>
+        <div class="field">
+          <span>What to focus? (${L("สิ่งที่โฟกัสเดือนนี้ — เพิ่มได้หลายข้อ", "Monthly focus items")})</span>
+          ${focusItems.length ? `<ul style="list-style:none;display:grid;gap:6px;margin:6px 0">${focusItems.map(it => cgItemRow("mfocus", mk, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 0">${L("ยังไม่มีรายการโฟกัสเดือนนี้", "No focus items yet")}</p>`}
+          <form class="row" data-form="cgAdd" data-sec="mfocus" data-key="${mk}" style="gap:6px;margin-top:4px" autocomplete="off">
+            <input class="input grow" name="text" id="m-focus" placeholder="${L("＋ เพิ่มสิ่งที่จะโฟกัสในเดือนนี้…", "＋ Add what to focus on this month…")}" style="min-height:38px;font-size:.88rem">
+            <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
+          </form>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <span>What to tell yourself? (${L("ประโยคเตือนใจตัวเอง — เพิ่มได้หลายข้อ", "Self reminders")})</span>
+          ${tellItems.length ? `<ul style="list-style:none;display:grid;gap:6px;margin:6px 0">${tellItems.map(it => cgItemRow("mtell", mk, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 0">${L("ยังไม่มีประโยคเตือนใจตัวเอง", "No reminders yet")}</p>`}
+          <form class="row" data-form="cgAdd" data-sec="mtell" data-key="${mk}" style="gap:6px;margin-top:4px" autocomplete="off">
+            <input class="input grow" name="text" id="m-tell" placeholder="${L("＋ เพิ่มประโยคเตือนใจตัวเอง…", "＋ Add a reminder to yourself…")}" style="min-height:38px;font-size:.88rem">
+            <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
+          </form>
+        </div></article>
       <article class="card"><div class="card-head"><h3>📆 Daily 24h Plan</h3><input type="date" class="input" style="width:auto;min-height:38px" value="${date}" data-act-change="plannerDate" id="planner-date" aria-label="${L("เลือกวันที่", "Pick a date")}"></div>
         <div class="row" style="justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface-2)"><b>Rate your day</b>${stars(`planner.daily.${date}.rate`, D.rate, "Rate your day")}</div>
         <h4 style="margin:14px 0 8px">🌅 Morning Plan (06:00–11:00)</h4><div class="hours">${[6, 7, 8, 9, 10, 11].map(hour).join("")}</div>
         <h4 style="margin:14px 0 8px">🌇 Noon & Evening Plan (12:00–21:00)</h4><div class="hours">${[12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(hour).join("")}</div>
         <h4 style="margin:14px 0 8px">🌙 Night & Sleep (22:00–05:00) • ${L("เวลานอนหลับ & ฟื้นฟูสมอง", "Sleep & Recovery Hours")}</h4><div class="hours">${[22, 23, 0, 1, 2, 3, 4, 5].map(hour).join("")}</div></article>
     </div>
-    <article class="card"><h3>✨ Dream Board</h3><div class="dream">${DREAM.map(d => `<div class="dream-tile" style="background:${d.g}"><div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div><textarea id="dream-${d.k}" data-bind="planner.dream.${d.k}" placeholder="${L("เขียนความฝันของคุณ…", "Write your dream…")}">${esc(P().dream[d.k])}</textarea></div>`).join("")}</div></article>
+    <article class="card"><h3>✨ Dream Board</h3><div class="dream">${DREAM.map(d => {
+      const dItems = getCgList("dream", d.k);
+      return `<div class="dream-tile" style="background:${d.g}">
+        <div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div>
+        ${dItems.length ? `<ul style="list-style:none;display:grid;gap:5px;margin:4px 0">${dItems.map(it => cgItemRow("dream", d.k, "", it, "", true)).join("")}</ul>` : ""}
+        <form class="row" data-form="cgAdd" data-sec="dream" data-key="${d.k}" style="gap:6px;margin-top:auto" autocomplete="off">
+          <input class="input grow" name="text" id="dream-${d.k}" placeholder="${L("＋ เพิ่มความฝันของคุณ…", "＋ Add your dream…")}" style="min-height:36px;font-size:.86rem;background:rgba(15,23,42,.35);border-color:rgba(255,255,255,.22);color:#fff">
+          <button class="btn btn-sm" type="submit" style="min-height:36px;background:rgba(255,255,255,.22);color:#fff;border:none">＋</button>
+        </form>
+      </div>`;
+    }).join("")}</div></article>
   </div>`;
     }
     function ensureRoutineHabits() {
@@ -6537,6 +6683,9 @@
       f.dataset.sid = d.sid || "";
       f.dataset.aid = d.aid || "";
       f.dataset.tid = d.tid || "";
+      f.dataset.sec = d.sec || "";
+      f.dataset.key = d.key || "";
+      f.dataset.sub = d.sub || "";
 
       let headTitle = L("แก้ไขรายการ", "Edit Item");
       let bodyHtml = "";
@@ -6620,6 +6769,13 @@
           <label class="field full"><span>${L("สิ่งที่ต้องทำ", "Step title")}</span><input class="input" id="ei-title" name="title" required value="${esc(st.title)}"></label>
           <label class="field"><span>📅 ${L("วันที่กำหนด (ไม่บังคับ)", "Target date")}</span><input class="input" name="date" type="date" value="${esc(st.date || "")}"></label>
           <label class="field"><span>📝 ${L("รายละเอียด / งบย่อย", "Note / Sub-budget")}</span><input class="input" name="note" value="${esc(st.note || "")}"></label>`;
+      } else if (kind === "cgItem") {
+        const list = getCgList(d.sec, d.key, d.sub);
+        const it = list.find(x => x.id === d.id);
+        if (!it) return;
+        headTitle = L("แก้ไขรายการ", "Edit Item");
+        bodyHtml = `
+          <label class="field full"><span>✏️ ${L("รายละเอียดรายการ", "Item text")}</span><input class="input" id="ei-title" name="text" required value="${esc(it.text)}"></label>`;
       } else {
         return;
       }
@@ -6664,6 +6820,22 @@
     Object.assign(A, {
       editTask: d => openEditTaskDlg(d.id),
       editItem: d => openEditItemDlg(d),
+      cgToggle: d => {
+        const list = getCgList(d.sec, d.key, d.sub);
+        const it = list.find(x => x.id === d.id);
+        if (!it) return;
+        it.done = !it.done;
+        rerender();
+        if (it.done) toast(L("✅ ทำสำเร็จแล้ว!", "✅ Completed!"));
+      },
+      cgDel: d => {
+        const list = getCgList(d.sec, d.key, d.sub);
+        const idx = list.findIndex(x => x.id === d.id);
+        if (idx >= 0) {
+          list.splice(idx, 1);
+          rerender();
+        }
+      },
       rDayToggle: (d, btn) => {
         const prefix = d.prefix;
         const wrap = document.getElementById(`${prefix}-days-wrap`);
@@ -6949,10 +7121,29 @@
           st.title = title;
           st.date = fd.date || "";
           st.note = (fd.note || "").trim();
+        } else if (kind === "cgItem") {
+          const list = getCgList(f.dataset.sec, f.dataset.key, f.dataset.sub);
+          const it = list.find(x => x.id === id);
+          const text = (fd.text || "").trim();
+          if (!it || !text) return;
+          it.text = text;
         }
         $("#edit-item-dlg")?.close();
         rerender();
         toast(L("✏️ บันทึกการแก้ไขเรียบร้อยแล้ว", "✏️ Changes saved"));
+      },
+      cgAdd: (fd, f) => {
+        const text = (fd.text || "").trim();
+        if (!text) return;
+        const sec = f.dataset.sec || "";
+        const key = f.dataset.key || "";
+        const sub = f.dataset.sub || "";
+        const list = getCgList(sec, key, sub);
+        text.split(/\r?\n/).map(s => s.trim()).filter(Boolean).forEach(line => {
+          list.push({ id: uid(), text: line, done: false });
+        });
+        rerender();
+        toast(L("＋ เพิ่มรายการแล้ว", "＋ Item added"));
       },
       tripSave: (fd, f) => {
         const amt = Number(fd.amount);
