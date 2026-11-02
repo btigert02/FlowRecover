@@ -2713,10 +2713,29 @@
     const prog = p => p.steps?.length ? Math.round(p.steps.filter(s => s.status === "done").length / p.steps.length * 100) : (Number(p.manual) || 0);
     const STEP = { todo: ["Todo", "var(--muted)"], doing: ["Doing", "var(--amber)"], waiting: ["Waiting", "var(--sky)"], done: ["Done", "var(--emerald)"] };
     const STEP_ORDER = ["todo", "doing", "waiting", "done"];
-    const freqLabel = f => ({ daily: L("ทุกวัน", "Daily"), eod: L("วันเว้นวัน", "Every other day"), weekday: L("จ.-ศ.", "Mon–Fri"), weekend: L("ส.-อา.", "Sat–Sun") }[f]);
+    function freqLabel(rOrFreq) {
+      const f = typeof rOrFreq === "object" && rOrFreq ? rOrFreq.freq : rOrFreq;
+      const days = typeof rOrFreq === "object" && rOrFreq && Array.isArray(rOrFreq.days) ? rOrFreq.days : null;
+      if (f === "custom" && days && days.length) {
+        return [1, 2, 3, 4, 5, 6, 0].filter(w => days.includes(w)).map(w => DAYS[LANG][w]).join("•");
+      }
+      return ({
+        daily: L("ทุกวัน", "Daily"),
+        eod: L("วันเว้นวัน", "Every other day"),
+        mwf: L("จ.•พ.•ศ.", "Mon•Wed•Fri"),
+        tts: L("อ.•พฤ.•ส.", "Tue•Thu•Sat"),
+        weekday: L("จ.-ศ.", "Mon–Fri"),
+        weekend: L("ส.-อา.", "Sat–Sun"),
+        custom: days && days.length ? [1, 2, 3, 4, 5, 6, 0].filter(w => days.includes(w)).map(w => DAYS[LANG][w]).join("•") : L("เลือกวันเอง", "Custom days")
+      })[f] || L("ทุกวัน", "Daily");
+    }
     function isDue(r, date) {
-      if (r.freq === "weekday") { const g = parseD(date).getDay(); return g >= 1 && g <= 5; }
-      if (r.freq === "weekend") { const g = parseD(date).getDay(); return g === 0 || g === 6; }
+      const g = parseD(date).getDay();
+      if (r.freq === "custom" && Array.isArray(r.days) && r.days.length) return r.days.includes(g);
+      if (r.freq === "mwf") return g === 1 || g === 3 || g === 5;
+      if (r.freq === "tts") return g === 2 || g === 4 || g === 6;
+      if (r.freq === "weekday") return g >= 1 && g <= 5;
+      if (r.freq === "weekend") return g === 0 || g === 6;
       if (r.freq === "eod") { const diff = Math.round((parseD(date) - parseD(r.created)) / 864e5); return diff >= 0 && diff % 2 === 0; }
       return true;
     }
@@ -3122,7 +3141,7 @@
     function routineRow(r) {
       const today = dkey(), on = !!r.log?.[today];
       return `<li class="task ${on ? "done" : ""}"><button class="check ${on ? "on" : ""}" data-act="routineCheck" data-id="${r.id}" id="rchk-${r.id}" aria-label="${L("เช็กอินกิจวัตร", "Check in routine")}">${on ? "✓" : ""}</button>
-    <div class="task-main"><div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r.freq)}</span></div><div class="task-title">${esc(r.title)}</div>
+    <div class="task-main"><div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r)}</span></div><div class="task-title">${esc(r.title)}</div>
     <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div></div>
     <div class="task-actions"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redt-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button></div></li>`;
     }
@@ -3183,15 +3202,16 @@
         <article class="card"><h3>🔁 ${L("กิจวัตรทำซ้ำ", "Recurring Routines")}</h3>
           <form class="form-grid" data-form="addRoutine" id="form-add-routine" autocomplete="off">
             <label class="field full"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="routine-title" required placeholder="${L("เช่น วิ่ง 3 กม. / อ่านหนังสือ", "e.g. Run 3 km / Read")}"></label>
-            <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="routine-freq">${freqOpts()}</select></label>
+            <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="rq-freq" data-act-change="rFreqChange" data-prefix="rq">${freqOpts()}</select></label>
             <label class="field"><span>${L("เวลา (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" id="routine-time"></label>
+            ${routineDaysPicker("rq", "daily")}
             <label class="field full"><span>${L("การเตือน (เมื่อกำหนดเวลา)", "Reminder (when a time is set)")}</span><select class="input" name="remind" id="routine-remind">${remindOpts(30)}</select></label>
             <button class="btn btn-emerald full" type="submit" id="btn-add-routine">＋ ${L("สร้างกิจวัตร", "Create routine")}</button>
           </form>
           <h4 style="margin:16px 0 8px">✅ ${L("ถึงรอบวันนี้", "Due today")} (${dueR.length})</h4>
           ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("วันนี้ไม่มีกิจวัตรที่ถึงรอบ", "No routines due today")}</p>`}
           <h4 style="margin:16px 0 8px">📚 ${L("กิจวัตรทั้งหมด", "All routines")}</h4>
-          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}${r.time && (r.remind ?? 30) ? ` · ⏰${r.remind ?? 30}${L(" นาที", "m")}` : ""}</span> <span class="streak">🔥${streak(r)}</span></div><div class="row" style="gap:2px;flex:none"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redit-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></div></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
+          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r)}${r.time ? " · " + esc(r.time) : ""}${r.time && (r.remind ?? 30) ? ` · ⏰${r.remind ?? 30}${L(" นาที", "m")}` : ""}</span> <span class="streak">🔥${streak(r)}</span></div><div class="row" style="gap:2px;flex:none"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redit-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></div></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
         </article>
       </div>
     </div>`;
@@ -3567,7 +3587,7 @@
         sum.push([
           x.h.name,
           x.r ? L("กิจวัตรทำซ้ำ", "Recurring Routine") : L("นิสัยทั่วไป", "Habit"),
-          x.r ? freqLabel(x.r.freq) : L("ทุกวัน", "Daily"),
+          x.r ? freqLabel(x.r) : L("ทุกวัน", "Daily"),
           x.r?.time || "-",
           x.done,
           x.due,
@@ -3653,7 +3673,7 @@
       <tbody>${P().habits.map(h => {
         const r = habitRoutine(h);
         const st = habitStreak(h);
-        return `<tr><td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>${esc(h.name)}</span>${r ? `<span class="chip chip-emerald" style="font-size:.68rem;padding:1px 6px" title="${L("เชื่อมกับกิจวัตรทำซ้ำ", "Linked to recurring routine")}">🔁 ${freqLabel(r.freq)}${r.time ? " " + esc(r.time) : ""}</span>` : ""}</div></td>${gridCols.map(d => { const on = !!P().habitLog[h.id]?.[d]; const due = isHabitDue(h, d); return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" style="${!due && !on ? "opacity:.4" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><span class="chip chip-amber" style="font-size:.72rem">🔥 ${st}</span></td><td><div class="row" style="gap:2px;flex-wrap:nowrap"><button class="icon-btn" data-act="editItem" data-kind="${r ? "routine" : "habit"}" data-id="${r ? r.id : h.id}" id="hedt-${h.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>${r ? "" : rBtn("hb-" + h.id, h.name)}<button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></div></td></tr>`;
+        return `<tr><td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>${esc(h.name)}</span>${r ? `<span class="chip chip-emerald" style="font-size:.68rem;padding:1px 6px" title="${L("เชื่อมกับกิจวัตรทำซ้ำ", "Linked to recurring routine")}">🔁 ${freqLabel(r)}${r.time ? " " + esc(r.time) : ""}</span>` : ""}</div></td>${gridCols.map(d => { const on = !!P().habitLog[h.id]?.[d]; const due = isHabitDue(h, d); return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" style="${!due && !on ? "opacity:.4" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><span class="chip chip-amber" style="font-size:.72rem">🔥 ${st}</span></td><td><div class="row" style="gap:2px;flex-wrap:nowrap"><button class="icon-btn" data-act="editItem" data-kind="${r ? "routine" : "habit"}" data-id="${r ? r.id : h.id}" id="hedt-${h.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>${r ? "" : rBtn("hb-" + h.id, h.name)}<button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></div></td></tr>`;
       }).join("")}</tbody></table></div>
       ${P().habits.length ? "" : `<p class="empty">${L("เพิ่มนิสัยแรกของคุณ หรือเพิ่มกิจวัตรที่หน้าคิวงาน", "Add your first habit or create a routine on Queue")}</p>`}
       <form class="row" data-form="addHabit" id="form-add-habit" style="margin-top:10px" autocomplete="off"><input class="input grow" name="name" id="habit-name" required placeholder="${L("เพิ่มนิสัยใหม่ เช่น นั่งสมาธิ 5 นาที", "New habit, e.g. Meditate 5 min")}" style="flex:1;min-width:0"><button class="btn btn-emerald" type="submit" id="btn-add-habit">＋</button></form>
@@ -5945,9 +5965,56 @@
     </div>`;
     }
 
-    /* ---------- 🔁 Routines: weekend + Planner → routine (+30 min reminder) ---------- */
-    const FREQS = () => [["daily", L("ทุกวัน", "Daily")], ["eod", L("วันเว้นวัน", "Every other day")], ["weekday", L("เฉพาะ จ.-ศ.", "Weekdays (Mon–Fri)")], ["weekend", L("เฉพาะ ส.-อา.", "Weekends (Sat–Sun)")]];
+    /* ---------- 🔁 Routines: weekend + MWF + Custom multi-day picker + Planner → routine ---------- */
+    const FREQS = () => [
+      ["daily", L("ทุกวัน", "Daily")],
+      ["eod", L("วันเว้นวัน", "Every other day")],
+      ["mwf", L("เฉพาะ จ. • พ. • ศ.", "Mon • Wed • Fri")],
+      ["tts", L("เฉพาะ อ. • พฤ. • ส.", "Tue • Thu • Sat")],
+      ["weekday", L("เฉพาะ จ.–ศ.", "Weekdays (Mon–Fri)")],
+      ["weekend", L("เฉพาะ ส.–อา.", "Weekends (Sat–Sun)")],
+      ["custom", L("กำหนดวันเอง (ติ๊กเลือกได้หลายวัน)", "Custom days (multi-select)")]
+    ];
     const freqOpts = (v = "daily") => FREQS().map(([k, l]) => `<option value="${k}" ${k === v ? "selected" : ""}>${l}</option>`).join("");
+    function defaultDaysForFreq(freq, curDays = null) {
+      if (freq === "custom" && Array.isArray(curDays) && curDays.length) return curDays;
+      if (freq === "mwf") return [1, 3, 5];
+      if (freq === "tts") return [2, 4, 6];
+      if (freq === "weekday") return [1, 2, 3, 4, 5];
+      if (freq === "weekend") return [6, 0];
+      if (freq === "eod") return [];
+      if (freq === "custom") return [1, 3, 5];
+      return [1, 2, 3, 4, 5, 6, 0];
+    }
+    function routineDaysPicker(prefix, freq = "daily", curDays = null) {
+      const sel = defaultDaysForFreq(freq, curDays);
+      return `<div class="field full" id="${prefix}-days-wrap">
+        <span>📅 ${L("คลิกติ๊กเลือกวันตามต้องการ (เลือกได้หลายวัน)", "Click to toggle days (multi-select)")}</span>
+        <input type="hidden" name="days" id="${prefix}-days" value="${sel.join(",")}">
+        <div class="wd-pick" role="group" aria-label="${L("เลือกวันทำซ้ำ", "Select repeat days")}" style="margin-top:4px">
+          ${[1, 2, 3, 4, 5, 6, 0].map(w => {
+            const on = sel.includes(w);
+            return `<button type="button" class="${on ? "on" : ""}" data-act="rDayToggle" data-prefix="${prefix}" data-day="${w}" aria-pressed="${on}">${on ? "✓ " : ""}${DAYS[LANG][w]}</button>`;
+          }).join("")}
+        </div>
+      </div>`;
+    }
+    function parseRoutineFreqAndDays(fd) {
+      let freq = FREQS().some(x => x[0] === fd.freq) ? fd.freq : "daily";
+      let days = String(fd.days ?? "").split(",").map(x => x.trim()).filter(x => x !== "").map(Number).filter(n => n >= 0 && n <= 6);
+      days = [1, 2, 3, 4, 5, 6, 0].filter(w => days.includes(w));
+      if (freq !== "eod") {
+        const key = days.join(",");
+        if (key === "1,2,3,4,5,6,0") freq = "daily";
+        else if (key === "1,3,5") freq = "mwf";
+        else if (key === "2,4,6") freq = "tts";
+        else if (key === "1,2,3,4,5") freq = "weekday";
+        else if (key === "6,0") freq = "weekend";
+        else if (days.length > 0) freq = "custom";
+        else days = defaultDaysForFreq(freq);
+      }
+      return { freq, days };
+    }
     const remindOpts = (v = 30) => [[0, L("เตือนตรงเวลาเท่านั้น", "At the time only")], [10, L("ก่อน 10 นาที", "10 min before")], [15, L("ก่อน 15 นาที", "15 min before")], [30, L("ก่อน 30 นาที", "30 min before")], [60, L("ก่อน 1 ชั่วโมง", "1 hour before")]].map(([k, l]) => `<option value="${k}" ${k === v ? "selected" : ""}>⏰ ${l}</option>`).join("");
     const rBtn = (id, title = "", time = "", from = "") => `<button type="button" class="icon-btn r-add" data-act="toRoutineDlg" data-title="${esc(title)}" data-time="${esc(time)}" data-from="${esc(from)}" id="ra-${id}" title="${L("เพิ่มเป็นกิจวัตรทำซ้ำ", "Add as a recurring routine")}" aria-label="${L("เพิ่มเป็นกิจวัตรทำซ้ำ", "Add as a recurring routine")}">🔁</button>`;
     function openRoutineDlg(title, time) {
@@ -5956,8 +6023,9 @@
         <p class="muted sm">${L("กิจวัตรจะขึ้นอัตโนมัติตามรอบในหน้าโฟกัสและคิวงาน — ถ้ากำหนดเวลา ระบบจะเตือนล่วงหน้าให้ (ค่าเริ่มต้น 30 นาที)", "The routine appears automatically on Focus and Queue — set a time to get an advance reminder (30 min by default).")}</p>
         <label class="field"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="rd-title" required value="${esc(title)}" placeholder="${L("เช่น วิ่ง 3 กม.", "e.g. Run 3 km")}"></label>
         <div class="form-grid">
-          <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="rd-freq">${freqOpts()}</select></label>
+          <label class="field"><span>${L("รอบการทำซ้ำ", "Repeat")}</span><select class="input" name="freq" id="rd-freq" data-act-change="rFreqChange" data-prefix="rd">${freqOpts()}</select></label>
           <label class="field"><span>${L("เวลา (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" id="rd-time" value="${esc(time || "")}"></label>
+          ${routineDaysPicker("rd", "daily")}
           <label class="field full"><span>${L("การเตือน", "Reminder")}</span><select class="input" name="remind" id="rd-remind">${remindOpts(30)}</select></label>
         </div>
         <button class="btn btn-emerald btn-xl" type="submit" id="rd-save">＋ ${L("สร้างกิจวัตร", "Create routine")}</button>`;
@@ -5965,7 +6033,8 @@
     }
     function makeRoutine(fd) {
       const title = (fd.title || "").trim(); if (!title) return null;
-      const r = { id: uid(), title, freq: FREQS().some(x => x[0] === fd.freq) ? fd.freq : "daily", time: fd.time || "", remind: fd.remind === undefined ? 30 : Number(fd.remind) || 0, created: dkey(), log: {} };
+      const { freq, days } = parseRoutineFreqAndDays(fd);
+      const r = { id: uid(), title, freq, days, time: fd.time || "", remind: fd.remind === undefined ? 30 : Number(fd.remind) || 0, created: dkey(), log: {} };
       state.routines.push(r); return r;
     }
     const routineToast = r => toast(r.time ? L(`🔁 สร้างกิจวัตร “${trunc(r.title, 20)}” แล้ว${r.remind ? ` • ⏰ เตือนก่อน ${r.remind} นาที` : ""}`, `🔁 Routine “${trunc(r.title, 20)}” created${r.remind ? ` • ⏰ ${r.remind} min reminder` : ""}`) : L("🔁 สร้างกิจวัตรแล้ว", "🔁 Routine created"));
@@ -6478,8 +6547,9 @@
         headTitle = L("แก้ไขกิจวัตรทำซ้ำ", "Edit Recurring Routine");
         bodyHtml = `
           <label class="field full"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="ei-title" required value="${esc(r.title)}"></label>
-          <label class="field"><span>${L("รอบความถี่", "Repeat frequency")}</span><select class="input" name="freq">${freqOpts(r.freq || "daily")}</select></label>
+          <label class="field"><span>${L("รอบความถี่", "Repeat frequency")}</span><select class="input" name="freq" id="ei-freq" data-act-change="rFreqChange" data-prefix="ei">${freqOpts(r.freq || "daily")}</select></label>
           <label class="field"><span>${L("เวลาเตือน (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" value="${esc(r.time || "")}"></label>
+          ${routineDaysPicker("ei", r.freq || "daily", r.days)}
           <label class="field full"><span>${L("การแจ้งเตือนล่วงหน้า", "Advance reminder")}</span><select class="input" name="remind">${remindOpts(r.remind ?? 30)}</select></label>`;
       } else if (kind === "habit") {
         const h = (P().habits || []).find(x => x.id === d.id);
@@ -6569,6 +6639,22 @@
     /* ---------- Change hooks, actions & forms ---------- */
     CHANGE.txnType = el => { finView().kind = el.value; const s = $("#txn-cat"); if (s) s.innerHTML = catOpts(el.value); save(); };
     CHANGE.editTxnType = el => { const s = $("#ei-txn-cat"); if (s) s.innerHTML = catOpts(el.value); };
+    CHANGE.rFreqChange = el => {
+      const prefix = el.dataset.prefix;
+      const wrap = document.getElementById(`${prefix}-days-wrap`);
+      const hid = document.getElementById(`${prefix}-days`);
+      if (!wrap || !hid) return;
+      const cur = hid.value ? hid.value.split(",").map(Number) : [];
+      const sel = defaultDaysForFreq(el.value, cur);
+      hid.value = sel.join(",");
+      wrap.querySelectorAll("button[data-day]").forEach(btn => {
+        const w = Number(btn.dataset.day);
+        const on = sel.includes(w);
+        btn.classList.toggle("on", on);
+        btn.setAttribute("aria-pressed", on);
+        btn.textContent = (on ? "✓ " : "") + DAYS[LANG][w];
+      });
+    };
     CHANGE.editTaskProj = el => {
       const p = proj(el.value), stSel = $("#et-step");
       if (!stSel) return;
@@ -6578,6 +6664,33 @@
     Object.assign(A, {
       editTask: d => openEditTaskDlg(d.id),
       editItem: d => openEditItemDlg(d),
+      rDayToggle: (d, btn) => {
+        const prefix = d.prefix;
+        const wrap = document.getElementById(`${prefix}-days-wrap`);
+        const hid = document.getElementById(`${prefix}-days`);
+        const selEl = document.getElementById(`${prefix}-freq`);
+        if (!wrap || !hid) return;
+        const isOn = !btn.classList.contains("on");
+        const w = Number(d.day);
+        btn.classList.toggle("on", isOn);
+        btn.setAttribute("aria-pressed", isOn);
+        btn.textContent = (isOn ? "✓ " : "") + DAYS[LANG][w];
+        const days = [];
+        [1, 2, 3, 4, 5, 6, 0].forEach(dayNum => {
+          const b = wrap.querySelector(`button[data-day="${dayNum}"]`);
+          if (b && b.classList.contains("on")) days.push(dayNum);
+        });
+        hid.value = days.join(",");
+        if (selEl) {
+          const key = days.join(",");
+          if (key === "1,2,3,4,5,6,0") selEl.value = "daily";
+          else if (key === "1,3,5") selEl.value = "mwf";
+          else if (key === "2,4,6") selEl.value = "tts";
+          else if (key === "1,2,3,4,5") selEl.value = "weekday";
+          else if (key === "6,0") selEl.value = "weekend";
+          else selEl.value = "custom";
+        }
+      },
       tripQuickSave: d => depositTripSavings(d.id, Number(d.v) || 1000, true),
       tripStepToggle: d => {
         const t = (P().trips || []).find(x => x.id === d.tid);
@@ -6765,7 +6878,9 @@
           const title = (fd.title || "").trim();
           if (!r || !title) return;
           r.title = title;
-          r.freq = FREQS().some(x => x[0] === fd.freq) ? fd.freq : (r.freq || "daily");
+          const parsed = parseRoutineFreqAndDays(fd);
+          r.freq = parsed.freq;
+          r.days = parsed.days;
           r.time = fd.time || "";
           r.remind = fd.remind === undefined ? 30 : Number(fd.remind) || 0;
           ensureRoutineHabits();
