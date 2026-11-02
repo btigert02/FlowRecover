@@ -13,11 +13,10 @@
   <meta name="apple-mobile-web-app-title" content="FlowRecover">
   <meta name="application-name" content="FlowRecover">
   <meta name="mobile-web-app-capable" content="yes">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="manifest" href="/manifest.json?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -513,15 +512,33 @@
     }
 
     .brand-logo {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 11px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, var(--amber), var(--emerald));
+      overflow: hidden;
+      background: #1b1845;
       color: #0b1220;
       font-size: 1.05rem;
-      box-shadow: 0 6px 18px -6px rgba(245, 158, 11, .6)
+      box-shadow: 0 6px 18px -6px rgba(245, 158, 11, .55);
+      border: 1.5px solid rgba(251, 191, 36, .35)
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    .brand-word {
+      font-weight: 800;
+      letter-spacing: -.02em;
+      background: linear-gradient(90deg, #fbbf24 0%, #f59e0b 45%, #34d399 55%, #10b981 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent
     }
 
     .brand-text {
@@ -1639,16 +1656,25 @@
     }
 
     .auth-logo {
-      width: 84px;
-      height: 84px;
+      width: 112px;
+      height: 112px;
       margin: 0 auto;
-      border-radius: 26px;
+      border-radius: 28px;
       display: grid;
       place-items: center;
+      overflow: hidden;
       font-size: 2.6rem;
-      background: linear-gradient(135deg, var(--amber), var(--emerald));
-      box-shadow: 0 20px 50px -14px rgba(245, 158, 11, .7);
+      background: #1b1845;
+      border: 2px solid rgba(251, 191, 36, .4);
+      box-shadow: 0 20px 50px -12px rgba(245, 158, 11, .65);
       animation: float 4s ease-in-out infinite
+    }
+
+    .auth-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
     }
 
     .auth h1 {
@@ -2385,7 +2411,7 @@
       <div class="topwrap">
         <div id="trial-banner" class="banner"></div>
         <header class="topbar">
-          <div class="brand"><span class="brand-logo">⚡</span><span class="brand-text">FlowRecover</span></div>
+          <div class="brand"><span class="brand-logo"><img src="/icon-192.png?v=2" alt="FlowRecover"></span><span class="brand-text brand-word">FlowRecover</span></div>
           <form class="idea-box" data-form="idea" id="idea-form" autocomplete="off">
             <input class="input" name="idea" id="idea-input" enterkeyhint="done">
           </form>
@@ -2800,7 +2826,7 @@
         "FlowRecover x Life Planner: flexible time-blocking, interrupt recovery with automatic schedule reflow, project tracking and an all-in-one life planner — built for one-thumb mobile use.");
       $("#auth-screen").innerHTML = `<div class="auth-card">
     <div class="auth-lang"><button class="btn btn-sm" data-act="lang" id="btn-auth-lang">🌐 ${L("English", "ภาษาไทย")}</button></div>
-    <div class="auth-logo">⚡</div>
+    <div class="auth-logo"><img src="/icon-512.png?v=2" alt="FlowRecover"></div>
     <div><h1><span>FlowRecover</span> x Life Planner</h1>
       <p class="muted" style="margin-top:8px">${L("จัดตารางงานยืดหยุ่น • ถูกแทรกก็ไม่หลุด • สมุดวางแผนชีวิตครบวงจร", "Adaptive Time-Blocking • Interrupt Recovery • All-in-One Life Planner OS")}</p></div>
     <div class="feat">
@@ -2816,7 +2842,7 @@
   </div>`;
       const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["calendar", "📆", L("ปฏิทิน", "Calendar")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
       $("#bottom-nav").setAttribute("aria-label", L("เมนูหลัก", "Main menu"));
-      $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo">⚡</span><span>FlowRecover</span></div>` +
+      $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo"><img src="/icon-192.png?v=2" alt="FlowRecover"></span><span class="brand-word">FlowRecover</span></div>` +
         tabs.map(([k, i, l]) => `<button class="nav-btn ${state.tab === k ? "on" : ""}" data-act="tab" data-tab="${k}" id="nav-${k}"><span class="ico">${i}</span>${l}</button>`).join("");
       $("#idea-input").placeholder = L("จดไอเดียด่วน แล้วกด Enter…", "Quick idea, press Enter…");
       $("#idea-input").setAttribute("aria-label", "Quick Idea Capture");
@@ -3295,7 +3321,7 @@
       const cnt = s => d.s.filter(x => x[1] === s).length;
       document.title = `${L("ความคืบหน้า", "Progress")}: ${d.t} — FlowRecover`;
       v.innerHTML = `<div class="share-page">
-    <div class="row"><span class="brand-logo">⚡</span><b>FlowRecover • Shared Progress View</b></div>
+    <div class="row"><span class="brand-logo"><img src="/icon-192.png?v=2" alt="FlowRecover"></span><b><span class="brand-word">FlowRecover</span> • Shared Progress View</b></div>
     <article class="card cockpit"><span class="pill pill-emerald">🔗 ${L("มุมมองแชร์ความคืบหน้า (อ่านอย่างเดียว)", "Shared progress view (read-only)")}</span>
       <h1 style="font-size:1.6rem">${esc(d.t)}</h1><p class="muted">🎯 ${esc(d.g || "-")}</p>
       <div class="row" style="justify-content:space-between"><b>${L("ความคืบหน้า", "Progress")}</b><b class="mono emerald" style="font-size:1.6rem">${d.p}%</b></div><div class="bar"><i style="width:${d.p}%"></i></div>
