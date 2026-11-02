@@ -2434,6 +2434,12 @@
   <dialog id="routine-dlg" closedby="any" aria-labelledby="routine-dlg-title">
     <form class="dlg-body" data-form="toRoutine" id="routine-dlg-form" autocomplete="off"></form>
   </dialog>
+  <dialog id="edit-task-dlg" closedby="any" aria-labelledby="edit-task-dlg-title">
+    <form class="dlg-body" data-form="editTask" id="edit-task-form" autocomplete="off"></form>
+  </dialog>
+  <dialog id="edit-item-dlg" closedby="any" aria-labelledby="edit-item-dlg-title">
+    <form class="dlg-body" data-form="editItem" id="edit-item-form" autocomplete="off"></form>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -2513,6 +2519,7 @@
       mapMode: "flow", mapProject: "", ganttZoom: "month", openStep: null, plannerGuideOpen: true,
       report: { range: "month", date: null, project: "all", type: "all" },
       cal: { view: "month", date: null, sel: null }, finView: { range: "month", date: null, kind: "exp" },
+      habitView: { range: "week", date: null },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
@@ -2697,7 +2704,10 @@
     }
     function points() {
       let h = 0; Object.values(P().habitLog).forEach(m => h += Object.values(m).filter(Boolean).length);
-      let r = 0; state.routines.forEach(x => r += Object.values(x.log || {}).filter(Boolean).length);
+      let r = 0; state.routines.forEach(x => {
+        const linked = P().habits.some(hb => hb.routineId === x.id || hb.name === x.title);
+        if (!linked) r += Object.values(x.log || {}).filter(Boolean).length;
+      });
       const t = state.tasks.filter(x => x.done).length;
       const s = (P().sleeps || []).length;
       return { habit: h * 5, routine: r * 5, task: t * 10, sleep: s * 15, total: h * 5 + r * 5 + t * 10 + s * 15 };
@@ -2940,7 +2950,7 @@
         <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest" style="flex:1;min-width:110px">☕ ${L("พักผ่อน", "Break")}</button>
         <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep" style="flex:1;min-width:110px">🌙 ${L("เข้านอน", "Sleep")}</button>
       </div>
-      <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
+      <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn" data-act="editTask" data-id="${cur.id}" id="btn-edit-current">✏️ ${L("แก้ไข", "Edit")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
     </article>`;
       } else {
         cockpit = `<article class="card cockpit idle" id="cockpit">
@@ -3077,14 +3087,15 @@
       <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
       <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
-    <div class="task-actions"><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
+    <div class="task-actions"><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="edt-${t.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
   </li>`;
     }
     function routineRow(r) {
       const today = dkey(), on = !!r.log?.[today];
       return `<li class="task ${on ? "done" : ""}"><button class="check ${on ? "on" : ""}" data-act="routineCheck" data-id="${r.id}" id="rchk-${r.id}" aria-label="${L("เช็กอินกิจวัตร", "Check in routine")}">${on ? "✓" : ""}</button>
     <div class="task-main"><div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r.freq)}</span></div><div class="task-title">${esc(r.title)}</div>
-    <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div></div></li>`;
+    <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div></div>
+    <div class="task-actions"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redt-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button></div></li>`;
     }
     function renderQueue() {
       const today = dkey(), date = state.queueDate || today, list = tasksOn(date);
@@ -3151,7 +3162,7 @@
           <h4 style="margin:16px 0 8px">✅ ${L("ถึงรอบวันนี้", "Due today")} (${dueR.length})</h4>
           ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("วันนี้ไม่มีกิจวัตรที่ถึงรอบ", "No routines due today")}</p>`}
           <h4 style="margin:16px 0 8px">📚 ${L("กิจวัตรทั้งหมด", "All routines")}</h4>
-          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}${r.time && (r.remind ?? 30) ? ` · ⏰${r.remind ?? 30}${L(" นาที", "m")}` : ""}</span> <span class="streak">🔥${streak(r)}</span></div><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
+          ${state.routines.length ? `<ul class="rows">${state.routines.map(r => `<li class="row-item"><div><b>${esc(r.title)}</b> <span class="muted">· ${freqLabel(r.freq)}${r.time ? " · " + esc(r.time) : ""}${r.time && (r.remind ?? 30) ? ` · ⏰${r.remind ?? 30}${L(" นาที", "m")}` : ""}</span> <span class="streak">🔥${streak(r)}</span></div><div class="row" style="gap:2px;flex:none"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redit-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button><button class="icon-btn" data-act="delRoutine" data-id="${r.id}" id="rdel-${r.id}" aria-label="${L("ลบกิจวัตร", "Delete routine")}">🗑️</button></div></li>`).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีกิจวัตร", "No routines yet")}</p>`}
         </article>
       </div>
     </div>`;
@@ -3217,7 +3228,7 @@
         </form></div>
       <div><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>📁 ${L("ไฟล์แนบ Google Drive", "Google Drive files")}</b>
           <button class="btn btn-sm" data-act="drivePick" data-pid="${p.id}" id="dp-${p.id}"><span class="link-ico">${DRIVE_SVG}</span>${L("เลือกไฟล์จาก Google Drive", "Pick from Google Drive")}</button></div>
-        ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>${linkIcon(l)}<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ — เลือกจาก Drive หรือคัดลอกลิงก์มาวาง", "No files yet — pick from Drive or paste a link")}</p>`}
+        ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>${linkIcon(l)}<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="editItem" data-kind="link" data-pid="${p.id}" data-id="${l.id}" id="le-${l.id}" title="${L("แก้ไขลิงก์", "Edit link")}" aria-label="${L("แก้ไขลิงก์", "Edit link")}">✏️</button><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ — เลือกจาก Drive หรือคัดลอกลิงก์มาวาง", "No files yet — pick from Drive or paste a link")}</p>`}
         <form class="form-grid" data-form="addLink" data-pid="${p.id}" id="fl-${p.id}" style="margin-top:8px" autocomplete="off">
           <input class="input" name="label" placeholder="${L("ชื่อไฟล์ (เว้นว่างได้ ตั้งชื่อให้อัตโนมัติ)", "File name (optional, auto)")}" id="fll-${p.id}">
           <div class="row" style="gap:6px"><input class="input grow" name="url" type="url" required placeholder="https://drive.google.com/..." id="flu-${p.id}" style="flex:1;min-width:0"><button class="btn" type="button" data-act="pasteLink" data-pid="${p.id}" id="flp-${p.id}" title="${L("วางลิงก์จากคลิปบอร์ด", "Paste from clipboard")}">📋</button></div>
@@ -3234,7 +3245,7 @@
           <button class="btn btn-amber full" type="submit" id="fptb-${p.id}">＋ ${L("เพิ่มเข้าคิวงาน", "Add to queue")}</button>
         </form>
         <b class="sm" style="display:block;margin-top:12px">${L("งานที่ผูกกับโปรเจคนี้", "Linked tasks")} (${tasks.length})</b>
-        ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span>${stepChip(t)}</div><button class="icon-btn" data-act="qdateGo" data-v="${t.date}" id="ptq-${t.id}" title="${L("ไปที่คิววันนั้น", "Open that day's queue")}" aria-label="${L("ไปที่คิววันนั้น", "Open that day's queue")}">📅</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีงาน — เพิ่มจากฟอร์มด้านบน หรือจากกิจกรรมย่อยของขั้นตอน", "No tasks yet — add one above or from a step's activities")}</p>`}</div>
+        ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span>${stepChip(t)}</div><div class="row" style="gap:4px"><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="pte-${t.id}" title="${L("แก้ไขงาน", "Edit task")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="qdateGo" data-v="${t.date}" id="ptq-${t.id}" title="${L("ไปที่คิววันนั้น", "Open that day's queue")}" aria-label="${L("ไปที่คิววันนั้น", "Open that day's queue")}">📅</button></div></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีงาน — เพิ่มจากฟอร์มด้านบน หรือจากกิจกรรมย่อยของขั้นตอน", "No tasks yet — add one above or from a step's activities")}</p>`}</div>
       <div class="row"><button class="btn btn-emerald grow" data-act="share" data-id="${p.id}" id="share-${p.id}">🔗 ${L("สร้างลิงก์แชร์ความคืบหน้า", "Create progress share link")}</button><button class="btn btn-ghost" data-act="delProject" data-id="${p.id}" id="pdel-${p.id}">🗑️ ${L("ลบ", "Delete")}</button></div>
     </div>` : ""}
   </article>`;
@@ -3330,7 +3341,13 @@
         rt: r => [r.food || "", { b: "07:00", l: "12:00", d: "18:00" }[r.meal] || ""]
       },
       trips: {
-        fields: [["place", ["สถานที่", "Destination"], "text", ["เช่น เชียงใหม่", "e.g. Chiang Mai"]], ["date", ["วันเดินทาง", "Travel date"], "date"], ["budget", ["งบ (฿)", "Budget (฿)"], "number"], ["notes", ["แผน/โน้ต", "Plan/notes"], "text", ["ที่พัก กิจกรรม", "Hotel, activities"]]],
+        fields: [
+          ["place", ["สถานที่ / ชื่อทริป", "Destination / Trip"], "text", ["เช่น เชียงใหม่ / ญี่ปุ่น", "e.g. Chiang Mai / Japan"]],
+          ["date", ["วันเดินทาง", "Travel date"], "date"],
+          ["budget", ["งบเป้าหมาย (฿)", "Target budget (฿)"], "number"],
+          ["saved", ["เก็บเงินได้แล้ว (฿)", "Saved so far (฿)"], "number"],
+          ["notes", ["รายละเอียด / แผนการเดินทาง", "Plan / details"], "text", ["ที่พัก เที่ยวบิน กิจกรรม", "Flights, hotel, activities"]]
+        ],
         row: r => `✈️ <b>${esc(r.place || "-")}</b> · ${fmtDate(r.date)} · <span class="sum">${money(r.budget)} ฿</span>${r.notes ? ` <span class="muted">· ${esc(r.notes)}</span>` : ""}`
       },
       media: {
@@ -3359,7 +3376,7 @@
     }
     function crudList(name, limit = 30) {
       const rows = [...P()[name]].sort((a, b) => (b.date || "").localeCompare(a.date || "") || b.ts - a.ts).slice(0, limit);
-      return rows.length ? `<ul class="rows">${rows.map(r => { const rt = CRUD[name].rt?.(r); return `<li class="row-item"><div>${CRUD[name].row(r)}</div><div class="row" style="gap:4px;flex:none">${rt && rt[0] ? rBtn("c-" + r.id, rt[0], rt[1] || "") : ""}<button class="icon-btn" data-act="delCrud" data-name="${name}" data-id="${r.id}" id="cd-${r.id}" aria-label="${L("ลบ", "Delete")}">🗑️</button></div></li>`; }).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีข้อมูล", "No entries yet")}</p>`;
+      return rows.length ? `<ul class="rows">${rows.map(r => { const rt = CRUD[name].rt?.(r); return `<li class="row-item"><div>${CRUD[name].row(r)}</div><div class="row" style="gap:4px;flex:none"><button class="icon-btn" data-act="editItem" data-kind="crud" data-name="${name}" data-id="${r.id}" id="ce-${r.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>${rt && rt[0] ? rBtn("c-" + r.id, rt[0], rt[1] || "") : ""}<button class="icon-btn" data-act="delCrud" data-name="${name}" data-id="${r.id}" id="cd-${r.id}" aria-label="${L("ลบ", "Delete")}">🗑️</button></div></li>`; }).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีข้อมูล", "No entries yet")}</p>`;
     }
     function radar() {
       const R = 70, cx = 90, cy = 90, pts = (scale) => DIMS.map((d, i) => { const a = (i * 72 - 90) * Math.PI / 180, r = scale(d) * R; return `${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`; }).join(" ");
@@ -3401,17 +3418,192 @@
     <article class="card"><h3>✨ Dream Board</h3><div class="dream">${DREAM.map(d => `<div class="dream-tile" style="background:${d.g}"><div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div><textarea id="dream-${d.k}" data-bind="planner.dream.${d.k}" placeholder="${L("เขียนความฝันของคุณ…", "Write your dream…")}">${esc(P().dream[d.k])}</textarea></div>`).join("")}</div></article>
   </div>`;
     }
+    function ensureRoutineHabits() {
+      const H = (P().habits ||= []);
+      const L = (P().habitLog ||= {});
+      state.routines.forEach(r => {
+        let h = H.find(x => x.routineId === r.id);
+        if (!h) {
+          h = H.find(x => !x.routineId && x.name.trim().toLowerCase() === r.title.trim().toLowerCase());
+          if (h) h.routineId = r.id;
+          else { h = { id: uid(), name: r.title, routineId: r.id }; H.push(h); }
+        } else {
+          h.name = r.title;
+        }
+        r.habitId = h.id;
+        L[h.id] ||= {};
+        r.log ||= {};
+        Object.entries(r.log).forEach(([d, v]) => { if (v) L[h.id][d] = true; });
+        Object.entries(L[h.id]).forEach(([d, v]) => { if (v) r.log[d] = true; });
+      });
+    }
+    function habitRoutine(h) {
+      return state.routines.find(r => r.id === h.routineId || r.habitId === h.id || r.title.trim().toLowerCase() === h.name.trim().toLowerCase()) || null;
+    }
+    function isHabitDue(h, date) {
+      const r = habitRoutine(h);
+      return r ? isDue(r, date) : true;
+    }
+    function prevHabitDue(h, d) {
+      const r = habitRoutine(h);
+      if (r) return prevDue(r, d);
+      return addDays(d, -1);
+    }
+    function habitStreak(h) {
+      const r = habitRoutine(h);
+      if (r) return streak(r);
+      const lg = P().habitLog[h.id] || {};
+      let d = dkey(); if (!lg[d]) d = addDays(d, -1);
+      let s = 0; for (let i = 0; i < 500 && d; i++) { if (lg[d]) { s++; d = addDays(d, -1); } else break; }
+      return s;
+    }
+    function habitView() {
+      state.habitView ||= { range: "week", date: null };
+      state.habitView.date ||= dkey();
+      return state.habitView;
+    }
+    function habitRange() {
+      const V = habitView(), d = parseD(V.date);
+      if (V.range === "week") { const a = addDays(V.date, -((d.getDay() + 6) % 7)); return [a, addDays(a, 6)]; }
+      if (V.range === "month") return [dkey(new Date(d.getFullYear(), d.getMonth(), 1)), dkey(new Date(d.getFullYear(), d.getMonth() + 1, 0))];
+      return [`${d.getFullYear()}-01-01`, `${d.getFullYear()}-12-31`];
+    }
+    function habitTitle() {
+      const V = habitView(), [a, b] = habitRange(), d = parseD(V.date);
+      if (V.range === "week") return `${fmtShort(a)} – ${fmtShort(b)}`;
+      if (V.range === "month") return LANG === "en" ? `${MONTHS.en[d.getMonth()]} ${d.getFullYear()}` : `${MONTHS.th[d.getMonth()]} ${d.getFullYear() + 543}`;
+      return `${L("ปี", "Year")} ${yearLabel(d.getFullYear())}`;
+    }
+    function habitReportData() {
+      ensureRoutineHabits();
+      const V = habitView(), [a, b] = habitRange(), today = dkey(), endCap = b < today ? b : today;
+      const days = [];
+      for (let d = a; d <= b; d = addDays(d, 1)) days.push(d);
+      const habits = P().habits || [], HLog = P().habitLog || {};
+      const items = habits.map((h, idx) => {
+        const r = habitRoutine(h), lg = HLog[h.id] || {};
+        let due = 0, done = 0;
+        days.forEach(d => {
+          const isd = isHabitDue(h, d);
+          if (d <= endCap && isd && (!r?.created || d >= r.created)) due++;
+          if (lg[d]) done++;
+        });
+        const pct = due ? Math.min(100, Math.round(done / due * 100)) : (done ? 100 : 0);
+        return { h, r, lg, due: Math.max(due, done), done, pct, streak: habitStreak(h), c: PALETTE[idx % PALETTE.length] };
+      });
+      const bk = [];
+      if (V.range === "year") {
+        for (let m = 0; m < 12; m++) {
+          const pre = a.slice(0, 5) + pad(m + 1);
+          const mDays = days.filter(d => d.startsWith(pre));
+          let t = 0, d = 0;
+          mDays.forEach(day => habits.forEach(h => {
+            if (day <= endCap && isHabitDue(h, day)) t++;
+            if (HLog[h.id]?.[day]) d++;
+          }));
+          bk.push({ l: MONTHS[LANG][m], k: pre, t: Math.max(t, d), d });
+        }
+      } else {
+        days.forEach(day => {
+          let t = 0, d = 0;
+          habits.forEach(h => {
+            if (isHabitDue(h, day)) t++;
+            if (HLog[h.id]?.[day]) d++;
+          });
+          bk.push({ l: V.range === "week" ? DAYS[LANG][parseD(day).getDay()] : String(parseD(day).getDate()), k: day, t: Math.max(t, d, 1), d });
+        });
+      }
+      const totalDone = items.reduce((s, x) => s + x.done, 0);
+      const totalDue = items.reduce((s, x) => s + x.due, 0);
+      const avgPct = totalDue ? Math.min(100, Math.round(totalDone / totalDue * 100)) : 0;
+      const topStreak = items.length ? Math.max(...items.map(x => x.streak)) : 0;
+      return { a, b, days, items, bk, totalDone, totalDue, avgPct, topStreak };
+    }
+    async function habitExport() {
+      const D = habitReportData(), V = habitView();
+      const sum = [
+        [`FlowRecover — ${L("รายงานผลนิสัยและกิจวัตร (Habit & Routine Tracker)", "Habit & Routine Tracker Report")}`],
+        [L("ช่วงเวลา", "Period"), habitTitle()],
+        [L("ตั้งแต่", "From"), D.a, L("ถึง", "To"), D.b],
+        [],
+        [L("จำนวนนิสัย/กิจวัตรทั้งหมด", "Total Habits & Routines"), D.items.length],
+        [L("เช็กอินสำเร็จรวม (ครั้ง)", "Total Check-ins"), D.totalDone],
+        [L("เป้าหมายตามรอบ (ครั้ง)", "Scheduled Target"), D.totalDue],
+        [L("ความสม่ำเสมอเฉลี่ย (%)", "Average Consistency (%)"), D.avgPct],
+        [L("สถิติต่อเนื่องสูงสุด (Streak วัน)", "Best Current Streak (days)"), D.topStreak],
+        [],
+        [L("ชื่อนิสัย / กิจวัตร", "Habit / Routine"), L("ประเภท", "Type"), L("รอบความถี่", "Frequency"), L("เวลาเตือน", "Time"), L("ทำสำเร็จ (ครั้ง)", "Completed"), L("เป้าหมาย (ครั้ง)", "Target"), L("ความสม่ำเสมอ (%)", "Consistency (%)"), L("Streak ปัจจุบัน (วัน)", "Current Streak")]
+      ];
+      D.items.forEach(x => {
+        sum.push([
+          x.h.name,
+          x.r ? L("กิจวัตรทำซ้ำ", "Recurring Routine") : L("นิสัยทั่วไป", "Habit"),
+          x.r ? freqLabel(x.r.freq) : L("ทุกวัน", "Daily"),
+          x.r?.time || "-",
+          x.done,
+          x.due,
+          x.pct,
+          x.streak
+        ]);
+      });
+      const matrixHead = [L("นิสัย / กิจวัตร", "Habit / Routine"), ...D.bk.map(b => b.k), L("รวมสำเร็จ", "Total Done"), "%"];
+      const matrixRows = [matrixHead];
+      D.items.forEach(x => {
+        const cells = D.bk.map(b => {
+          if (V.range === "year") {
+            return D.days.filter(d => d.startsWith(b.k) && x.lg[d]).length;
+          }
+          return x.lg[b.k] ? "✓" : "";
+        });
+        matrixRows.push([x.h.name, ...cells, x.done, x.pct + "%"]);
+      });
+      const logRows = [[L("วันที่", "Date"), L("นิสัย / กิจวัตร", "Habit / Routine"), L("ประเภท", "Type"), L("สถานะ", "Status")]];
+      D.days.forEach(d => {
+        D.items.forEach(x => {
+          if (x.lg[d]) {
+            logRows.push([d, x.h.name, x.r ? L("กิจวัตร", "Routine") : L("นิสัย", "Habit"), L("สำเร็จ (✓)", "Completed (✓)")]);
+          }
+        });
+      });
+      const fname = `FlowRecover_Habit_Report_${V.range}_${D.a}_${D.b}`;
+      toast(L("⏳ กำลังสร้างไฟล์ Excel รายงานนิสัย…", "⏳ Building Habit Excel report…"));
+      try {
+        const X = await import("https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs");
+        const wb = X.utils.book_new(), add = (rows, name, cols) => { const ws = X.utils.aoa_to_sheet(rows); if (cols) ws["!cols"] = cols.map(w => ({ wch: w })); X.utils.book_append_sheet(wb, ws, name); };
+        add(sum, L("สรุปผล", "Summary"), [32, 18, 16, 12, 16, 16, 18, 18]);
+        add(matrixRows, L("ตารางความต่อเนื่อง", "Tracker Grid"), [28, ...D.bk.map(() => 10), 12, 10]);
+        add(logRows, L("ประวัติเช็กอิน", "Check-in Log"), [14, 32, 16, 16]);
+        X.writeFile(wb, fname + ".xlsx");
+        toast(L("⬇️ ดาวน์โหลด Excel รายงานผลนิสัยแล้ว", "⬇️ Habit Excel report downloaded"));
+      } catch (e) {
+        console.warn("xlsx export failed, falling back to CSV", e);
+        const csv = "\ufeff" + sum.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+        const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" })); a.download = fname + ".csv"; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        toast(L("⬇️ ดาวน์โหลดเป็น CSV แล้ว (เปิดด้วย Excel ได้)", "⬇️ Downloaded as CSV (opens in Excel)"));
+      }
+    }
     function plannerHM() {
+      ensureRoutineHabits();
       const pts = points(), lv = LV.filter(x => pts.total >= x).length, next = LV[lv];
       const prevT = lv ? LV[lv - 1] : 0, pct = next ? Math.round((pts.total - prevT) / (next - prevT) * 100) : 100;
       const wk = weekDates(), today = dkey();
       const T = P().tiny;
+      const V = habitView(), HD = habitReportData();
+      const ranges = [["week", L("รายสัปดาห์", "Weekly")], ["month", L("รายเดือน", "Monthly")], ["year", L("รายปี", "Yearly")]];
+      const mx = Math.max(1, ...HD.bk.map(x => Math.max(x.t, x.d))), Wc = 640, Hc = 190, pb = 22, ch = Hc - pb - 8, bw = Wc / HD.bk.length, step = HD.bk.length > 16 ? Math.ceil(HD.bk.length / 16) : 1;
+      const chart = `<svg viewBox="0 0 ${Wc} ${Hc}" role="img" aria-label="${L("กราฟความต่อเนื่องของนิสัยและกิจวัตร", "Habit & routine consistency chart")}"><defs><linearGradient id="hb-g" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#34d399"/><stop offset="1" stop-color="#059669"/></linearGradient></defs>
+        ${[.25, .5, .75, 1].map(g => `<line x1="0" x2="${Wc}" y1="${8 + ch * (1 - g)}" y2="${8 + ch * (1 - g)}" style="stroke:var(--border)" stroke-dasharray="3 4"/>`).join("")}
+        ${HD.bk.map((x, i) => { const h1 = ch * x.t / mx, h2 = ch * x.d / mx, X0 = i * bw + bw * .17, w = bw * .66; return `<g><title>${x.l}: ${x.d}/${x.t}</title><rect x="${X0}" y="${8 + ch - h1}" width="${w}" height="${h1}" rx="3" fill="rgba(148,163,184,.25)"/><rect x="${X0}" y="${8 + ch - h2}" width="${w}" height="${h2}" rx="3" fill="url(#hb-g)"/>${i % step === 0 ? `<text x="${X0 + w / 2}" y="${Hc - 6}" text-anchor="middle" font-size="10" fill="#94a3b8">${x.l}</text>` : ""}</g>`; }).join("")}
+      </svg><div class="legend"><span><i style="background:#10b981"></i>${L("เช็กอินสำเร็จ", "Completed")}</span><span><i style="background:rgba(148,163,184,.45)"></i>${L("เป้าหมายตามรอบ", "Target")}</span></div>`;
+      const gridCols = V.range === "week" ? HD.days : wk;
+      const gridTitle = V.range === "week" ? habitTitle() : L("สัปดาห์ปัจจุบัน", "Current week");
       return `<div class="grid">
     <div class="grid grid-2b">
       <article class="card"><h3>⛰️ Level Up Mountain (L1–L10)</h3>
         <div class="row" style="justify-content:space-between"><div><b class="mono amber" style="font-size:2rem">${pts.total}</b> <span class="muted">pts</span></div><span class="pill pill-amber">${lv ? "Level " + lv : L("ตีนเขา", "Base camp")}${lv === 10 ? L(" 🏆 ยอดเขา!", " 🏆 Summit!") : ""}</span></div>
         <div class="bar" style="margin:10px 0 4px"><i style="width:${pct}%"></i></div>
-        <p class="muted sm">${next ? L(`อีก ${next - pts.total} pts ถึง L${lv + 1}`, `${next - pts.total} pts to L${lv + 1}`) : L("พิชิตยอดเขาแล้ว!", "You reached the summit!")} • ${L("นิสัย", "Habits")} ${pts.habit} • ${L("กิจวัตร", "Routines")} ${pts.routine} • ${L("งานสำเร็จ", "Tasks")} ${pts.task}</p>
+        <p class="muted sm">${next ? L(`อีก ${next - pts.total} pts ถึง L${lv + 1}`, `${next - pts.total} pts to L${lv + 1}`) : L("พิชิตยอดเขาแล้ว!", "You reached the summit!")} • ${L("นิสัย & กิจวัตร", "Habits & Routines")} ${pts.habit + pts.routine} • ${L("งานสำเร็จ", "Tasks")} ${pts.task}</p>
         <div class="mountain">${LV.map((p, i) => ({ i: i + 1, p })).reverse().map(({ i, p }) => `<div class="mt-row ${pts.total >= p ? "on" : ""} ${i === lv ? "cur" : ""}" style="--w:${30 + (10 - i) * 7}%"><span>L${i}</span><span>${p} pts</span>${i === lv ? "<em>🧗</em>" : ""}</div>`).join("")}</div>
         <p class="muted sm center">${L("เช็กอินนิสัย/กิจวัตร +5 • ทำงานสำเร็จ +10", "Habit/routine check-in +5 • task done +10")}</p></article>
       <article class="card"><h3>😊 Daily Mood Tracker</h3>
@@ -3420,11 +3612,52 @@
         <div class="mood-strip">${wk.map(d => `<div>${P().mood[d] || "·"}<small>${dayName(parseD(d))}</small></div>`).join("")}</div>
         <label class="field" style="margin-top:14px"><span>⚡ Mood Booster — ${L("กิจกรรมที่ช่วยเติมพลังบวก", "activities that lift your mood")}</span><textarea class="input" id="booster" data-bind="planner.booster" placeholder="${L("เช่น ฟังเพลงโปรด เดินเล่น 10 นาที โทรหาเพื่อน", "e.g. Favorite music, 10-min walk, call a friend")}">${esc(P().booster)}</textarea></label><div class="row" style="justify-content:flex-end;margin-top:6px"><button type="button" class="btn btn-sm" data-act="toRoutineDlg" data-from="booster" id="ra-booster">🔁 ${L("เพิ่มเป็นกิจวัตร", "Make it a routine")}</button></div></article>
     </div>
-    <article class="card"><div class="card-head"><h3>🔥 Habit Tracker (${L("+5 แต้ม/ช่อง", "+5 pts/check")})</h3></div>
-      <div style="overflow-x:auto"><table class="habit-grid"><thead><tr><th style="text-align:left">${L("นิสัย", "Habit")}</th>${wk.map(d => `<th>${dayName(parseD(d))}<br>${parseD(d).getDate()}</th>`).join("")}<th></th></tr></thead>
-      <tbody>${P().habits.map(h => `<tr><td>${esc(h.name)}</td>${wk.map(d => { const on = !!P().habitLog[h.id]?.[d]; return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><div class="row" style="gap:2px;flex-wrap:nowrap">${rBtn("hb-" + h.id, h.name)}<button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></div></td></tr>`).join("")}</tbody></table></div>
-      ${P().habits.length ? "" : `<p class="empty">${L("เพิ่มนิสัยแรกของคุณ", "Add your first habit")}</p>`}
-      <form class="row" data-form="addHabit" id="form-add-habit" style="margin-top:10px" autocomplete="off"><input class="input grow" name="name" id="habit-name" required placeholder="${L("เพิ่มนิสัยใหม่ เช่น นั่งสมาธิ 5 นาที", "New habit, e.g. Meditate 5 min")}" style="flex:1;min-width:0"><button class="btn btn-emerald" type="submit" id="btn-add-habit">＋</button></form></article>
+    <article class="card">
+      <div class="card-head" style="flex-wrap:wrap;gap:8px">
+        <div>
+          <h3>🔥 Habit & Routine Tracker (${L("+5 แต้ม/ช่อง", "+5 pts/check")})</h3>
+          <p class="muted sm">${L("กิจวัตรที่เพิ่มจากหน้าคิวงานจะซิงก์มาที่นี่อัตโนมัติ เช็กอินจากฝั่งไหนก็อัปเดตตรงกัน", "Routines added from Queue sync here automatically — check in from either place")}</p>
+        </div>
+        <span class="chip chip-emerald">🔗 ${L(`เชื่อมกิจวัตร ${state.routines.length} รายการ`, `${state.routines.length} routines linked`)}</span>
+      </div>
+      <div style="overflow-x:auto;margin-top:8px"><table class="habit-grid"><thead><tr><th style="text-align:left">${L("นิสัย / กิจวัตร", "Habit / Routine")} (${gridTitle})</th>${gridCols.map(d => `<th>${dayName(parseD(d))}<br>${parseD(d).getDate()}</th>`).join("")}<th>Streak</th><th></th></tr></thead>
+      <tbody>${P().habits.map(h => {
+        const r = habitRoutine(h);
+        const st = habitStreak(h);
+        return `<tr><td><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap"><span>${esc(h.name)}</span>${r ? `<span class="chip chip-emerald" style="font-size:.68rem;padding:1px 6px" title="${L("เชื่อมกับกิจวัตรทำซ้ำ", "Linked to recurring routine")}">🔁 ${freqLabel(r.freq)}${r.time ? " " + esc(r.time) : ""}</span>` : ""}</div></td>${gridCols.map(d => { const on = !!P().habitLog[h.id]?.[d]; const due = isHabitDue(h, d); return `<td><button class="hcell ${on ? "on" : ""} ${d === today ? "today" : ""}" style="${!due && !on ? "opacity:.4" : ""}" data-act="habit" data-h="${h.id}" data-d="${d}" id="hc-${h.id}-${d}" aria-label="${esc(h.name)} ${fmtDate(d)}" aria-pressed="${on}">${on ? "✓" : ""}</button></td>`; }).join("")}<td><span class="chip chip-amber" style="font-size:.72rem">🔥 ${st}</span></td><td><div class="row" style="gap:2px;flex-wrap:nowrap"><button class="icon-btn" data-act="editItem" data-kind="${r ? "routine" : "habit"}" data-id="${r ? r.id : h.id}" id="hedt-${h.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>${r ? "" : rBtn("hb-" + h.id, h.name)}<button class="icon-btn" data-act="delHabit" data-id="${h.id}" id="hd-${h.id}" aria-label="${L("ลบนิสัย", "Delete habit")}">✕</button></div></td></tr>`;
+      }).join("")}</tbody></table></div>
+      ${P().habits.length ? "" : `<p class="empty">${L("เพิ่มนิสัยแรกของคุณ หรือเพิ่มกิจวัตรที่หน้าคิวงาน", "Add your first habit or create a routine on Queue")}</p>`}
+      <form class="row" data-form="addHabit" id="form-add-habit" style="margin-top:10px" autocomplete="off"><input class="input grow" name="name" id="habit-name" required placeholder="${L("เพิ่มนิสัยใหม่ เช่น นั่งสมาธิ 5 นาที", "New habit, e.g. Meditate 5 min")}" style="flex:1;min-width:0"><button class="btn btn-emerald" type="submit" id="btn-add-habit">＋</button></form>
+    </article>
+    <article class="card" id="habit-report-card">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div>
+          <h3>📊 ${L("รายงานผลความต่อเนื่อง (Habit & Routine Report)", "Habit & Routine Consistency Report")}</h3>
+          <p class="muted sm">${L("สรุปผลการทำนิสัยและกิจวัตร รายสัปดาห์ • รายเดือน • รายปี พร้อมส่งออกไฟล์ Excel", "Weekly • Monthly • Yearly consistency breakdown with Excel export")}</p>
+        </div>
+        <button class="btn btn-emerald btn-sm" data-act="habitExport" id="btn-habit-xlsx">⬇️ ${L("ดาวน์โหลด Excel (.xlsx)", "Download Excel (.xlsx)")}</button>
+      </div>
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <div class="seg" role="tablist">${ranges.map(([k, l]) => `<button class="${V.range === k ? "on" : ""}" data-act="habitRange" data-v="${k}" id="hrng-${k}">${l}</button>`).join("")}</div>
+        <div class="row" style="gap:6px;align-items:center">
+          <button class="icon-btn" data-act="habitNav" data-v="-1" id="hb-prev" aria-label="${L("ก่อนหน้า", "Previous")}">‹</button>
+          <b style="min-width:140px;text-align:center">${habitTitle()}</b>
+          <button class="icon-btn" data-act="habitNav" data-v="1" id="hb-next" aria-label="${L("ถัดไป", "Next")}">›</button>
+          <button class="btn btn-sm" data-act="habitNow" id="hb-now">${L("ปัจจุบัน", "Now")}</button>
+        </div>
+      </div>
+      <div class="kpis" style="margin-top:12px">
+        ${kpiBox(`${HD.totalDone}/${HD.totalDue}`, L(`เช็กอินสำเร็จ (${HD.avgPct}%)`, `Check-ins (${HD.avgPct}%)`), "emerald")}
+        ${kpiBox(`${HD.avgPct}%`, L("ความสม่ำเสมอเฉลี่ย", "Avg consistency"), "amber")}
+        ${kpiBox(`🔥 ${HD.topStreak}`, L("Streak สูงสุด (วัน)", "Best streak (days)"), "violet")}
+        ${kpiBox(`${HD.items.length}`, L("นิสัย & กิจวัตรทั้งหมด", "Total habits & routines"), "sky")}
+      </div>
+      <div class="chart-wrap" style="margin-top:12px">${chart}</div>
+      <div style="margin-top:12px">
+        <h4 style="margin-bottom:8px">📋 ${L("ความสม่ำเสมอแยกตามรายการ", "Consistency by habit / routine")} • ${habitTitle()}</h4>
+        ${HD.items.length ? HD.items.map(x => `<div class="hbar"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(x.h.name)}">${x.r ? "🔁 " : "🔥 "}${esc(x.h.name)}</span><div class="bar"><i style="width:${x.pct}%;background:${x.c}"></i></div><span class="mono sm"><b>${x.done}</b>/${x.due} <span class="muted">(${x.pct}% • 🔥${x.streak})</span></span></div>`).join("") : `<p class="empty">${L("ยังไม่มีรายการนิสัยหรือกิจวัตร", "No habits or routines yet")}</p>`}
+      </div>
+    </article>
     <div class="grid grid-2b">
       <article class="card"><h3>🌱 Tiny Habit</h3>
         <div class="form-grid"><label class="field"><span>${L("หลังจาก… (นิสัยเดิม)", "After I… (existing habit)")}</span><input class="input" id="tiny-after" data-bind="planner.tiny.after" data-live="tiny" value="${esc(T.after)}" placeholder="${L("แปรงฟันเสร็จ", "brush my teeth")}"></label>
@@ -3437,11 +3670,124 @@
   </div>`;
     }
     const tinyText = () => { const T = P().tiny; return `💡 <b>${L("หลังจาก", "After I")}</b> ${esc(T.after || "……")} <b>${L("ฉันจะ", "I will")}</b> ${esc(T.will || "……")} 🎉`; };
+    function tripStats(t) {
+      const budget = Math.max(0, Number(t.budget) || 0);
+      const saved = Math.max(0, Number(t.saved) || 0);
+      const remain = Math.max(0, budget - saved);
+      const pct = budget > 0 ? Math.min(100, Math.round((saved / budget) * 100)) : (saved > 0 ? 100 : 0);
+      const today = dkey();
+      const daysLeft = t.date ? Math.ceil((parseD(t.date) - parseD(today)) / 86400000) : null;
+      const monthsLeft = daysLeft !== null && daysLeft > 0 ? Math.max(1, Math.ceil(daysLeft / 30)) : 1;
+      const perMonth = remain > 0 ? Math.ceil(remain / monthsLeft) : 0;
+      const perDay = remain > 0 && daysLeft !== null && daysLeft > 0 ? Math.ceil(remain / daysLeft) : 0;
+      const steps = (t.steps ||= []);
+      const doneSteps = steps.filter(s => s.done).length;
+      const stepPct = steps.length ? Math.round((doneSteps / steps.length) * 100) : 0;
+      return { budget, saved, remain, pct, daysLeft, monthsLeft, perMonth, perDay, steps, doneSteps, stepPct };
+    }
+    function allTripsSummary() {
+      const trips = [...(P().trips || [])].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999") || b.ts - a.ts);
+      const items = trips.map(t => ({ t, s: tripStats(t) }));
+      const totalBudget = items.reduce((a, x) => a + x.s.budget, 0);
+      const totalSaved = items.reduce((a, x) => a + x.s.saved, 0);
+      const totalRemain = items.reduce((a, x) => a + x.s.remain, 0);
+      const totalMonthly = items.reduce((a, x) => a + x.s.perMonth, 0);
+      const pct = totalBudget > 0 ? Math.min(100, Math.round((totalSaved / totalBudget) * 100)) : 0;
+      return { items, totalBudget, totalSaved, totalRemain, totalMonthly, pct };
+    }
+    function renderTripsSection() {
+      const TS = allTripsSummary();
+      return `<article class="card full" id="travel-planner-card">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <div>
+            <h3>✈️ Travel Planner & ${L("แผนออมเงินท่องเที่ยว", "Travel Savings & Step Planner")}</h3>
+            <p class="muted sm">${L("วางแผนทริป คำนวณยอดที่ต้องออมต่อเดือน เชื่อมกับ Planner การเงิน (F) และเช็กลิสต์สิ่งที่ต้องทำเป็นขั้นตอน", "Plan trips, calculate monthly savings needed, sync with Finance Planner (F), and manage step-by-step checklists")}</p>
+          </div>
+          <button class="btn btn-sm" data-act="psec" data-v="f" id="btn-trip-to-fin">💰 ${L("ดูหน้า Planner การเงิน (F)", "Open Finance Planner (F)")}</button>
+        </div>
+        <div class="kpis" style="margin:12px 0">
+          ${kpiBox(`${money(TS.totalBudget)} ฿`, L("งบท่องเที่ยวรวม", "Total Trip Budget"), "amber")}
+          ${kpiBox(`${money(TS.totalSaved)} ฿`, L(`เก็บเงินได้แล้ว (${TS.pct}%)`, `Saved (${TS.pct}%)`), "emerald")}
+          ${kpiBox(`${money(TS.totalRemain)} ฿`, L("ต้องเก็บเพิ่มอีก", "Remaining Needed"), TS.totalRemain > 0 ? "rose" : "emerald")}
+          ${kpiBox(`${money(TS.totalMonthly)} ฿`, L("ต้องออมรวม / เดือน", "Monthly Savings Needed"), "sky")}
+        </div>
+        ${crudForm("trips")}
+        ${TS.items.length ? `<div class="grid" style="margin-top:14px;gap:14px">${TS.items.map(({ t, s }) => {
+          const cdTxt = s.daysLeft === null ? L("ยังไม่ระบุวันเดินทาง", "No date set") : s.daysLeft > 0 ? L(`อีก ${s.daysLeft} วัน (~${s.monthsLeft} เดือน)`, `in ${s.daysLeft} days (~${s.monthsLeft} mo)`) : s.daysLeft === 0 ? L("🎉 เดินทางวันนี้!", "🎉 Today!") : L(`ผ่านไปแล้ว ${Math.abs(s.daysLeft)} วัน`, `${Math.abs(s.daysLeft)}d ago`);
+          return `<div class="card" style="background:var(--surface-2);border:1px solid var(--border);padding:14px">
+            <div class="row" style="justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap">
+              <div>
+                <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+                  <b style="font-size:1.1rem">✈️ ${esc(t.place || "-")}</b>
+                  ${t.date ? `<span class="chip chip-sky">📅 ${fmtDate(t.date)}</span>` : ""}
+                  <span class="chip ${s.daysLeft !== null && s.daysLeft > 0 ? "chip-amber" : "chip-emerald"}">⏳ ${cdTxt}</span>
+                </div>
+                ${t.notes ? `<p class="muted sm" style="margin-top:4px">📝 ${esc(t.notes)}</p>` : ""}
+              </div>
+              <div class="row" style="gap:4px">
+                <button class="btn btn-sm" data-act="editItem" data-kind="crud" data-name="trips" data-id="${t.id}" id="te-${t.id}" title="${L("แก้ไขข้อมูลทริป", "Edit trip details")}">✏️ ${L("แก้ไขทริป", "Edit")}</button>
+                <button class="icon-btn" data-act="delCrud" data-name="trips" data-id="${t.id}" id="td-${t.id}" aria-label="${L("ลบทริป", "Delete trip")}">🗑️</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;padding:12px;border-radius:12px;background:var(--surface)">
+              <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                <b>💰 ${L("แผนออมเงินเพื่อทริปนี้ (เชื่อมกับ Planner การเงิน)", "Trip Savings Plan (Linked to Finance Planner)")}</b>
+                <span class="mono sm"><b class="emerald">${money(s.saved)}</b> / <b>${money(s.budget)} ฿</b> (${s.pct}%)</span>
+              </div>
+              <div class="bar" style="margin:8px 0;height:12px"><i style="width:${s.pct}%"></i></div>
+              <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                ${s.remain > 0 ? `<div class="sm">🎯 ${L("ต้องเก็บเพิ่ม", "Still need")}: <b class="rose mono">${money(s.remain)} ฿</b> • ${L("ต้องออมเดือนละ", "Save per month")}: <b class="amber mono" style="font-size:1rem">${money(s.perMonth)} ฿/${L("เดือน", "mo")}</b> <span class="muted">(${L(`เวลาเหลือ ~${s.monthsLeft} เดือน`, `~${s.monthsLeft} mo left`)}${s.perDay > 0 ? ` • ${L("เฉลี่ยวันละ", "or")} ${money(s.perDay)} ฿/${L("วัน", "day")}` : ""})</span></div>` : `<div class="sm emerald"><b>✅ ${L("เก็บเงินครบตามเป้าหมายทริปนี้แล้ว! 🎉", "Savings goal reached for this trip! 🎉")}</b></div>`}
+              </div>
+              <form class="row" data-form="tripSave" data-id="${t.id}" id="tsf-${t.id}" style="gap:6px;flex-wrap:wrap;align-items:center" autocomplete="off">
+                <input class="input" type="number" name="amount" inputmode="decimal" step="any" min="1" placeholder="${L("จำนวนเงินออม (฿)", "Save amount (฿)")}" value="${s.perMonth || ""}" style="width:150px;min-height:36px" required>
+                <button class="btn btn-emerald btn-sm" type="submit">🐷 ＋${L("ออมเข้าทริป", "Deposit to Trip")}</button>
+                ${s.perMonth > 0 ? `<button class="btn btn-sm" type="button" data-act="tripQuickSave" data-id="${t.id}" data-v="${s.perMonth}">⚡ +${money(s.perMonth)} (${L("ยอดเดือนนี้", "Monthly target")})</button>` : ""}
+                <button class="btn btn-sm" type="button" data-act="tripQuickSave" data-id="${t.id}" data-v="1000">+1,000 ฿</button>
+                <label class="row sm muted" style="gap:4px;margin-left:auto;cursor:pointer"><input type="checkbox" name="syncFin" value="1" checked> ${L("ซิงก์ยอดออม & บันทึกใน Planner การเงิน (F)", "Sync with Finance Planner (F)")}</label>
+              </form>
+            </div>
+
+            <div style="margin-top:12px;padding:12px;border-radius:12px;background:var(--surface)">
+              <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+                <div>
+                  <b>🧭 ${L("แผนสิ่งที่ต้องทำเป็นขั้นตอน (Travel Checklist)", "Step-by-Step Travel Checklist")}</b>
+                  <span class="chip ${s.steps.length && s.doneSteps === s.steps.length ? "chip-emerald" : ""}" style="margin-left:6px">${s.doneSteps}/${s.steps.length} (${s.stepPct}%)</span>
+                </div>
+                <div class="row" style="gap:4px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-sm" data-act="tripPresetSteps" data-id="${t.id}">✨ ${L("+ ชุดขั้นตอนมาตรฐาน", "+ Standard Checklist")}</button>
+                </div>
+              </div>
+              ${s.steps.length ? `<ul class="rows" style="margin-bottom:10px">${s.steps.map((st, idx) => `<li class="row-item" style="${st.done ? "opacity:.65" : ""}">
+                <div class="row" style="gap:8px;align-items:center;min-width:0;flex:1">
+                  <button type="button" class="check ${st.done ? "done" : ""}" data-act="tripStepToggle" data-tid="${t.id}" data-sid="${st.id}" aria-label="${L("สลับสถานะ", "Toggle step")}">${st.done ? "✓" : ""}</button>
+                  <div style="min-width:0">
+                    <b style="${st.done ? "text-decoration:line-through" : ""}">${idx + 1}. ${esc(st.title)}</b>
+                    ${st.date ? ` <span class="chip chip-sky" style="font-size:.7rem;padding:1px 6px">📅 ${fmtDate(st.date)}</span>` : ""}
+                    ${st.note ? ` <span class="muted sm">· ${esc(st.note)}</span>` : ""}
+                  </div>
+                </div>
+                <div class="row" style="gap:4px;flex:none">
+                  <button type="button" class="icon-btn" data-act="editItem" data-kind="tripStep" data-tid="${t.id}" data-id="${st.id}" title="${L("แก้ไขขั้นตอน", "Edit step")}" aria-label="${L("แก้ไขขั้นตอน", "Edit step")}">✏️</button>
+                  <button type="button" class="btn btn-sm" data-act="tripStepQueue" data-tid="${t.id}" data-sid="${st.id}" title="${L("ส่งเข้าคิวงานรายวัน", "Send to daily task queue")}">📅 ${L("เข้าคิวงาน", "Queue")}</button>
+                  <button type="button" class="icon-btn" data-act="tripStepDel" data-tid="${t.id}" data-sid="${st.id}" aria-label="${L("ลบขั้นตอน", "Delete step")}">✕</button>
+                </div>
+              </li>`).join("")}</ul>` : `<p class="muted sm" style="margin-bottom:8px">${L("ยังไม่มีขั้นตอน — เพิ่มสิ่งที่ต้องเตรียมด้านล่าง หรือกด “+ ชุดขั้นตอนมาตรฐาน”", "No steps yet — add one below or tap “+ Standard Checklist”")}</p>`}
+              <form class="row" data-form="addTripStep" data-tid="${t.id}" id="ts-add-${t.id}" style="gap:6px;flex-wrap:wrap" autocomplete="off">
+                <input class="input grow" name="title" placeholder="${L("เพิ่มขั้นตอน เช่น จองตั๋วเครื่องบิน / จองที่พัก / วางแผนจุดเที่ยว", "Add step, e.g. Book flights / Book hotel / Plan itinerary")}" style="flex:2;min-width:160px;min-height:36px" required>
+                <input class="input" type="date" name="date" style="flex:1;min-width:125px;min-height:36px" title="${L("วันที่ต้องทำ (ไม่บังคับ)", "Target date (optional)")}">
+                <input class="input" name="note" placeholder="${L("โน้ต/งบย่อย (ไม่บังคับ)", "Note / sub-budget (opt)")}" style="flex:1;min-width:120px;min-height:36px">
+                <button class="btn btn-amber btn-sm" type="submit">＋ ${L("เพิ่มขั้นตอน", "Add step")}</button>
+              </form>
+            </div>
+          </div>`;
+        }).join("")}</div>` : `<p class="empty" style="margin-top:12px">${L("ยังไม่มีแผนท่องเที่ยว — เพิ่มทริปแรกของคุณด้านบนเพื่อเริ่มวางแผนการออมและขั้นตอนเตรียมตัว!", "No trips yet — add your first trip above to plan monthly savings and preparation steps!")}</p>`}
+      </article>`;
+    }
     function plannerWL() {
       const today = dkey(), kcal = P().meals.filter(m => m.date === today).reduce((a, m) => a + (Number(m.kcal) || 0), 0);
       const ws = P().workouts.filter(w => Number(w.weight)).sort((a, b) => a.date.localeCompare(b.date));
       const wDiff = ws.length > 1 ? (ws.at(-1).weight - ws[0].weight).toFixed(1) : null;
-      const tb = P().trips.reduce((a, t) => a + (Number(t.budget) || 0), 0);
       const slps = P().sleeps || [];
       const avgSleep = slps.length ? (slps.reduce((a, s) => a + (Number(s.hours) || 0), 0) / slps.length).toFixed(1) : null;
       return `<div class="grid grid-2b">
@@ -3452,8 +3798,8 @@
       ${ws.length ? `<p class="muted sm" style="margin-bottom:10px">${L("น้ำหนักล่าสุด", "Latest weight")} <b class="amber">${ws.at(-1).weight} ${L("กก.", "kg")}</b>${wDiff !== null ? ` • ${L("เปลี่ยนแปลง", "change")} <b class="${wDiff <= 0 ? "emerald" : "rose"}">${wDiff > 0 ? "+" : ""}${wDiff} ${L("กก.", "kg")}</b>` : ""}</p>` : ""}
       ${crudForm("workouts")}${crudList("workouts")}</article>
     <article class="card"><h3>🥗 Meal Plan & Calories</h3><p class="muted sm" style="margin-bottom:10px">${L("วันนี้รวม", "Today's total")} <b class="amber">${money(kcal)} kcal</b></p>${crudForm("meals")}${crudList("meals")}</article>
-    <article class="card"><h3>✈️ Travel Planner</h3><p class="muted sm" style="margin-bottom:10px">${L("งบรวมทุกทริป", "Total trip budget")} <b class="amber">${money(tb)} ฿</b></p>${crudForm("trips")}${crudList("trips")}</article>
-    <article class="card full"><h3>📚 Book Shelf & 🎬 Movie Collection</h3>${crudForm("media")}${crudList("media")}</article>
+    <article class="card"><h3>📚 Book Shelf & 🎬 Movie Collection</h3>${crudForm("media")}${crudList("media")}</article>
+    ${renderTripsSection()}
   </div>`;
     }
 
@@ -3894,7 +4240,7 @@
     function renderIdeas() {
       $("#ideas-body").innerHTML = `
     <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
-    ${state.ideas.length ? `<ul class="rows">${[...state.ideas].reverse().map(x => `<li class="row-item"><div>${esc(x.text)}<div class="muted sm">${fmtDT(x.at)}</div></div><button class="btn btn-sm" data-act="ideaToTask" data-id="${x.id}" id="it-${x.id}">→ ${L("งาน", "Task")}</button><button class="icon-btn" data-act="delIdea" data-id="${x.id}" id="id-${x.id}" aria-label="${L("ลบไอเดีย", "Delete idea")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("พิมพ์ไอเดียในช่อง 💡 ด้านบน แล้วกด Enter", "Type an idea in the 💡 box at the top and press Enter")}</p>`}`;
+    ${state.ideas.length ? `<ul class="rows">${[...state.ideas].reverse().map(x => `<li class="row-item"><div>${esc(x.text)}<div class="muted sm">${fmtDT(x.at)}</div></div><button class="icon-btn" data-act="editItem" data-kind="idea" data-id="${x.id}" id="ie-${x.id}" title="${L("แก้ไขไอเดีย", "Edit idea")}" aria-label="${L("แก้ไขไอเดีย", "Edit idea")}">✏️</button><button class="btn btn-sm" data-act="ideaToTask" data-id="${x.id}" id="it-${x.id}">→ ${L("งาน", "Task")}</button><button class="icon-btn" data-act="delIdea" data-id="${x.id}" id="id-${x.id}" aria-label="${L("ลบไอเดีย", "Delete idea")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("พิมพ์ไอเดียในช่อง 💡 ด้านบน แล้วกด Enter", "Type an idea in the 💡 box at the top and press Enter")}</p>`}`;
     }
     function openShare(p) {
       const url = shareUrl(p);
@@ -4172,8 +4518,21 @@
         rerender(); toast(n ? L(`📦 ย้ายงานรอง ${n} งานไป ${fmtDate(addDays(d.date, 1))} แล้ว`, `📦 Moved ${n} secondary tasks to ${fmtDate(addDays(d.date, 1))}`) : L("ไม่มีงานรองให้ย้าย", "No secondary tasks to move"));
       },
       qdate: d => { state.queueDate = d.v; renderView(); },
-      routineCheck: d => { const r = state.routines.find(x => x.id === d.id); if (!r) return; const k = dkey(); r.log ||= {}; r.log[k] = !r.log[k]; rerender(); if (r.log[k]) toast(L(`🔥 Streak ${streak(r)} วัน! +5 แต้ม`, `🔥 ${streak(r)}-day streak! +5 pts`)); },
-      delRoutine: d => { if (!confirm(L("ลบกิจวัตรนี้?", "Delete this routine?"))) return; state.routines = state.routines.filter(x => x.id !== d.id); rerender(); },
+      routineCheck: d => {
+        const r = state.routines.find(x => x.id === d.id); if (!r) return;
+        const k = dkey(); r.log ||= {}; r.log[k] = !r.log[k];
+        ensureRoutineHabits();
+        const h = P().habits.find(x => x.routineId === r.id || x.id === r.habitId);
+        if (h) { P().habitLog[h.id] ||= {}; P().habitLog[h.id][k] = r.log[k]; }
+        rerender();
+        if (r.log[k]) toast(L(`🔥 Streak ${streak(r)} วัน! +5 แต้ม`, `🔥 ${streak(r)}-day streak! +5 pts`));
+      },
+      delRoutine: d => {
+        if (!confirm(L("ลบกิจวัตรนี้?", "Delete this routine?"))) return;
+        state.routines = state.routines.filter(x => x.id !== d.id);
+        P().habits.forEach(h => { if (h.routineId === d.id) delete h.routineId; });
+        rerender();
+      },
       projSub: d => { state.projSub = d.v; rerender(); },
       openProject: d => { state.openProject = state.openProject === d.id ? null : d.id; renderView(); },
       delProject: d => { if (!confirm(L("ลบโปรเจคนี้? (งานที่ผูกไว้จะกลายเป็นงานทั่วไป)", "Delete this project? (linked tasks become general tasks)"))) return; state.projects = state.projects.filter(p => p.id !== d.id); state.tasks.forEach(t => { if (t.projectId === d.id) t.projectId = null; }); rerender(); },
@@ -4185,8 +4544,29 @@
       nativeShare: () => navigator.share({ title: L("ความคืบหน้าโปรเจค — FlowRecover", "Project progress — FlowRecover"), url: $("#share-url").value }).catch(() => { }),
       psec: d => { state.plannerSec = d.v; rerender(); scrollTo({ top: 0, behavior: "smooth" }); },
       rate: d => { const cur = Number(getPath(state, d.path)) || 0, v = Number(d.v); setPath(state, d.path, cur === v ? 0 : v); rerender(); },
-      habit: d => { const Lg = P().habitLog; Lg[d.h] ||= {}; Lg[d.h][d.d] = !Lg[d.h][d.d]; rerender(); if (Lg[d.h][d.d]) toast(L("🔥 +5 แต้ม", "🔥 +5 pts")); },
-      delHabit: d => { if (!confirm(L("ลบนิสัยนี้?", "Delete this habit?"))) return; P().habits = P().habits.filter(h => h.id !== d.id); delete P().habitLog[d.id]; rerender(); },
+      habit: d => {
+        const Lg = P().habitLog; Lg[d.h] ||= {}; Lg[d.h][d.d] = !Lg[d.h][d.d];
+        const h = P().habits.find(x => x.id === d.h), r = h ? habitRoutine(h) : null;
+        if (r) { r.log ||= {}; r.log[d.d] = Lg[d.h][d.d]; }
+        rerender();
+        if (Lg[d.h][d.d]) toast(L("🔥 +5 แต้ม", "🔥 +5 pts"));
+      },
+      delHabit: d => {
+        if (!confirm(L("ลบนิสัยนี้?", "Delete this habit?"))) return;
+        const h = P().habits.find(x => x.id === d.id), r = h ? habitRoutine(h) : null;
+        if (r && confirm(L("ต้องการลบกิจวัตรทำซ้ำที่เชื่อมกันในหน้าคิวงานด้วยไหม?", "Also delete the linked recurring routine in Queue?"))) {
+          state.routines = state.routines.filter(x => x.id !== r.id);
+        } else if (r) {
+          delete r.habitId;
+        }
+        P().habits = P().habits.filter(x => x.id !== d.id);
+        delete P().habitLog[d.id];
+        rerender();
+      },
+      habitRange: d => { habitView().range = d.v; rerender(); },
+      habitNav: d => { const V = habitView(), n = Number(d.v); V.date = V.range === "week" ? addDays(V.date, 7 * n) : addMonths(V.date, V.range === "month" ? n : 12 * n); rerender(); },
+      habitNow: () => { habitView().date = dkey(); rerender(); },
+      habitExport: () => habitExport(),
       mood: d => { const k = dkey(); P().mood[k] = P().mood[k] === d.v ? "" : d.v; rerender(); },
       addSave: d => { const F = P().finance; F.saved = Math.max(0, (Number(F.saved) || 0) + Number(d.v)); rerender(); if (Number(d.v) > 0) toast(L(`🐷 ออมเพิ่ม ${money(d.v)} ฿`, `🐷 Saved ${money(d.v)} ฿ more`)); },
       delCrud: d => { P()[d.name] = P()[d.name].filter(r => r.id !== d.id); rerender(); },
@@ -4421,6 +4801,7 @@
       const spans = [["w1", L("+1 สัปดาห์", "+1 wk")], ["m1", L("+1 เดือน", "+1 mo")], ["m3", L("+3 เดือน", "+3 mo")], ["m6", L("+6 เดือน", "+6 mo")], ["y1", L("+1 ปี", "+1 yr")], ["y2", L("+2 ปี", "+2 yr")], ["y3", L("+3 ปี", "+3 yr")]];
       return `<div class="step-detail">
       <div class="form-grid">
+        <label class="field full"><span>✏️ ${L("ชื่อขั้นตอน", "Step name")}</span><input class="input" id="stitle-${s.id}" data-bind="${base}.title" value="${esc(s.title)}"></label>
         <label class="field"><span>🚀 ${L("วันเริ่ม", "Start date")}</span><input class="input" type="date" id="ss-${s.id}" data-bind="${base}.start" data-rr="1" value="${s.start || ""}"></label>
         <label class="field"><span>🏁 ${L("วันสิ้นสุด", "End date")}</span><input class="input" type="date" id="se-${s.id}" data-bind="${base}.end" data-rr="1" value="${s.end || ""}" min="${s.start || ""}"></label>
       </div>
@@ -4449,6 +4830,7 @@
       <span class="drag-handle" aria-hidden="true">⠿</span>
       <button class="check" data-act="actToggle" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ac-${a.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark done")}">${a.done ? "✓" : ""}</button>
       <div class="grow" style="min-width:0"><div class="act-title">${esc(a.title)}</div><div class="muted sm">${a.date ? "📅 " + fmtDate(a.date) : L("ไม่มีวันที่", "No date")}${q ? " • 📋 " + L("อยู่ในคิว", "queued") : ""}${a.gcalId ? " • 📆✓" : ""}</div></div>
+      <button class="icon-btn" data-act="editItem" data-kind="act" data-pid="${p.id}" data-sid="${s.id}" data-id="${a.id}" id="ae-${a.id}" title="${L("แก้ไขกิจกรรม", "Edit activity")}" aria-label="${L("แก้ไขกิจกรรม", "Edit activity")}">✏️</button>
       ${q ? "" : `<button class="icon-btn" data-act="actQueue" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="aq-${a.id}" title="${L("เพิ่มเข้าคิวงาน", "Add to queue")}" aria-label="${L("เพิ่มเข้าคิวงาน", "Add to queue")}">📋</button>`}
       <button class="icon-btn" data-act="actDel" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ad-${a.id}" aria-label="${L("ลบกิจกรรม", "Delete activity")}">✕</button>
     </li>`;
@@ -5209,7 +5591,7 @@
         }
         if (x.k === "t") {
           const t = x.t, p = proj(t.projectId);
-          return `<li class="cal-item t"><span class="cal-time">${fmt(t.start)}–${fmt(t.start + t.dur)}</span><div class="grow"><b>${t.done ? "✅ " : ""}${esc(t.title)}</b><div class="muted sm">${t.fromGcal ? "📥 " + L("จาก Google Calendar", "from Google Calendar") : t.gcalId ? "📆 " + L("ซิงก์กับ Google แล้ว", "synced to Google") : "⚡ FlowRecover"}${p ? " • 🗂️ " + esc(p.title) : ""}</div></div></li>`;
+          return `<li class="cal-item t"><span class="cal-time">${fmt(t.start)}–${fmt(t.start + t.dur)}</span><div class="grow"><b>${t.done ? "✅ " : ""}${esc(t.title)}</b><div class="muted sm">${t.fromGcal ? "📥 " + L("จาก Google Calendar", "from Google Calendar") : t.gcalId ? "📆 " + L("ซิงก์กับ Google แล้ว", "synced to Google") : "⚡ FlowRecover"}${p ? " • 🗂️ " + esc(p.title) : ""}</div></div><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="ce-${t.id}" title="${L("แก้ไขงาน", "Edit task")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button></li>`;
         }
         return `<li class="cal-item s"><span class="cal-time">🧭</span><div class="grow"><b>${esc(x.title)}</b><div class="muted sm">🗂️ ${esc(x.p.title)}</div></div></li>`;
       };
@@ -5346,7 +5728,7 @@
     }
     function txnRow(x) {
       const C = (x.type === "inc" ? ICAT() : XCAT())[x.cat] || (x.type === "inc" ? ICAT().other : XCAT().other);
-      return `<li class="txn"><span class="txn-ico">${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><div class="muted sm">${fmtDate(x.date)} • ${C[1]}${x.legacy ? " • " + L("บันทึกแบบเดิม", "legacy entry") : ""}</div></div><b class="mono ${x.type === "inc" ? "amt-inc" : "amt-exp"}">${x.type === "inc" ? "+" : "−"}${money(x.amount)}</b><button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="txd-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">🗑️</button></li>`;
+      return `<li class="txn"><span class="txn-ico">${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><div class="muted sm">${fmtDate(x.date)} • ${C[1]}${x.legacy ? " • " + L("บันทึกแบบเดิม", "legacy entry") : ""}</div></div><b class="mono ${x.type === "inc" ? "amt-inc" : "amt-exp"}">${x.type === "inc" ? "+" : "−"}${money(x.amount)}</b>${x.legacy ? `<button class="icon-btn" data-act="editItem" data-kind="crud" data-name="expenses" data-id="${esc(x.id.split("~")[0])}" id="txe-${esc(x.id)}" title="${L("แก้ไขรายการ", "Edit entry")}" aria-label="${L("แก้ไขรายการ", "Edit entry")}">✏️</button>` : `<button class="icon-btn" data-act="editItem" data-kind="txn" data-id="${esc(x.id)}" id="txe-${esc(x.id)}" title="${L("แก้ไขรายการ", "Edit entry")}" aria-label="${L("แก้ไขรายการ", "Edit entry")}">✏️</button>`}<button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="txd-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">🗑️</button></li>`;
     }
     function plannerF() {
       const mk = dkey().slice(0, 7), F = P().finance, mon = allTxns().filter(x => (x.date || "").startsWith(mk));
@@ -5382,7 +5764,7 @@
 
           ${incRows.length ? `<ul class="inc-list">${incRows.map(x => {
             const C = IC[x.cat] || IC.other;
-            return `<li class="inc-item"><span>${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><small>${fmtDate(x.date)} • ${C[1]}</small></div><b class="amt">+${money(x.amount)} ฿</b><button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="inrm-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">✕</button></li>`;
+            return `<li class="inc-item"><span>${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><small>${fmtDate(x.date)} • ${C[1]}</small></div><b class="amt">+${money(x.amount)} ฿</b><button class="icon-btn" data-act="editItem" data-kind="txn" data-id="${esc(x.id)}" id="ined-${esc(x.id)}" title="${L("แก้ไขรายการ", "Edit entry")}" aria-label="${L("แก้ไขรายการ", "Edit entry")}">✏️</button><button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="inrm-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">✕</button></li>`;
           }).join("")}</ul>` : (Number(F.income) > 0 ? `
             <div class="row" style="justify-content:space-between;align-items:center;padding:8px 10px;background:var(--surface-3);border-radius:10px;margin-bottom:8px">
               <div class="muted sm">💡 ${L("มียอดตั้งต้นเดิม", "Legacy planned income")}: <b class="emerald mono">${money(F.income)} ฿</b></div>
@@ -5415,7 +5797,33 @@
         <div class="row" style="justify-content:space-between"><b class="mono emerald" style="font-size:1.6rem">${money(saved)} ฿</b><span class="muted">${L("เป้า", "Goal")} ${money(goal)} ฿ • ${sp}%</span></div>
         <div class="bar" style="margin:10px 0;height:14px"><i style="width:${sp}%"></i></div>
         <div class="row"><button class="btn btn-emerald grow" data-act="addSave" data-v="1000" id="btn-save-1000">+1,000 ฿</button><button class="btn btn-emerald grow" data-act="addSave" data-v="5000" id="btn-save-5000">+5,000 ฿</button><button class="btn" data-act="addSave" data-v="-1000" id="btn-save-minus">−1,000</button></div>
-        <label class="field" style="margin-top:12px"><span>${L("เป้าหมายเงินออม (฿)", "Savings goal (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-goal" data-bind="planner.finance.goal" data-num="1" data-rr="1" value="${goal || ""}"></label></article>
+        <label class="field" style="margin-top:12px"><span>${L("เป้าหมายเงินออม (฿)", "Savings goal (฿)")}</span><input class="input" type="number" inputmode="decimal" min="0" id="fin-goal" data-bind="planner.finance.goal" data-num="1" data-rr="1" value="${goal || ""}"></label>
+        ${(() => {
+          const TS = allTripsSummary();
+          return `<div style="margin-top:14px;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
+              <b>✈️ ${L("เป้าหมายออมเพื่อการท่องเที่ยว (Travel Savings)", "Travel Savings Goals")}</b>
+              <button type="button" class="btn btn-sm" data-act="psec" data-v="wl" id="btn-fin-to-trip">✈️ ${L("จัดการทริป", "Travel Planner")}</button>
+            </div>
+            ${TS.items.length ? `
+              <div class="row sm" style="justify-content:space-between;margin-top:6px;flex-wrap:wrap;gap:6px">
+                <span>${L("เก็บแล้ว", "Saved")}: <b class="emerald mono">${money(TS.totalSaved)}</b> / <b>${money(TS.totalBudget)} ฿</b> (${TS.pct}%)</span>
+                <span>🎯 ${L("ต้องออมเดือนละ", "Monthly target")}: <b class="amber mono">${money(TS.totalMonthly)} ฿/${L("เดือน", "mo")}</b></span>
+              </div>
+              <div class="bar" style="margin:6px 0;height:8px"><i style="width:${TS.pct}%"></i></div>
+              <ul class="rows" style="margin-top:8px">${TS.items.map(({ t, s }) => `<li class="row-item" style="padding:6px 8px">
+                <div style="min-width:0;flex:1">
+                  <div class="row" style="justify-content:space-between;gap:6px">
+                    <b class="sm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">✈️ ${esc(t.place || "-")} ${t.date ? `<span class="muted">(${fmtDate(t.date)})</span>` : ""}</b>
+                    <span class="mono sm"><b class="emerald">${money(s.saved)}</b>/${money(s.budget)} ฿</span>
+                  </div>
+                  <div class="muted sm">${s.remain > 0 ? `${L("ต้องออมเดือนละ", "Save")} <b class="amber">${money(s.perMonth)} ฿/${L("เดือน", "mo")}</b> (${L(`ขาดอีก ${money(s.remain)} ฿`, `${money(s.remain)} ฿ left`)})` : `<span class="emerald">✅ ${L("ครบตามเป้าแล้ว!", "Goal reached!")}</span>`}</div>
+                </div>
+                ${s.remain > 0 ? `<button type="button" class="btn btn-emerald btn-sm" data-act="tripQuickSave" data-id="${t.id}" data-v="${s.perMonth || 1000}" title="${L("ออมเงินเข้าทริปนี้", "Deposit to this trip")}">+${money(s.perMonth || 1000)} ฿</button>` : ""}
+              </li>`).join("")}</ul>
+            ` : `<p class="muted sm" style="margin-top:6px">${L("ยังไม่มีเป้าหมายทริปท่องเที่ยว — กด “✈️ จัดการทริป” เพื่อตั้งงบและคำนวณยอดออมรายเดือน", "No travel goals yet — tap “✈️ Travel Planner” to set a trip budget and monthly savings plan")}</p>`}
+          </div>`;
+        })()}</article>
     </div>
     <div class="grid grid-2b">
       <article class="card"><h3>💸 ${L("บันทึกรายรับ-รายจ่าย", "Log income & expenses")}</h3>${txnForm()}</article>
@@ -5679,9 +6087,246 @@
       ["Income tax & deductions", "Planner › TX: choose individual or company, enter income and deductions — tax is calculated with tips for remaining deductions"]] });
     GUIDE_GO.push({ tab: "planner", sec: "tx" });
 
+    function openEditTaskDlg(id) {
+      const t = state.tasks.find(x => x.id === id);
+      if (!t) return;
+      const f = $("#edit-task-form");
+      if (!f) return;
+      f.dataset.id = t.id;
+      const projOpts = `<option value="">📌 ${L("งานทั่วไป", "General task")}</option>` + state.projects.map(p => `<option value="${p.id}" ${t.projectId === p.id ? "selected" : ""}>🗂️ ${esc(p.title)}</option>`).join("");
+      const curProj = proj(t.projectId);
+      const stepOpts = `<option value="">— ${L("ไม่ผูกขั้นตอน", "No step")} —</option>` + (curProj ? curProj.steps.map(s => `<option value="${s.id}" ${t.stepId === s.id ? "selected" : ""}>🧭 ${esc(trunc(s.title, 44))}</option>`).join("") : "");
+      const stdDurs = [15, 25, 30, 45, 60, 75, 90, 120, 150, 180, 240, 300, 360, 480];
+      const durs = stdDurs.includes(t.dur) ? stdDurs : [...stdDurs, t.dur].sort((a, b) => a - b);
+      const durOpts = durs.map(v => `<option value="${v}" ${v === t.dur ? "selected" : ""}>${durOptLabel(v)}</option>`).join("");
+      f.innerHTML = `
+        <div class="dlg-head"><h2 id="edit-task-dlg-title">✏️ ${L("แก้ไขคิวงาน", "Edit Task")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="edit-task-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+        <div class="form-grid">
+          <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" id="et-title" required value="${esc(t.title)}" placeholder="${L("เช่น ทำสไลด์นำเสนอลูกค้า", "e.g. Prepare client pitch deck")}"></label>
+          <label class="field"><span>📅 ${L("วันที่", "Date")}</span><input class="input" type="date" name="date" id="et-date" required value="${esc(t.date)}"></label>
+          <label class="field"><span>⏰ ${L("เวลาเริ่ม", "Start time")}</span><input class="input" type="time" name="start" id="et-start" required value="${fmt(t.start)}"></label>
+          <label class="field"><span>⏳ ${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="et-dur">${durOpts}</select></label>
+          <label class="field"><span>🏷️ ${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="et-priority">
+            <option value="main" ${t.priority !== "secondary" ? "selected" : ""}>⭐ ${L("งานหลัก (ต้องเสร็จวันนี้)", "Main (must finish today)")}</option>
+            <option value="secondary" ${t.priority === "secondary" ? "selected" : ""}>📌 ${L("งานรอง (ย้ายได้เมื่อเวลาไม่พอ)", "Secondary (movable if needed)")}</option>
+          </select></label>
+          <label class="field"><span>🗂️ ${L("ผูกกับโปรเจค", "Link to project")}</span><select class="input" name="project" id="et-project" data-act-change="editTaskProj">${projOpts}</select></label>
+          <label class="field"><span>🧭 ${L("ขั้นตอนในโปรเจค", "Project step")}</span><select class="input" name="step" id="et-step" ${curProj ? "" : "disabled"}>${stepOpts}</select></label>
+          <label class="field full"><span>📌 ${L("Context Bookmark / โน้ตจุดค้าง", "Context Bookmark / Note")}</span><input class="input" name="bookmark" id="et-bookmark" value="${esc(t.bookmark || "")}" placeholder="${L("เช่น ทำถึงหน้า 3 เหลือใส่กราฟ…", "e.g. Stopped at slide 3, add chart next…")}"></label>
+        </div>
+        <div class="row" style="margin-top:8px;gap:8px">
+          <button class="btn btn-amber grow" type="submit" id="et-save">💾 ${L("บันทึกการแก้ไข", "Save changes")}</button>
+          <button class="btn" type="button" data-act="closeDlg" data-id="edit-task-dlg">${L("ยกเลิก", "Cancel")}</button>
+        </div>`;
+      const dlg = $("#edit-task-dlg");
+      if (dlg && !dlg.open) dlg.showModal();
+      setTimeout(() => $("#et-title")?.focus(), 40);
+    }
+
+    function depositTripSavings(tid, amount, syncFin = true) {
+      const t = (P().trips || []).find(x => x.id === tid);
+      const amt = Math.max(0, Number(amount) || 0);
+      if (!t || !(amt > 0)) return;
+      t.saved = Math.max(0, (Number(t.saved) || 0) + amt);
+      if (syncFin) {
+        const F = P().finance;
+        F.saved = Math.max(0, (Number(F.saved) || 0) + amt);
+        (P().txns ||= []).push({
+          id: uid(),
+          ts: Date.now(),
+          date: dkey(),
+          type: "exp",
+          cat: "invest",
+          amount: amt,
+          note: `✈️ ${L("ออมเงินทริป", "Trip savings")}: ${t.place || "-"}`
+        });
+      }
+      rerender();
+      const s = tripStats(t);
+      toast(L(`🐷 ออมเข้าทริป "${t.place}" +${money(amt)} ฿ แล้ว (เก็บได้ ${money(s.saved)}/${money(s.budget)} ฿)`, `🐷 Saved +${money(amt)} ฿ for "${t.place}" (${money(s.saved)}/${money(s.budget)} ฿)`));
+    }
+
+    function openEditItemDlg(d) {
+      const f = $("#edit-item-form");
+      if (!f) return;
+      const kind = d.kind;
+      f.dataset.kind = kind || "";
+      f.dataset.id = d.id || "";
+      f.dataset.name = d.name || "";
+      f.dataset.pid = d.pid || "";
+      f.dataset.sid = d.sid || "";
+      f.dataset.aid = d.aid || "";
+      f.dataset.tid = d.tid || "";
+
+      let headTitle = L("แก้ไขรายการ", "Edit Item");
+      let bodyHtml = "";
+
+      if (kind === "routine") {
+        const r = state.routines.find(x => x.id === d.id);
+        if (!r) return;
+        headTitle = L("แก้ไขกิจวัตรทำซ้ำ", "Edit Recurring Routine");
+        bodyHtml = `
+          <label class="field full"><span>${L("ชื่อกิจวัตร", "Routine name")}</span><input class="input" name="title" id="ei-title" required value="${esc(r.title)}"></label>
+          <label class="field"><span>${L("รอบความถี่", "Repeat frequency")}</span><select class="input" name="freq">${freqOpts(r.freq || "daily")}</select></label>
+          <label class="field"><span>${L("เวลาเตือน (ไม่บังคับ)", "Time (optional)")}</span><input class="input" type="time" name="time" value="${esc(r.time || "")}"></label>
+          <label class="field full"><span>${L("การแจ้งเตือนล่วงหน้า", "Advance reminder")}</span><select class="input" name="remind">${remindOpts(r.remind ?? 30)}</select></label>`;
+      } else if (kind === "habit") {
+        const h = (P().habits || []).find(x => x.id === d.id);
+        if (!h) return;
+        headTitle = L("แก้ไขนิสัย (Habit)", "Edit Habit");
+        bodyHtml = `
+          <label class="field full"><span>${L("ชื่อนิสัย", "Habit name")}</span><input class="input" name="name" id="ei-title" required value="${esc(h.name)}"></label>`;
+      } else if (kind === "crud") {
+        const name = d.name;
+        const cfg = CRUD[name];
+        const row = (P()[name] || []).find(x => x.id === d.id);
+        if (!cfg || !row) return;
+        const titles = {
+          sleeps: L("แก้ไขบันทึกการนอน", "Edit Sleep Entry"),
+          workouts: L("แก้ไขบันทึกออกกำลังกาย", "Edit Workout Entry"),
+          meals: L("แก้ไขรายการอาหาร", "Edit Meal Entry"),
+          trips: L("แก้ไขแผนท่องเที่ยว (Travel Planner)", "Edit Trip Details"),
+          media: L("แก้ไขหนังสือ / หนัง", "Edit Book / Movie"),
+          expenses: L("แก้ไขรายจ่าย", "Edit Expense")
+        };
+        headTitle = titles[name] || L("แก้ไขรายการ", "Edit Entry");
+        bodyHtml = cfg.fields.map(([k, l, t, o], idx) => {
+          const lab = L(l[0], l[1]);
+          const val = row[k] ?? "";
+          if (t === "select") {
+            return `<label class="field ${idx === 0 ? "full" : ""}"><span>${lab}</span><select class="input" name="${k}">${o.map(x => `<option value="${x[0]}" ${String(val) === String(x[0]) ? "selected" : ""}>${L(x[1], x[2])}</option>`).join("")}</select></label>`;
+          }
+          return `<label class="field ${k === "place" || k === "notes" || k === "note" || k === "title" || k === "food" ? "full" : ""}"><span>${lab}</span><input class="input" ${idx === 0 ? 'id="ei-title"' : ""} name="${k}" type="${t}" value="${esc(val)}" ${t === "number" ? 'inputmode="decimal" step="any" min="0"' : ""} placeholder="${o ? esc(L(o[0], o[1])) : ""}"></label>`;
+        }).join("");
+      } else if (kind === "txn") {
+        const x = (P().txns || []).find(t => t.id === d.id);
+        if (!x) return;
+        headTitle = L("แก้ไขรายการรายรับ-รายจ่าย", "Edit Finance Entry");
+        const tp = x.type === "inc" ? "inc" : "exp";
+        const cOpts = Object.entries(tp === "inc" ? ICAT() : XCAT()).map(([k, [i, l]]) => `<option value="${k}" ${x.cat === k ? "selected" : ""}>${i} ${l}</option>`).join("");
+        bodyHtml = `
+          <label class="field"><span>${L("ประเภท", "Type")}</span><select class="input" name="type" data-act-change="editTxnType"><option value="exp" ${tp === "exp" ? "selected" : ""}>➖ ${L("รายจ่าย", "Expense")}</option><option value="inc" ${tp === "inc" ? "selected" : ""}>➕ ${L("รายรับ", "Income")}</option></select></label>
+          <label class="field"><span>${L("จำนวนเงิน (฿)", "Amount (฿)")}</span><input class="input" id="ei-title" name="amount" type="number" inputmode="decimal" step="any" min="0" required value="${esc(x.amount)}"></label>
+          <label class="field"><span>${L("วันที่", "Date")}</span><input class="input" name="date" type="date" required value="${esc(x.date || dkey())}"></label>
+          <label class="field"><span>${L("หมวดหมู่", "Category")}</span><select class="input" name="cat" id="ei-txn-cat">${cOpts}</select></label>
+          <label class="field full"><span>${L("รายละเอียด / โน้ต", "Note / Details")}</span><input class="input" name="note" value="${esc(x.note || "")}"></label>`;
+      } else if (kind === "act") {
+        const [, , a] = findAct(d.pid, d.sid, d.aid);
+        if (!a) return;
+        headTitle = L("แก้ไขกิจกรรมย่อยในโปรเจค", "Edit Project Sub-activity");
+        bodyHtml = `
+          <label class="field full"><span>${L("ชื่อกิจกรรมย่อย", "Activity title")}</span><input class="input" id="ei-title" name="title" required value="${esc(a.title)}"></label>
+          <label class="field full"><span>📅 ${L("วันที่กำหนด (ไม่บังคับ)", "Target date (optional)")}</span><input class="input" name="date" type="date" value="${esc(a.date || "")}"></label>`;
+      } else if (kind === "link") {
+        const p = proj(d.pid), l = p?.links?.find(x => x.id === d.id);
+        if (!l) return;
+        headTitle = L("แก้ไขลิงก์ไฟล์แนบ", "Edit Attached Link");
+        bodyHtml = `
+          <label class="field full"><span>${L("ชื่อไฟล์ / ป้ายกำกับ", "Label / File name")}</span><input class="input" id="ei-title" name="label" value="${esc(l.label || "")}"></label>
+          <label class="field full"><span>🔗 URL</span><input class="input" name="url" type="url" required value="${esc(l.url || "")}"></label>`;
+      } else if (kind === "idea") {
+        const x = state.ideas.find(i => i.id === d.id);
+        if (!x) return;
+        headTitle = L("แก้ไขไอเดีย", "Edit Idea");
+        bodyHtml = `
+          <label class="field full"><span>💡 ${L("ข้อความไอเดีย", "Idea text")}</span><input class="input" id="ei-title" name="text" required value="${esc(x.text)}"></label>`;
+      } else if (kind === "tripStep") {
+        const t = (P().trips || []).find(x => x.id === d.tid);
+        const st = (t?.steps || []).find(x => x.id === d.id);
+        if (!st) return;
+        headTitle = L("แก้ไขขั้นตอนเตรียมทริป", "Edit Travel Checklist Step");
+        bodyHtml = `
+          <label class="field full"><span>${L("สิ่งที่ต้องทำ", "Step title")}</span><input class="input" id="ei-title" name="title" required value="${esc(st.title)}"></label>
+          <label class="field"><span>📅 ${L("วันที่กำหนด (ไม่บังคับ)", "Target date")}</span><input class="input" name="date" type="date" value="${esc(st.date || "")}"></label>
+          <label class="field"><span>📝 ${L("รายละเอียด / งบย่อย", "Note / Sub-budget")}</span><input class="input" name="note" value="${esc(st.note || "")}"></label>`;
+      } else {
+        return;
+      }
+
+      f.innerHTML = `
+        <div class="dlg-head"><h2 id="edit-item-dlg-title">✏️ ${headTitle}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="edit-item-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+        <div class="form-grid">${bodyHtml}</div>
+        <div class="row" style="margin-top:8px;gap:8px">
+          <button class="btn btn-amber grow" type="submit" id="ei-save">💾 ${L("บันทึกการแก้ไข", "Save changes")}</button>
+          <button class="btn" type="button" data-act="closeDlg" data-id="edit-item-dlg">${L("ยกเลิก", "Cancel")}</button>
+        </div>`;
+      const dlg = $("#edit-item-dlg");
+      if (dlg && !dlg.open) dlg.showModal();
+      setTimeout(() => $("#ei-title")?.focus(), 40);
+    }
+
     /* ---------- Change hooks, actions & forms ---------- */
     CHANGE.txnType = el => { finView().kind = el.value; const s = $("#txn-cat"); if (s) s.innerHTML = catOpts(el.value); save(); };
+    CHANGE.editTxnType = el => { const s = $("#ei-txn-cat"); if (s) s.innerHTML = catOpts(el.value); };
+    CHANGE.editTaskProj = el => {
+      const p = proj(el.value), stSel = $("#et-step");
+      if (!stSel) return;
+      stSel.disabled = !p;
+      stSel.innerHTML = `<option value="">— ${L("ไม่ผูกขั้นตอน", "No step")} —</option>` + (p ? p.steps.map(s => `<option value="${s.id}">🧭 ${esc(trunc(s.title, 44))}</option>`).join("") : "");
+    };
     Object.assign(A, {
+      editTask: d => openEditTaskDlg(d.id),
+      editItem: d => openEditItemDlg(d),
+      tripQuickSave: d => depositTripSavings(d.id, Number(d.v) || 1000, true),
+      tripStepToggle: d => {
+        const t = (P().trips || []).find(x => x.id === d.tid);
+        const st = (t?.steps || []).find(x => x.id === d.sid);
+        if (!st) return;
+        st.done = !st.done;
+        rerender();
+        if (st.done) toast(L("✅ ทำขั้นตอนทริปเสร็จแล้ว!", "✅ Trip step completed!"));
+      },
+      tripStepDel: d => {
+        const t = (P().trips || []).find(x => x.id === d.tid);
+        if (!t) return;
+        t.steps = (t.steps || []).filter(x => x.id !== d.sid);
+        rerender();
+      },
+      tripStepQueue: d => {
+        const t = (P().trips || []).find(x => x.id === d.tid);
+        const st = (t?.steps || []).find(x => x.id === d.sid);
+        if (!t || !st) return;
+        const date = st.date && st.date >= dkey() ? st.date : (state.queueDate || dkey());
+        const title = `✈️ [${t.place}] ${st.title}`;
+        if (state.tasks.some(k => k.date === date && k.title === title)) {
+          toast(L("ขั้นตอนนี้มีในคิวงานแล้ว", "Already in the task queue"));
+          return;
+        }
+        state.tasks.push({
+          id: uid(),
+          title,
+          date,
+          start: toMin(suggestStart(date)),
+          dur: 45,
+          projectId: null,
+          priority: "main",
+          done: !!st.done,
+          bookmark: st.note || ""
+        });
+        rerender();
+        toast(L(`📅 ส่ง "${trunc(st.title, 24)}" เข้าคิวงานวันที่ ${fmtDate(date)} แล้ว`, `📅 Queued "${trunc(st.title, 24)}" for ${fmtDate(date)}`));
+      },
+      tripPresetSteps: d => {
+        const t = (P().trips || []).find(x => x.id === d.id);
+        if (!t) return;
+        t.steps ||= [];
+        const presets = [
+          L("จองตั๋วเดินทาง / ตั๋วเครื่องบิน", "Book flights / transport"),
+          L("จองที่พัก / โรงแรม", "Book hotel / accommodation"),
+          L("วางแผนตารางเที่ยวและร้านอาหาร", "Plan daily itinerary & dining"),
+          L("เตรียมเอกสาร / พาสปอร์ต / ประกันเดินทาง", "Check passport / visa / insurance"),
+          L("จัดกระเป๋าและของใช้จำเป็น", "Pack luggage & essentials")
+        ];
+        let added = 0;
+        presets.forEach(p => {
+          if (!t.steps.some(s => s.title === p)) {
+            t.steps.push({ id: uid(), title: p, done: false, date: "", note: "" });
+            added++;
+          }
+        });
+        rerender();
+        toast(added ? L(`✨ เพิ่ม ${added} ขั้นตอนมาตรฐานเข้าทริปแล้ว`, `✨ Added ${added} checklist steps`) : L("มีขั้นตอนมาตรฐานครบแล้ว", "Standard steps already added"));
+      },
       delTask: d => {
         const t = state.tasks.find(x => x.id === d.id); if (!t) return;
         if (!confirm(t.gcalId ? L("ลบงานนี้? (จะลบออกจาก Google Calendar ด้วย)", "Delete this task? (it will also be removed from Google Calendar)") : L("ลบงานนี้?", "Delete this task?"))) return;
@@ -5765,6 +6410,143 @@
       }
     });
     Object.assign(FORMS, {
+      editTask: (fd, f) => {
+        const t = state.tasks.find(x => x.id === f.dataset.id);
+        const title = (fd.title || "").trim();
+        if (!t || !title) return;
+        const oldPid = t.projectId, oldSid = t.stepId, oldAid = t.actId;
+        t.title = title;
+        t.date = fd.date || t.date || dkey();
+        if (fd.start) t.start = toMin(fd.start);
+        if (fd.dur) t.dur = Math.max(5, Number(fd.dur) || 60);
+        t.priority = fd.priority === "secondary" ? "secondary" : "main";
+        t.projectId = fd.project || null;
+        t.bookmark = (fd.bookmark || "").trim();
+        if (t.projectId && fd.step) {
+          t.stepId = fd.step;
+          if (t.projectId !== oldPid || t.stepId !== oldSid) delete t.actId;
+        } else {
+          delete t.stepId;
+          delete t.actId;
+        }
+        if (oldAid) {
+          const [p, s, a] = findAct(oldPid, oldSid, oldAid);
+          if (a) {
+            if (t.actId === oldAid) {
+              a.title = t.title;
+              a.date = t.date;
+              autoSync(p, s);
+            } else {
+              delete a.taskId;
+            }
+          }
+        }
+        $("#edit-task-dlg")?.close();
+        rerender();
+        if (t.gcalId) gSyncChanges().catch(() => {});
+        toast(L("✏️ บันทึกการแก้ไขคิวงานแล้ว", "✏️ Task updated"));
+      },
+      editItem: (fd, f) => {
+        const kind = f.dataset.kind;
+        const id = f.dataset.id;
+        if (kind === "routine") {
+          const r = state.routines.find(x => x.id === id);
+          const title = (fd.title || "").trim();
+          if (!r || !title) return;
+          r.title = title;
+          r.freq = FREQS().some(x => x[0] === fd.freq) ? fd.freq : (r.freq || "daily");
+          r.time = fd.time || "";
+          r.remind = fd.remind === undefined ? 30 : Number(fd.remind) || 0;
+          ensureRoutineHabits();
+        } else if (kind === "habit") {
+          const h = (P().habits || []).find(x => x.id === id);
+          const name = (fd.name || "").trim();
+          if (!h || !name) return;
+          h.name = name;
+          const r = habitRoutine(h);
+          if (r) r.title = name;
+        } else if (kind === "crud") {
+          const name = f.dataset.name;
+          const cfg = CRUD[name];
+          const row = (P()[name] || []).find(x => x.id === id);
+          if (!cfg || !row) return;
+          cfg.fields.forEach(([k, , t]) => {
+            let v = fd[k] ?? "";
+            if (t === "number") v = v === "" ? 0 : Number(v);
+            else v = String(v).trim();
+            row[k] = v;
+          });
+        } else if (kind === "txn") {
+          const x = (P().txns || []).find(t => t.id === id);
+          const amount = Number(fd.amount);
+          if (!x || !(amount > 0)) return;
+          x.type = fd.type === "inc" ? "inc" : "exp";
+          x.amount = amount;
+          x.date = fd.date || x.date || dkey();
+          x.cat = fd.cat || "other";
+          x.note = (fd.note || "").trim();
+        } else if (kind === "act") {
+          const [p, s, a] = findAct(f.dataset.pid, f.dataset.sid, f.dataset.aid);
+          const title = (fd.title || "").trim();
+          if (!a || !title) return;
+          a.title = title;
+          a.date = fd.date || "";
+          if (a.taskId) {
+            const t = state.tasks.find(k => k.id === a.taskId);
+            if (t) {
+              t.title = a.title;
+              if (a.date) t.date = a.date;
+            }
+          }
+          autoSync(p, s);
+        } else if (kind === "link") {
+          const p = proj(f.dataset.pid), l = p?.links?.find(x => x.id === id);
+          const url = (fd.url || "").trim();
+          if (!l || !/^https?:\/\//i.test(url)) {
+            toast(L("ลิงก์ต้องขึ้นต้นด้วย https://", "Link must start with https://"));
+            return;
+          }
+          l.label = (fd.label || "").trim();
+          l.url = url;
+        } else if (kind === "idea") {
+          const x = state.ideas.find(i => i.id === id);
+          const text = (fd.text || "").trim();
+          if (!x || !text) return;
+          x.text = text;
+          renderIdeas();
+          renderTopbar();
+        } else if (kind === "tripStep") {
+          const t = (P().trips || []).find(x => x.id === f.dataset.tid);
+          const st = (t?.steps || []).find(x => x.id === id);
+          const title = (fd.title || "").trim();
+          if (!st || !title) return;
+          st.title = title;
+          st.date = fd.date || "";
+          st.note = (fd.note || "").trim();
+        }
+        $("#edit-item-dlg")?.close();
+        rerender();
+        toast(L("✏️ บันทึกการแก้ไขเรียบร้อยแล้ว", "✏️ Changes saved"));
+      },
+      tripSave: (fd, f) => {
+        const amt = Number(fd.amount);
+        if (!(amt > 0)) { toast(L("กรุณาใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
+        depositTripSavings(f.dataset.id, amt, !!fd.syncFin);
+      },
+      addTripStep: (fd, f) => {
+        const t = (P().trips || []).find(x => x.id === f.dataset.tid);
+        const title = (fd.title || "").trim();
+        if (!t || !title) return;
+        (t.steps ||= []).push({
+          id: uid(),
+          title,
+          done: false,
+          date: fd.date || "",
+          note: (fd.note || "").trim()
+        });
+        rerender();
+        toast(L("🧭 เพิ่มขั้นตอนเตรียมทริปแล้ว", "🧭 Added trip checklist step"));
+      },
       addRoutine: fd => { const r = makeRoutine(fd); if (!r) return; rerender(); routineToast(r); },
       toRoutine: fd => { const r = makeRoutine(fd); if (!r) return; $("#routine-dlg").close(); rerender(); routineToast(r); },
       addMonthIncome: fd => {
