@@ -2990,8 +2990,159 @@
     }
 
     /* ===================== Seed data ===================== */
+    function isSampleText(s) {
+      return /\(ตัวอย่าง|\[ตัวอย่าง|\(Sample|\[Sample/i.test(String(s || ""));
+    }
+    function hasAnyRealUserData() {
+      const Pl = P();
+      if ((state.tasks || []).some(t => !isSampleText(t.title))) return true;
+      if ((state.projects || []).some(p => !isSampleText(p.title))) return true;
+      if ((state.routines || []).some(r => !isSampleText(r.title))) return true;
+      if ((state.ideas || []).some(i => !isSampleText(i.text))) return true;
+      if (Object.values(Pl.goals || {}).some(g => (g?.items || []).some(it => !isSampleText(it.text)) || (g?.goal && !isSampleText(g.goal)))) return true;
+      if (Object.values(Pl.monthly || {}).some(m => (m?.focusGroups || []).some(g => !isSampleText(g.title)) || (m?.focusItems || []).some(it => !isSampleText(it.text)))) return true;
+      if (Object.values(Pl.dreamItems || {}).some(arr => (arr || []).some(it => !isSampleText(it.text)))) return true;
+      if ((Pl.txns || []).some(t => !isSampleText(t.note))) return true;
+      if ((Pl.fixedBills || []).some(b => !isSampleText(b.title))) return true;
+      if ((Pl.trips || []).some(t => !isSampleText(t.place))) return true;
+      return false;
+    }
+    function purgeSampleItemsOnly() {
+      let removed = 0;
+      const beforeTasks = (state.tasks || []).length;
+      state.tasks = (state.tasks || []).filter(t => !isSampleText(t.title) && !isSampleText(t.bookmark));
+      removed += beforeTasks - state.tasks.length;
+
+      const beforeProj = (state.projects || []).length;
+      state.projects = (state.projects || []).filter(p => !isSampleText(p.title));
+      removed += beforeProj - state.projects.length;
+
+      const beforeRout = (state.routines || []).length;
+      state.routines = (state.routines || []).filter(r => !isSampleText(r.title));
+      removed += beforeRout - state.routines.length;
+
+      const beforeIdeas = (state.ideas || []).length;
+      state.ideas = (state.ideas || []).filter(i => !isSampleText(i.text));
+      removed += beforeIdeas - state.ideas.length;
+
+      const Pl = P();
+      if (Pl.goals && typeof Pl.goals === "object") {
+        Object.values(Pl.goals).forEach(g => {
+          if (g && Array.isArray(g.items)) {
+            const b = g.items.length;
+            g.items = g.items.filter(it => !isSampleText(it.text));
+            removed += b - g.items.length;
+          }
+        });
+      }
+      if (Pl.monthly && typeof Pl.monthly === "object") {
+        Object.values(Pl.monthly).forEach(m => {
+          if (!m || typeof m !== "object") return;
+          if (Array.isArray(m.focusGroups)) {
+            const b = m.focusGroups.length;
+            m.focusGroups = m.focusGroups.filter(g => !isSampleText(g.title));
+            removed += b - m.focusGroups.length;
+          }
+          if (Array.isArray(m.focusItems)) {
+            const b = m.focusItems.length;
+            m.focusItems = m.focusItems.filter(it => !isSampleText(it.text));
+            removed += b - m.focusItems.length;
+          }
+          if (Array.isArray(m.tellItems)) {
+            const b = m.tellItems.length;
+            m.tellItems = m.tellItems.filter(it => !isSampleText(it.text) && !/โฟกัสทีละงาน เมื่อมีงานแทรกให้บันทึกจุดค้างไว้|ความสม่ำเสมอเล็กๆ ในทุกวัน สร้างผลลัพธ์ที่ยิ่งใหญ่เสมอ|Focus on one thing at a time — bookmark interruptions|Small daily consistency creates massive results/.test(String(it.text || "")));
+            removed += b - m.tellItems.length;
+          }
+        });
+      }
+      if (Pl.daily && typeof Pl.daily === "object") {
+        Object.values(Pl.daily).forEach(d => {
+          if (!d?.planItems || typeof d.planItems !== "object") return;
+          Object.keys(d.planItems).forEach(hk => {
+            if (Array.isArray(d.planItems[hk])) {
+              const b = d.planItems[hk].length;
+              d.planItems[hk] = d.planItems[hk].filter(it => !isSampleText(it.text));
+              removed += b - d.planItems[hk].length;
+            }
+          });
+        });
+      }
+      if (Pl.dreamItems && typeof Pl.dreamItems === "object") {
+        Object.keys(Pl.dreamItems).forEach(k => {
+          if (Array.isArray(Pl.dreamItems[k])) {
+            const b = Pl.dreamItems[k].length;
+            Pl.dreamItems[k] = Pl.dreamItems[k].filter(it => !isSampleText(it.text));
+            removed += b - Pl.dreamItems[k].length;
+          }
+        });
+      }
+      if (Array.isArray(Pl.habits)) {
+        const sampleHabitNames = new Set([
+          "ดื่มน้ำสะอาดครบ 8 แก้ว", "Drink 8 glasses of water",
+          "เข้านอนก่อน 23:00 น.", "Sleep before 11 PM",
+          "ไม่เล่นมือถือก่อนนอน 30 นาที", "No phone 30 mins before bed"
+        ]);
+        const b = Pl.habits.length;
+        Pl.habits = Pl.habits.filter(h => {
+          const isSamp = isSampleText(h.name) || (!h.routineId && sampleHabitNames.has(h.name));
+          if (isSamp && Pl.habitLog) delete Pl.habitLog[h.id];
+          return !isSamp;
+        });
+        removed += b - Pl.habits.length;
+      }
+      if (Pl.tiny) {
+        if (isSampleText(Pl.tiny.after)) { Pl.tiny.after = ""; removed++; }
+        if (isSampleText(Pl.tiny.will)) { Pl.tiny.will = ""; removed++; }
+      }
+      if (isSampleText(Pl.obstacle)) { Pl.obstacle = ""; removed++; }
+      if (isSampleText(Pl.solution)) { Pl.solution = ""; removed++; }
+      if (isSampleText(Pl.booster)) { Pl.booster = ""; removed++; }
+      if (Pl.finance && Pl.finance.goal === 100000 && Pl.finance.saved === 35000) {
+        Pl.finance.goal = 50000;
+        Pl.finance.saved = 0;
+        removed++;
+      }
+      if (Array.isArray(Pl.txns)) {
+        const b = Pl.txns.length;
+        Pl.txns = Pl.txns.filter(t => !isSampleText(t.note));
+        removed += b - Pl.txns.length;
+      }
+      if (Array.isArray(Pl.fixedBills)) {
+        const b = Pl.fixedBills.length;
+        Pl.fixedBills = Pl.fixedBills.filter(x => !isSampleText(x.title));
+        removed += b - Pl.fixedBills.length;
+      }
+      if (Array.isArray(Pl.workouts)) {
+        const b = Pl.workouts.length;
+        Pl.workouts = Pl.workouts.filter(x => !isSampleText(x.type));
+        removed += b - Pl.workouts.length;
+      }
+      if (Array.isArray(Pl.meals)) {
+        const b = Pl.meals.length;
+        Pl.meals = Pl.meals.filter(x => !isSampleText(x.food));
+        removed += b - Pl.meals.length;
+      }
+      if (Array.isArray(Pl.sleeps)) {
+        const b = Pl.sleeps.length;
+        Pl.sleeps = Pl.sleeps.filter(x => !isSampleText(x.note));
+        removed += b - Pl.sleeps.length;
+      }
+      if (Array.isArray(Pl.trips)) {
+        const b = Pl.trips.length;
+        Pl.trips = Pl.trips.filter(x => !isSampleText(x.place) && !isSampleText(x.notes));
+        removed += b - Pl.trips.length;
+      }
+      if (Array.isArray(Pl.media)) {
+        const b = Pl.media.length;
+        Pl.media = Pl.media.filter(x => !isSampleText(x.title));
+        removed += b - Pl.media.length;
+      }
+      state.sampleCleared = true;
+      return removed;
+    }
+
     function seedPlannerSampleIfEmpty(force = false) {
-      if (state.sampleCleared && !force) return;
+      if ((state.sampleCleared || hasAnyRealUserData()) && !force) return;
       const today = dkey(), mk = today.slice(0, 7);
       const Pl = P();
 
@@ -3185,8 +3336,12 @@
     }
 
     function seed(force = false) {
-      if (state.sampleCleared && !force) return;
-      if (force) state.sampleCleared = false;
+      if ((state.sampleCleared || hasAnyRealUserData() || isUserAdmin()) && !force) return;
+      if (force) {
+        purgeSampleItemsOnly();
+        state.sampleCleared = false;
+        state.explicitSampleLoaded = true;
+      }
       const today = dkey(), n = Math.max(0, Math.floor(nowMin() / 15) * 15);
       if (!state.tasks.length && !state.projects.length && !state.routines.length || force) {
         const p1 = {
@@ -6395,19 +6550,16 @@
         toast(L("✨ โหลดข้อมูลตัวอย่างครบทุกหมวดเรียบร้อยแล้ว! ลองคลิกดูตามเมนูต่างๆ ได้เลยครับ", "✨ Sample data loaded across all sections!"));
       },
       clearSampleData: () => {
-        if (!confirm(L("ต้องการล้างข้อมูลตัวอย่างในแอปทั้งหมด เพื่อเริ่มกรอกข้อมูลจริงของคุณใช่หรือไม่?", "Clear all sample data so you can start entering your own real data?"))) return;
-        state.tasks = [];
-        state.routines = [];
-        state.projects = [];
-        state.ideas = [];
-        state.planner = defaults().planner;
-        state.sampleCleared = true;
+        const removed = purgeSampleItemsOnly();
+        state.explicitSampleLoaded = false;
         state.welcomeSeen = true;
         save();
         if (fb && state.user && !state.user.demo) cloudSave();
         $("#welcome-dlg")?.close();
         renderAll();
-        toast(L("🧹 ล้างข้อมูลตัวอย่างเรียบร้อยแล้ว — เริ่มกรอกข้อมูลจริงของคุณได้เลยครับ!", "🧹 Sample data cleared — ready for your own data!"));
+        toast(removed > 0
+          ? L(`🧹 ลบรายการตัวอย่างออก ${removed} รายการเรียบร้อยแล้ว (ข้อมูลจริงของคุณอยู่ครบ 100%)`, `🧹 Removed ${removed} sample items (your real data is 100% preserved)`)
+          : L("🧹 ไม่มีรายการตัวอย่างค้างอยู่ในระบบแล้วครับ (ข้อมูลจริงของคุณอยู่ครบ)", "🧹 No sample items remaining (your real data is safe)"));
       },
       payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
       ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
@@ -9973,14 +10125,15 @@
     function showApp(forceWelcome = false) {
       $("#auth-screen").hidden = true;
       $("#app").hidden = false;
-      seed();
+      if (!state.explicitSampleLoaded && (hasAnyRealUserData() || isUserAdmin())) {
+        const removed = purgeSampleItemsOnly();
+        if (removed > 0) {
+          save();
+          if (fb && state.user && !state.user.demo) cloudSave();
+        }
+      }
       renderAll();
-      let justLogged = false;
-      try {
-        justLogged = sessionStorage.getItem("fr.just_logged_in") === "1";
-        if (justLogged) sessionStorage.removeItem("fr.just_logged_in");
-      } catch {}
-      if ((forceWelcome || justLogged || !state.welcomeSeen) && !$("#paywall")?.open) {
+      if (forceWelcome && !$("#paywall")?.open) {
         renderWelcomeDlg();
         const dlg = $("#welcome-dlg");
         if (dlg && !dlg.open) dlg.showModal();
@@ -10040,9 +10193,11 @@
         const switched = state.user?.uid !== u.uid;
         state.user = { uid: u.uid, name: u.displayName || u.email, email: u.email, photo: u.photoURL || "" };
         const uref = fb.doc(fb.db, "users", u.uid);
+        let isBrandNewUser = false;
         try {
           const snap = await fb.getDoc(uref);
           if (!snap.exists()) {
+            isBrandNewUser = true;
             // First Google sign-in → start 7-day trial
             await fb.setDoc(uref, {
               email: (u.email || "").toLowerCase(),
@@ -10073,10 +10228,29 @@
           }
           unsub = fb.onSnapshot(uref, s => s.exists() && applyServerSub(s.data()));
           const ds = await fb.getDoc(fb.doc(fb.db, "users", u.uid, "data", "main"));
-          if (ds.exists()) { const keep = { user: state.user, sub: state.sub, lang: state.lang }; state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep }); state.queueDate = dkey(); state.plannerDate = dkey(); }
-          else { if (switched) { const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang }; state = hydrate(keep); state.queueDate = dkey(); state.plannerDate = dkey(); } seed(); cloudSave(); }
+          if (ds.exists()) {
+            const keep = { user: state.user, sub: state.sub, lang: state.lang };
+            state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep });
+            state.queueDate = dkey();
+            state.plannerDate = dkey();
+            if (!state.explicitSampleLoaded && (hasAnyRealUserData() || isUserAdmin())) {
+              const removed = purgeSampleItemsOnly();
+              if (removed > 0) cloudSave();
+            }
+          } else {
+            if (switched) {
+              const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang };
+              state = hydrate(keep);
+              state.queueDate = dkey();
+              state.plannerDate = dkey();
+            }
+            if (isBrandNewUser && !isUserAdmin()) {
+              seed(true);
+            }
+            cloudSave();
+          }
         } catch (e) { console.error(e); toast(L("โหลดข้อมูลจากคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องชั่วคราว", "Couldn't load cloud data — using local data for now")); }
-        LANG = state.lang; save(); renderStatic(); showApp();
+        LANG = state.lang; save(); renderStatic(); showApp(isBrandNewUser && !isUserAdmin());
       });
     }
 
