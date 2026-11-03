@@ -60,16 +60,21 @@ exports.stripeWebhook = onRequest(
           const s = event.data.object;
           if (s.payment_status !== "paid") break; // async methods: wait for async_payment_succeeded
           const email = (s.customer_details?.email || s.customer_email || "").toLowerCase();
-          const ref = await findUserRef({ uid: s.client_reference_id, email, customerId: s.customer });
+          const [cleanUid, refPkgKey] = String(s.client_reference_id || "").split("__");
+          const ref = await findUserRef({ uid: cleanUid || s.client_reference_id, email, customerId: s.customer });
           const curDoc = ref ? await ref.get() : null;
           const curData = curDoc?.exists ? curDoc.data() : {};
+          const pkgKey = refPkgKey || curData?.selected_pkg || "30d";
+          const addMonths = pkgKey === "365d" ? 12 : pkgKey === "90d" ? 3 : 1;
+          const addDaysMs = pkgKey === "365d" ? 365 * 24 * 3600 * 1000 : pkgKey === "90d" ? 90 * 24 * 3600 * 1000 : PASS_MS;
           const prevMonths = Number(curData?.pro_months) || 0;
           const data = {
             subscription_status: "pro",
             stripe_customer_id: s.customer || null,
             pro_since: curData?.pro_since || FieldValue.serverTimestamp(),
             last_paid_at: FieldValue.serverTimestamp(),
-            pro_months: prevMonths + 1,
+            pro_months: prevMonths + addMonths,
+            selected_pkg: pkgKey,
           };
           if (s.mode === "subscription") {
             // 💳 Card subscription — auto-renews until customer.subscription.deleted
@@ -77,11 +82,11 @@ exports.stripeWebhook = onRequest(
             data.stripe_subscription_id = s.subscription || null;
             data.pro_until = FieldValue.delete();
           } else {
-            // 📱 PromptPay one-time payment — 30-day pass (extends any remaining time)
+            // 📱 PromptPay / one-time package — 30 / 90 / 365-day pass (extends any remaining time)
             const current = curData?.pro_until?.toMillis?.() || 0;
             const base = Math.max(Date.now(), current || 0);
-            data.plan = "promptpay_30d";
-            data.pro_until = admin.firestore.Timestamp.fromMillis(base + PASS_MS);
+            data.plan = `promptpay_${pkgKey}`;
+            data.pro_until = admin.firestore.Timestamp.fromMillis(base + addDaysMs);
           }
           if (ref) await ref.set(data, { merge: true });
           else if (email) {

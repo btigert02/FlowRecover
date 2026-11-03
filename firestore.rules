@@ -19,6 +19,9 @@ service cloud.firestore {
     //   - login_count: int (optional, >= 0) - Number of sign-ins
     //   - auth_provider: string (optional, <= 100 chars) - Auth provider identifier (e.g., 'google.com')
     //   - updated_at: timestamp (optional) - Last profile update timestamp
+    //   - user_feedback: string (optional, <= 1000 chars) - User feedback or message to admin
+    //   - user_feedback_at: timestamp | int (optional) - When feedback was submitted
+    //   - selected_pkg: string (optional, <= 50 chars) - Selected package preference (e.g., '30d', '90d', '365d')
     //   - pro_since: timestamp (optional, admin/webhook only)
     //   - pro_until: timestamp (optional, admin/webhook only)
     //   - pro_months: number (optional, admin only)
@@ -89,12 +92,18 @@ service cloud.firestore {
         && (!('auth_provider' in data) || (data.auth_provider is string && data.auth_provider.size() <= 100))
         && (!('last_login_at' in data) || data.last_login_at is timestamp || data.last_login_at is int)
         && (!('login_count' in data) || (data.login_count is int && data.login_count >= 0 && data.login_count <= 1000000))
-        && (!('updated_at' in data) || data.updated_at is timestamp);
+        && (!('updated_at' in data) || data.updated_at is timestamp)
+        && (!('user_feedback' in data) || data.user_feedback == null || (data.user_feedback is string && data.user_feedback.size() <= 1000))
+        && (!('user_feedback_at' in data) || data.user_feedback_at == null || data.user_feedback_at is timestamp || data.user_feedback_at is int)
+        && (!('selected_pkg' in data) || data.selected_pkg == null || (data.selected_pkg is string && data.selected_pkg.size() <= 50));
     }
 
     function isValidUserCreate(data) {
       return hasRequiredFields(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at'])
-        && hasOnlyAllowedFields(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at', 'last_login_at', 'login_count', 'auth_provider'])
+        && hasOnlyAllowedFields([
+            'email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at',
+            'last_login_at', 'login_count', 'auth_provider', 'user_feedback', 'user_feedback_at', 'selected_pkg'
+          ])
         && data.subscription_status == 'trial'
         && data.trial_start_at == request.time
         && data.created_at == request.time
@@ -108,7 +117,10 @@ service cloud.firestore {
           'canceled_at', 'created_at', 'granted_by', 'granted_at'
         ])
         && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['email', 'name', 'photo', 'last_login_at', 'login_count', 'auth_provider', 'updated_at'])
+             .hasOnly([
+               'email', 'name', 'photo', 'last_login_at', 'login_count', 'auth_provider',
+               'updated_at', 'user_feedback', 'user_feedback_at', 'selected_pkg'
+             ])
         && isValidUserProfile(data);
     }
 
