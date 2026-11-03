@@ -2570,6 +2570,7 @@
             <button type="button" class="icon-btn voice-btn" data-act="voiceInput" data-target="idea-input" id="btn-voice-idea" title="พูดเพื่อจดไอเดีย (Voice to Text)" aria-label="Voice input" style="width:34px;height:34px;flex:none">🎙️</button>
           </form>
           <button class="icon-btn" data-act="openSearch" id="btn-global-search" title="ค้นหาทั่วทั้งแอป (Cmd+K / Ctrl+K)" aria-label="Search">🔍</button>
+          <button class="icon-btn" data-act="openWelcome" id="btn-welcome" title="แนะนำการใช้งานเบื้องต้น & ข้อมูลตัวอย่าง" aria-label="Welcome guide">🧭</button>
           <button class="icon-btn badge-btn" data-act="ideas" id="btn-ideas">🗒️<b id="idea-count" hidden>0</b></button>
           <button class="lang-btn" data-act="lang" id="btn-lang"></button>
           <button class="icon-btn" data-act="theme" id="btn-theme">🌙</button>
@@ -2636,6 +2637,9 @@
   </dialog>
   <dialog id="gperm-dlg" closedby="any" aria-labelledby="gperm-dlg-title" style="width:min(640px,95vw)">
     <div class="dlg-body" id="gperm-dlg-body"></div>
+  </dialog>
+  <dialog id="welcome-dlg" closedby="any" aria-labelledby="welcome-dlg-title" style="width:min(700px,95vw)">
+    <div class="dlg-body" id="welcome-dlg-body"></div>
   </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
@@ -2938,35 +2942,253 @@
     }
 
     /* ===================== Seed data ===================== */
-    function seed() {
-      if (state.tasks.length || state.projects.length || state.routines.length) return;
+    function seedPlannerSampleIfEmpty(force = false) {
+      if (state.sampleCleared && !force) return;
+      const today = dkey(), mk = today.slice(0, 7);
+      const Pl = P();
+
+      // 1. 5-Dimension Goals
+      Pl.goals ||= {};
+      const hasGoals = Object.values(Pl.goals).some(g => (g?.items?.length || g?.goal));
+      if (!hasGoals || force) {
+        Pl.goals = {
+          self: { items: [
+            { id: uid(), text: L("อ่านหนังสือพัฒนาตัวเองให้จบเดือนละ 1 เล่ม (ตัวอย่าง)", "Finish 1 self-development book per month (Sample)"), done: true },
+            { id: uid(), text: L("ฝึกทักษะ AI และเครื่องมือดิจิทัลวันละ 30 นาที (ตัวอย่าง)", "Practice AI & digital tools 30 mins/day (Sample)"), done: false }
+          ]},
+          health: { items: [
+            { id: uid(), text: L("ออกกำลังกายสัปดาห์ละ 4 วัน วันละ 30 นาที (ตัวอย่าง)", "Work out 4 days/week for 30 mins (Sample)"), done: true },
+            { id: uid(), text: L("เข้านอนก่อน 23:00 น. และดื่มน้ำวันละ 8 แก้ว (ตัวอย่าง)", "Sleep before 11 PM & drink 8 glasses of water (Sample)"), done: false }
+          ]},
+          wealth: { items: [
+            { id: uid(), text: L("ออมเงินและลงทุนอย่างน้อย 20% ของรายรับทุกเดือน (ตัวอย่าง)", "Save & invest at least 20% of monthly income (Sample)"), done: true },
+            { id: uid(), text: L("สร้างรายได้เสริมจากสินค้า Digital / คอร์สออนไลน์ 15,000 ฿/เดือน (ตัวอย่าง)", "Build 15,000 ฿/mo side income from digital products (Sample)"), done: false }
+          ]},
+          relation: { items: [
+            { id: uid(), text: L("ทานมื้อเย็นและพูดคุยกับครอบครัวทุกวันอาทิตย์ (ตัวอย่าง)", "Family dinner & quality time every Sunday (Sample)"), done: true },
+            { id: uid(), text: L("โทรหาคุณพ่อคุณแม่สัปดาห์ละ 2 ครั้ง (ตัวอย่าง)", "Call parents twice a week (Sample)"), done: false }
+          ]},
+          hobby: { items: [
+            { id: uid(), text: L("จัดสวนมุมพักผ่อนและถ่ายภาพคาเฟ่เดือนละครั้ง (ตัวอย่าง)", "Tend home garden & photography walk monthly (Sample)"), done: false }
+          ]}
+        };
+      }
+
+      // 2. Monthly Focus (with Topic Groups + General Items)
+      Pl.monthly ||= {};
+      const M = (Pl.monthly[mk] ||= {});
+      if ((!M.focusGroups?.length && !M.focusItems?.length) || force) {
+        M.focusGroups = [
+          {
+            id: uid(),
+            title: L("🚀 งานหลัก & โปรเจคลูกค้า (ตัวอย่างหัวข้อ)", "🚀 Core Work & Client Projects (Sample Topic)"),
+            items: [
+              { id: uid(), text: L("ส่งมอบเว็บไซต์ลูกค้า A เฟสแรกให้เสร็จสมบูรณ์", "Deliver Phase 1 of Client A Website"), done: true },
+              { id: uid(), text: L("เตรียมเทมเพลตแบบฟอร์มการทำงาน (Planner & Video Workflow)", "Prepare standard workflow templates"), done: false }
+            ]
+          },
+          {
+            id: uid(),
+            title: L("🎬 ช่องคอนเทนต์ & สินค้า Digital (ตัวอย่างหัวข้อ)", "🎬 Content Channels & Digital Products (Sample Topic)"),
+            items: [
+              { id: uid(), text: L("อัปเดตคลิปช่อง YouTube เพลงบรรเลง / คอนเทนต์ความรู้ 4 คลิป", "Publish 4 YouTube videos this month"), done: false },
+              { id: uid(), text: L("ออกแบบกราฟิกเทศกาล & สมุดแพลนเนอร์ดิจิทัล", "Design seasonal graphics & digital planner"), done: false }
+            ]
+          }
+        ];
+        M.focusItems = [
+          { id: uid(), text: L("วางแผนตารางงานและทบทวนเป้าหมายทุกเช้าวันจันทร์ (ตัวอย่าง)", "Review weekly schedule & goals every Monday morning (Sample)"), done: true },
+          { id: uid(), text: L("สรุปบัญชีรายรับ-รายจ่ายประจำเดือนทุกสิ้นเดือน (ตัวอย่าง)", "Review monthly income & expense summary (Sample)"), done: false }
+        ];
+        M.tellItems = [
+          { id: uid(), text: L("โฟกัสทีละงาน เมื่อมีงานแทรกให้บันทึกจุดค้างไว้ ไม่ต้องกังวล 🌱", "Focus on one thing at a time — bookmark interruptions and stay calm 🌱"), done: true },
+          { id: uid(), text: L("ความสม่ำเสมอเล็กๆ ในทุกวัน สร้างผลลัพธ์ที่ยิ่งใหญ่เสมอ ✨", "Small daily consistency creates massive results ✨"), done: false }
+        ];
+      }
+
+      // 3. Daily 24h Plan
+      Pl.daily ||= {};
+      const D = (Pl.daily[today] ||= {});
+      if (!D.planItems || !Object.values(D.planItems).some(arr => arr?.length) || force) {
+        D.rate = 4;
+        D.planItems = D.planItems || {};
+        D.planItems.h07 = [{ id: uid(), text: L("ออกกำลังกายเบาๆ + ทานมื้อเช้าเติมพลัง (ตัวอย่าง)", "Morning stretch + healthy breakfast (Sample)"), done: true }];
+        D.planItems.h09 = [{ id: uid(), text: L("Deep Work: ลุยงานสำคัญอันดับ 1 ของวันนี้ (ตัวอย่าง)", "Deep Work: #1 priority task of the day (Sample)"), done: false }];
+        D.planItems.h14 = [{ id: uid(), text: L("ประชุมอัปเดตงานกับทีม / ตอบแชทลูกค้า (ตัวอย่าง)", "Team sync / reply to client messages (Sample)"), done: false }];
+        D.planItems.h21 = [{ id: uid(), text: L("อ่านหนังสือ 15 หน้า & เตรียมเข้านอน (ตัวอย่าง)", "Read 15 pages & wind down for sleep (Sample)"), done: false }];
+      }
+
+      // 4. Dream Board
+      Pl.dreamItems ||= {};
+      const hasDream = Object.values(Pl.dreamItems).some(arr => arr?.length);
+      if (!hasDream || force) {
+        Pl.dreamItems = {
+          live: [
+            { id: uid(), text: L("บ้านเดี่ยวมีสวนสีเขียวและห้องทำงานโปร่งแสงธรรมชาติ (ตัวอย่าง)", "Modern home with a green garden and sunlit workspace (Sample)"), done: false },
+            { id: uid(), text: L("จัดมุมโต๊ะทำงาน Ergonomic นั่งสบายไม่ปวดหลัง (ตัวอย่าง)", "Ergonomic desk setup for healthy posture (Sample)"), done: true }
+          ],
+          drive: [
+            { id: uid(), text: L("รถยนต์ไฟฟ้าครอบครัว ขับนุ่มปลอดภัย ประหยัดพลังงาน (ตัวอย่าง)", "Safe, comfortable family EV (Sample)"), done: false }
+          ],
+          do: [
+            { id: uid(), text: L("วิ่งมินิมาราธอน 10 กม. สำเร็จโดยไม่เหนื่อยหอบ (ตัวอย่าง)", "Complete a 10K mini-marathon strong (Sample)"), done: false },
+            { id: uid(), text: L("สร้างระบบ Passive Income จากสินค้าดิจิทัล (ตัวอย่าง)", "Build automated passive income stream (Sample)"), done: false }
+          ],
+          be: [
+            { id: uid(), text: L("พาครอบครัวเที่ยวญี่ปุ่นชมใบไม้เปลี่ยนสี 7 วัน (ตัวอย่าง)", "7-day autumn family trip to Japan (Sample)"), done: false },
+            { id: uid(), text: L("พักผ่อนริมทะเลกระบี่ / ภูเก็ต ชาร์จพลัง 4 วัน 3 คืน (ตัวอย่าง)", "4-day beach retreat in Krabi / Phuket (Sample)"), done: false }
+          ]
+        };
+      }
+
+      // 5. Habits, Tiny Habit, Mood & Booster
+      if (!Pl.habits?.length || force) {
+        const h1 = { id: uid(), name: L("ดื่มน้ำสะอาดครบ 8 แก้ว", "Drink 8 glasses of water") };
+        const h2 = { id: uid(), name: L("เข้านอนก่อน 23:00 น.", "Sleep before 11 PM") };
+        const h3 = { id: uid(), name: L("ไม่เล่นมือถือก่อนนอน 30 นาที", "No phone 30 mins before bed") };
+        Pl.habits = [h1, h2, h3];
+        Pl.habitLog = {
+          [h1.id]: { [today]: true, [addDays(today, -1)]: true, [addDays(today, -2)]: true },
+          [h2.id]: { [addDays(today, -1)]: true, [addDays(today, -2)]: true },
+          [h3.id]: { [today]: true, [addDays(today, -1)]: true }
+        };
+      }
+      if ((!Pl.tiny?.after && !Pl.tiny?.will) || force) {
+        Pl.tiny = {
+          after: L("ตื่นนอนและดื่มน้ำเปล่า 1 แก้ว (ตัวอย่าง)", "Waking up and drinking a glass of water (Sample)"),
+          will: L("เปิดดูคิวงานใน FlowRecover และจัดลำดับ 3 งานสำคัญทันที (ตัวอย่าง)", "Review FlowRecover queue and pick top 3 priorities (Sample)")
+        };
+        Pl.obstacle = L("มักถูกงานด่วนหรือแชทแทรกจนลืมทำแผนหลักของวัน (ตัวอย่าง)", "Often interrupted by urgent messages and lose track of main plan (Sample)");
+        Pl.solution = L("กดปุ่ม “⏸️ มีงานแทรก” ในแอปเพื่อบันทึกจุดค้าง แล้วให้ระบบเลื่อนคิวให้อัตโนมัติ (ตัวอย่าง)", "Tap “⏸️ Interrupted” to bookmark context and auto-reflow the queue (Sample)");
+      }
+      Pl.mood ||= {};
+      if (!Pl.mood[today] || force) Pl.mood[today] = "😄";
+      if (!Pl.booster || force) Pl.booster = L("เปิดเพลงบรรเลง Lo-Fi เบาๆ + จิบกาแฟอุ่นๆ ก่อนเริ่มบล็อกโฟกัส (ตัวอย่าง)", "Play soft Lo-Fi beats + warm coffee before starting a focus block (Sample)");
+
+      // 6. Finance (Savings Goal, Sample Income/Expense Transactions, Fixed Bills)
+      Pl.finance ||= { income: 0, goal: 100000, saved: 35000 };
+      if ((!Pl.finance.saved && Pl.finance.goal === 50000) || force) {
+        Pl.finance = { income: 0, goal: 100000, saved: 35000 };
+      }
+      Pl.txns ||= [];
+      if (!Pl.txns.length || force) {
+        Pl.txns = [
+          { id: uid(), ts: Date.now() - 864e5 * 2, date: addDays(today, -2), type: "inc", cat: "salary", amount: 45000, note: L("เงินเดือนประจำ (ตัวอย่าง)", "Monthly Salary (Sample)") },
+          { id: uid(), ts: Date.now() - 864e5, date: addDays(today, -1), type: "inc", cat: "freelance", amount: 12500, note: L("รายได้โปรเจคออกแบบเว็บไซต์ลูกค้า (ตัวอย่าง)", "Client Web Design Project (Sample)") },
+          { id: uid(), ts: Date.now() - 7200e3, date: today, type: "exp", cat: "food", amount: 380, note: L("ค่าอาหารมื้อเที่ยงและกาแฟ (ตัวอย่าง)", "Lunch & Coffee (Sample)") },
+          { id: uid(), ts: Date.now() - 3600e3, date: today, type: "exp", cat: "bills", amount: 1290, note: L("ค่าอินเทอร์เน็ตบ้านและค่าน้ำ-ไฟ (ตัวอย่าง)", "Home Internet & Utilities (Sample)") },
+          { id: uid(), ts: Date.now() - 1800e3, date: today, type: "exp", cat: "work", amount: 650, note: L("ค่าซอฟต์แวร์และเครื่องมือทำงาน (ตัวอย่าง)", "Work Software Subscription (Sample)") }
+        ];
+      }
+      Pl.fixedBills ||= [];
+      if (!Pl.fixedBills.length || force) {
+        Pl.fixedBills = [
+          { id: uid(), title: L("ค่าอินเทอร์เน็ตไฟเบอร์ (ตัวอย่าง)", "Home Fiber Internet (Sample)"), amount: 690, cat: "bills", dueDay: 15, paidMonths: { [mk]: true } },
+          { id: uid(), title: L("ค่าเช่าคลาวด์ / โปรแกรมทำงาน (ตัวอย่าง)", "Cloud & Work Apps (Sample)"), amount: 450, cat: "work", dueDay: 25, paidMonths: {} }
+        ];
+      }
+
+      // 7. Health, Sleep, Travel & Media
+      Pl.workouts ||= [];
+      if (!Pl.workouts.length || force) {
+        Pl.workouts = [
+          { id: uid(), ts: Date.now(), date: today, type: L("วิ่งจ็อกกิ้งสวนสาธารณะ + ยืดเหยียด (ตัวอย่าง)", "Park Jogging & Stretching (Sample)"), mins: 35, weight: 64.5 }
+        ];
+      }
+      Pl.meals ||= [];
+      if (!Pl.meals.length || force) {
+        Pl.meals = [
+          { id: uid(), ts: Date.now(), date: today, meal: "b", food: L("ข้าวต้มอกไก่ไข่ลวก + กาแฟดำ (ตัวอย่าง)", "Chicken rice porridge + black coffee (Sample)"), kcal: 380 },
+          { id: uid(), ts: Date.now(), date: today, meal: "l", food: L("ข้าวกล้องปลาแซลมอนย่าง + สลัดผัก (ตัวอย่าง)", "Grilled salmon brown rice + salad (Sample)"), kcal: 540 }
+        ];
+      }
+      Pl.sleeps ||= [];
+      if (!Pl.sleeps.length || force) {
+        Pl.sleeps = [
+          { id: uid(), ts: Date.now(), date: today, hours: 7.5, quality: "5", note: L("หลับสนิท ตื่นมาสดชื่นพร้อมลุยงาน (ตัวอย่าง)", "Deep sleep, woke up refreshed (Sample)") }
+        ];
+      }
+      Pl.trips ||= [];
+      if (!Pl.trips.length || force) {
+        Pl.trips = [
+          {
+            id: uid(),
+            ts: Date.now(),
+            place: L("เชียงใหม่ • ทริปพักผ่อนธรรมชาติ & คาเฟ่ (ตัวอย่าง)", "Chiang Mai • Nature & Cafe Retreat (Sample)"),
+            date: addDays(today, 60),
+            budget: 15000,
+            saved: 6000,
+            notes: L("4 วัน 3 คืน • พักโซนแม่ริม/นิมมาน (ตัวอย่าง)", "4D3N • Stay in Mae Rim / Nimman (Sample)"),
+            steps: [
+              { id: uid(), title: L("จองตั๋วเครื่องบินไป-กลับ", "Book round-trip flights"), done: true, date: addDays(today, 10), note: L("จองเรียบร้อยแล้ว 3,200 ฿", "Booked 3,200 ฿") },
+              { id: uid(), title: L("จองที่พักแม่ริม 2 คืน และในเมือง 1 คืน", "Book hotels (2 nights Mae Rim, 1 night city)"), done: false, date: addDays(today, 25), note: L("งบที่พัก ~5,500 ฿", "Budget ~5,500 ฿") },
+              { id: uid(), title: L("วางแผนร้านอาหารและจุดชมวิว", "Plan cafes, dining & scenic spots"), done: false, date: addDays(today, 45), note: "" }
+            ]
+          }
+        ];
+      }
+      Pl.media ||= [];
+      if (!Pl.media.length || force) {
+        Pl.media = [
+          { id: uid(), ts: Date.now(), kind: "book", title: L("Atomic Habits — เพราะชีวิตดีได้กว่าที่เป็น (ตัวอย่าง)", "Atomic Habits (Sample)"), rating: "5" },
+          { id: uid(), ts: Date.now(), kind: "movie", title: L("Inside Out 2 — มหัศจรรย์อารมณ์อลเวง 2 (ตัวอย่าง)", "Inside Out 2 (Sample)"), rating: "5" }
+        ];
+      }
+    }
+
+    function seed(force = false) {
+      if (state.sampleCleared && !force) return;
+      if (force) state.sampleCleared = false;
       const today = dkey(), n = Math.max(0, Math.floor(nowMin() / 15) * 15);
-      const st = arr => arr.map(([title, status]) => ({ id: uid(), title, status }));
-      const p1 = {
-        id: uid(), title: L("เปิดตัวเว็บไซต์ลูกค้า A", "Client A website launch"), monthlyGoal: L("ปิดงานลูกค้า 2 รายในเดือนนี้", "Close 2 client projects this month"), manual: 0,
-        coordinator: { name: L("คุณมิ้นท์ (PM)", "Mint (PM)"), contact: "mint@example.com • 081-234-5678" },
-        links: [{ id: uid(), label: "Brief & Sitemap (Google Drive)", url: "https://drive.google.com/" }],
-        steps: st([[L("เก็บ Requirement", "Gather requirements"), "done"], [L("ออกแบบ Wireframe", "Wireframes"), "done"], [L("พัฒนาหน้า Landing", "Build landing page"), "doing"], [L("รอ Feedback ลูกค้า", "Waiting for client feedback"), "waiting"], [L("ขึ้นระบบจริง", "Go live"), "todo"]])
-      };
-      const p2 = {
-        id: uid(), title: L("คอร์สออนไลน์ Excel", "Excel online course"), monthlyGoal: L("สร้างรายได้เสริม 10,000 ฿", "Earn 10,000 ฿ side income"), manual: 0,
-        coordinator: { name: L("พี่บอส (ตัดต่อ)", "Boss (editor)"), contact: "Line: boss.edit" }, links: [],
-        steps: st([[L("เขียนสคริปต์ 5 บท", "Write 5 scripts"), "done"], [L("อัดวิดีโอ", "Record videos"), "doing"], [L("ตัดต่อ", "Edit"), "todo"], [L("เปิดขาย", "Launch sales"), "todo"]])
-      };
-      state.projects = [p1, p2];
-      const T = (title, start, dur, projectId, priority) => ({ id: uid(), title, date: today, start: Math.max(0, start), dur, projectId, priority, done: false, bookmark: "" });
-      state.tasks = [
-        T(L("พัฒนาหน้า Landing (Hero + Pricing)", "Build landing page (Hero + Pricing)"), n - 15, 60, p1.id, "main"),
-        T(L("ตอบอีเมลลูกค้า & นัดประชุม", "Reply to client emails & schedule meeting"), n + 60, 30, null, "secondary"),
-        T(L("อัดวิดีโอคอร์ส บทที่ 3", "Record course video, lesson 3"), n + 105, 60, p2.id, "main"),
-        T(L("จัดเอกสารบัญชีประจำเดือน", "Organize monthly accounting docs"), n + 180, 45, null, "secondary")
-      ];
-      state.routines = [
-        { id: uid(), title: L("ออกกำลังกาย 20 นาที", "Exercise 20 minutes"), freq: "daily", time: "06:30", created: addDays(today, -6), log: { [addDays(today, -1)]: true, [addDays(today, -2)]: true, [addDays(today, -3)]: true } },
-        { id: uid(), title: L("อ่านหนังสือ 15 หน้า", "Read 15 pages"), freq: "eod", time: "21:00", created: today, log: {} },
-        { id: uid(), title: L("เช็กยอดขายประจำวัน", "Check daily sales"), freq: "weekday", time: "09:00", created: addDays(today, -10), log: {} }
-      ];
-      if (!P().habits.length) P().habits = [L("ดื่มน้ำ 8 แก้ว", "Drink 8 glasses of water"), L("นอนก่อน 5 ทุ่ม", "Sleep before 11 PM"), L("ไม่เล่นมือถือก่อนนอน", "No phone before bed")].map(name => ({ id: uid(), name }));
+      if (!state.tasks.length && !state.projects.length && !state.routines.length || force) {
+        const p1 = {
+          id: uid(), title: L("เปิดตัวเว็บไซต์ลูกค้า A (ตัวอย่าง)", "Client A website launch (Sample)"), monthlyGoal: L("ปิดงานลูกค้า 2 รายในเดือนนี้", "Close 2 client projects this month"), manual: 0,
+          coordinator: { name: L("คุณมิ้นท์ (PM)", "Mint (PM)"), contact: "mint@example.com • 081-234-5678" },
+          links: [{ id: uid(), label: "Brief & Sitemap (Google Drive)", url: "https://drive.google.com/" }],
+          steps: [
+            { id: uid(), title: L("เก็บ Requirement & สรุปขอบเขตงาน", "Gather requirements & scope"), status: "done", start: addDays(today, -5), end: addDays(today, -3), activities: [
+              { id: uid(), title: L("ประชุมเปิดโปรเจคกับลูกค้า", "Kickoff meeting with client"), done: true, date: addDays(today, -5) }
+            ]},
+            { id: uid(), title: L("ออกแบบ Wireframe & UI", "Design Wireframes & UI"), status: "done", start: addDays(today, -2), end: addDays(today, -1), activities: [] },
+            { id: uid(), title: L("พัฒนาหน้า Landing Page & ระบบชำระเงิน", "Build Landing Page & Checkout"), status: "doing", start: today, end: addDays(today, 3), activities: [
+              { id: uid(), title: L("จัดวางส่วน Hero และตารางแพ็กเกจราคา", "Build Hero section & pricing cards"), done: true, date: today },
+              { id: uid(), title: L("ทดสอบการแสดงผลบนมือถือและคอมพิวเตอร์", "Test responsive layout on mobile & desktop"), done: false, date: addDays(today, 1) }
+            ]},
+            { id: uid(), title: L("รอ Feedback ลูกค้า & แก้ไขรอบสุดท้าย", "Client feedback & final polish"), status: "waiting", start: addDays(today, 4), end: addDays(today, 5), activities: [] },
+            { id: uid(), title: L("ส่งมอบและเปิดใช้งานระบบจริง (Go Live)", "Final delivery & Go Live"), status: "todo", start: addDays(today, 6), end: addDays(today, 7), activities: [] }
+          ]
+        };
+        const p2 = {
+          id: uid(), title: L("คอร์สออนไลน์ & สินค้า Digital (ตัวอย่าง)", "Online Course & Digital Product (Sample)"), monthlyGoal: L("สร้างรายได้เสริม 15,000 ฿/เดือน", "Earn 15,000 ฿/mo side income"), manual: 0,
+          coordinator: { name: L("พี่บอส (ทีมตัดต่อ)", "Boss (Video Editor)"), contact: "Line: boss.edit" }, links: [],
+          steps: [
+            { id: uid(), title: L("วางโครงสร้างเนื้อหาและเขียนสคริปต์ 5 บท", "Outline & write 5 lesson scripts"), status: "done", start: addDays(today, -4), end: addDays(today, -1), activities: [] },
+            { id: uid(), title: L("อัดวิดีโอและทำสไลด์ประกอบการสอน", "Record videos & slides"), status: "doing", start: today, end: addDays(today, 4), activities: [] },
+            { id: uid(), title: L("ตัดต่อและทำปกคลิป", "Edit videos & thumbnails"), status: "todo", start: addDays(today, 5), end: addDays(today, 8), activities: [] },
+            { id: uid(), title: L("เปิดระบบรับสมัครและโปรโมตหน้าเพจ", "Launch sales page & promotion"), status: "todo", start: addDays(today, 9), end: addDays(today, 12), activities: [] }
+          ]
+        };
+        state.projects = [p1, p2];
+        const T = (title, start, dur, projectId, priority, bookmark = "") => ({ id: uid(), title, date: today, start: Math.max(0, start), dur, projectId, priority, done: false, bookmark });
+        state.tasks = [
+          T(L("พัฒนาหน้า Landing (Hero + Pricing) [ตัวอย่างงานกำลังโฟกัส]", "Build landing page (Hero + Pricing) [Sample Focus Task]"), n - 10, 60, p1.id, "main", L("ทำส่วนหัวเสร็จแล้ว กำลังแต่งปุ่มสมัครแพ็กเกจ (ตัวอย่างบันทึกจุดค้าง)", "Header done, styling pricing CTA buttons (Sample context bookmark)")),
+          T(L("ตอบอีเมลลูกค้า & ส่งใบเสนอราคา (ตัวอย่างงานรอง)", "Reply to client emails & send quote (Sample secondary)"), n + 60, 30, null, "secondary"),
+          T(L("อัดวิดีโอคอร์ส บทที่ 3 (ตัวอย่างงานหลัก)", "Record course video, lesson 3 (Sample main task)"), n + 105, 60, p2.id, "main"),
+          T(L("สรุปบัญชีรายรับ-รายจ่ายประจำสัปดาห์ (ตัวอย่าง)", "Weekly finance & expense review (Sample)"), n + 180, 45, null, "secondary")
+        ];
+        state.routines = [
+          { id: uid(), title: L("ออกกำลังกาย 20 นาที (ตัวอย่างกิจวัตร)", "Exercise 20 minutes (Sample routine)"), freq: "daily", time: "06:30", created: addDays(today, -6), log: { [addDays(today, -1)]: true, [addDays(today, -2)]: true, [addDays(today, -3)]: true } },
+          { id: uid(), title: L("อ่านหนังสือพัฒนาตัวเอง 15 หน้า (ตัวอย่าง)", "Read 15 pages (Sample)"), freq: "eod", time: "21:00", created: today, log: {} },
+          { id: uid(), title: L("เช็กยอดขาย & แผนงานประจำวัน (ตัวอย่าง)", "Check daily sales & plan (Sample)"), freq: "weekday", time: "09:00", created: addDays(today, -10), log: { [addDays(today, -1)]: true } }
+        ];
+      }
+      if (!state.ideas?.length || force) {
+        state.ideas = [
+          { id: uid(), text: L("💡 ทำคลิปสั้นแนะนำวิธีจัดตารางเวลาแบบยืดหยุ่น (ตัวอย่างไอเดียด่วน — กดปุ่ม “→ งาน” เพื่อส่งเข้าคิววันนี้ได้)", "💡 Make a short reel on flexible time-blocking (Sample idea — tap “→ Task” to queue today)"), at: Date.now() - 3600e3 },
+          { id: uid(), text: L("💡 ออกแบบชุดเทมเพลต Digital Planner สำหรับเทศกาลปีใหม่ (ตัวอย่าง)", "💡 Design New Year Digital Planner template bundle (Sample)"), at: Date.now() - 1800e3 }
+        ];
+      }
+      seedPlannerSampleIfEmpty(force);
       save();
     }
 
@@ -5803,6 +6025,85 @@
           </div>
         </div>`;
     }
+    function renderWelcomeDlg() {
+      const b = $("#welcome-dlg-body");
+      if (!b) return;
+      const uName = state.user?.name || L("ผู้ใช้งาน", "User");
+      const isDemo = !!state.user?.demo;
+      const cards = [
+        [
+          "⚡",
+          L("1. โฟกัส & กู้คืนเมื่อมีงานแทรก (Focus & Interrupt)", "1. Focus & Interrupt Recovery"),
+          L("ดูงานปัจจุบัน กดปุ่มสีส้ม “⏸️ มีงานแทรก!” เพื่อบันทึกจุดค้างและเลื่อนคิวงานถัดไปอัตโนมัติ พร้อมจับเวลา Pomodoro", "See your current task, tap “⏸️ Interrupted!” to bookmark context and auto-reflow your schedule, or run a Pomodoro timer."),
+          "focus", "", L("ไปดูหน้าโฟกัส →", "Open Focus →")
+        ],
+        [
+          "📅",
+          L("2. คิวงานรายวัน & กิจวัตรทำซ้ำ (Queue & Routines)", "2. Daily Queue & Recurring Routines"),
+          L("เราจำลองตารางงานวันนี้ (งานหลัก/งานรอง) และกิจวัตรประจำวันพร้อมสถิติ Streak ไว้ให้ลองติ๊กถูกและแก้ไขเวลาได้ทันที", "Explore sample daily tasks and recurring routines with streak tracking — try checking items off or shifting times."),
+          "queue", "", L("ไปดูตัวอย่างคิวงาน →", "View Sample Queue →")
+        ],
+        [
+          "🗂️",
+          L("3. โปรเจค • ไทม์ไลน์ Gantt • แชร์ลิงก์ทีม (Projects)", "3. Projects • Gantt Timeline • Team Share"),
+          L("มีตัวอย่างโปรเจคลูกค้าและคอร์สออนไลน์ พร้อมขั้นตอนย่อย แผนผัง Gantt Chart และปุ่มแชร์ความคืบหน้าให้ทีมดูโดยไม่ต้องล็อกอิน", "Includes 2 sample projects with steps, Gantt timeline, relationship map, and sign-in-free progress share links."),
+          "projects", "", L("ไปดูตัวอย่างโปรเจค →", "View Sample Projects →")
+        ],
+        [
+          "🎯",
+          L("4. เป้าหมาย 5 มิติ • Monthly Focus • Dream Board", "4. 5-D Goals • Monthly Focus • Dream Board"),
+          L("ดูตัวอย่างการตั้งเป้าหมาย 5 มิติ, Monthly Focus แบบแยกหัวข้อ (ลากสลับลำดับได้), ตาราง 24 ชม. และ Dream Board 4 หมวด", "See examples of 5-D goals, topic-grouped Monthly Focus (with drag-and-drop), 24h plan, and the 4-tile Dream Board."),
+          "planner", "cg", L("ไปดูตัวอย่างเป้าหมาย →", "View Goals & Dream Board →")
+        ],
+        [
+          "💰",
+          L("5. บัญชีรายรับ-รายจ่าย • บิลประจำ • เป้าออม", "5. Income & Expenses • Fixed Bills • Savings"),
+          L("จำลองรายการรายรับ-รายจ่าย กราฟสรุป ปุ่มดึงข้อความสรุปมาแสดงในหน้าเดียว ดาวน์โหลดไฟล์ Excel และเช็กบิลประจำเดือน", "Pre-filled with sample income/expense entries, charts, on-page summary text puller, Excel export, and monthly bills."),
+          "planner", "f", L("ไปดูตัวอย่างการเงิน →", "View Sample Finance →")
+        ],
+        [
+          "✈️",
+          L("6. แผนออมทริปเที่ยว • สุขภาพ • คำนวณภาษี", "6. Travel Planner • Health & Sleep • Tax"),
+          L("มีตัวอย่างทริปเชียงใหม่พร้อมคำนวณเงินออมต่อเดือนและ Checklist เตรียมทริป, บันทึกออกกำลังกาย/อาหาร/การนอน และคำนวณภาษี", "Includes a sample Chiang Mai trip with monthly savings & checklist, workout/meal/sleep logs, and Thai tax calculator."),
+          "planner", "wl", L("ไปดูทริป & สุขภาพ →", "View Travel & Wellness →")
+        ]
+      ];
+      b.innerHTML = `
+        <div class="dlg-head">
+          <div>
+            <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px">
+              <span class="pill pill-emerald" style="font-size:.72rem;padding:2px 8px">${isDemo ? `👀 ${L("โหมดทดลองในเครื่อง", "Local Preview Mode")}` : `✨ ${L("เชื่อมต่อบัญชี Google แล้ว", "Google Account Connected")}`}</span>
+              <span class="chip chip-amber" style="font-size:.72rem;padding:2px 8px">📋 ${L("มีข้อมูลตัวอย่างพร้อมดูแนวทางการกรอก", "Sample Data Pre-loaded")}</span>
+            </div>
+            <h2 id="welcome-dlg-title" style="font-size:1.22rem">👋 ${L(`ยินดีต้อนรับคุณ ${esc(uName)} สู่ FlowRecover x Life Planner`, `Welcome ${esc(uName)} to FlowRecover x Life Planner`)}</h2>
+          </div>
+          <button type="button" class="icon-btn" data-act="dismissWelcome" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <div style="display:grid;gap:10px;max-height:64dvh;overflow-y:auto;padding-right:4px">
+          <div style="padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(16,185,129,.1));border:1px solid rgba(245,158,11,.35);font-size:.86rem;line-height:1.55">
+            <b>💡 ${L("ระบบได้จำลองข้อมูลตัวอย่าง (Sample Data) ไว้ให้ครบทุกเมนูแล้ว!", "We have populated realistic sample data across every section for you!")}</b>
+            <p class="muted sm" style="margin-top:4px">${L("คุณสามารถคลิกดูตัวอย่างการกรอก แก้ไข ลบ หรือทดลองกดปุ่มต่างๆ ในแต่ละหน้าได้ทันที เมื่อเห็นภาพการใช้งานชัดเจนแล้ว สามารถกดปุ่ม “🧹 ล้างข้อมูลตัวอย่าง” ด้านล่างเพื่อเริ่มกรอกข้อมูลจริงของคุณได้ทุกเมื่อครับ (เปิดหน้าต่างนี้ซ้ำได้จากปุ่ม 🧭 ด้านบนขวา)", "Explore how each feature is filled out, try editing or checking items off, and when you're ready to start fresh, click “🧹 Clear Sample Data” below (reopen this guide anytime via the 🧭 icon in the top bar).")}</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:8px">
+            ${cards.map(([ico, title, desc, tab, sec, btnLbl]) => `
+              <div style="padding:12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;gap:8px">
+                <div>
+                  <b style="font-size:.9rem;display:block;margin-bottom:4px">${ico} ${title}</b>
+                  <p class="muted sm" style="font-size:.8rem;line-height:1.45">${desc}</p>
+                </div>
+                <button type="button" class="btn btn-sm" style="align-self:flex-start;color:var(--amber);border-color:rgba(245,158,11,.35)" data-act="welcomeGo" data-tab="${tab}" data-sec="${sec}">${btnLbl}</button>
+              </div>
+            `).join("")}
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border)">
+          <div class="row" style="gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn-sm" data-act="loadSampleData" title="${L("เติมข้อมูลตัวอย่างให้ครบทุกหมวดอีกครั้ง", "Restore all sample examples")}">🔄 ${L("โหลดข้อมูลตัวอย่างใหม่", "Reset Sample Data")}</button>
+            <button type="button" class="btn btn-sm" style="color:var(--rose);border-color:rgba(251,113,133,.35)" data-act="clearSampleData" title="${L("ลบข้อมูลตัวอย่างออกทั้งหมดเพื่อเริ่มกรอกข้อมูลจริง", "Remove sample items and start with a clean slate")}">🧹 ${L("ล้างข้อมูลตัวอย่าง (เริ่มกรอกจริง)", "Clear Sample Data")}</button>
+          </div>
+          <button type="button" class="btn btn-amber" data-act="dismissWelcome" id="btn-welcome-start">🚀 ${L("เริ่มสำรวจแอปพร้อมข้อมูลตัวอย่างเลย!", "Start Exploring with Sample Data!")}</button>
+        </div>`;
+    }
     function renderIdeas() {
       $("#ideas-body").innerHTML = `
     <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
@@ -5839,6 +6140,7 @@
         if ($("#ideas-dlg").open) renderIdeas();
         if ($("#legal-dlg")?.open) renderLegalDlg();
         if ($("#gperm-dlg")?.open) renderGPermDlg();
+        if ($("#welcome-dlg")?.open) renderWelcomeDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
@@ -5848,6 +6150,40 @@
       legalTab: d => { renderLegalDlg(d?.tab || "privacy"); },
       openGPermGuide: d => { renderGPermDlg(d?.connect === "1"); const dlg = $("#gperm-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       openDemoPreview: () => { const dlg = $("#demo-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      openWelcome: () => { renderWelcomeDlg(); const dlg = $("#welcome-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      dismissWelcome: () => { state.welcomeSeen = true; save(); $("#welcome-dlg")?.close(); },
+      welcomeGo: d => {
+        state.welcomeSeen = true;
+        if (d.tab) state.tab = d.tab;
+        if (d.sec) state.plannerSec = d.sec;
+        $("#welcome-dlg")?.close();
+        save();
+        renderStatic();
+        renderView();
+        scrollTo({ top: 0, behavior: "smooth" });
+      },
+      loadSampleData: () => {
+        seed(true);
+        if (fb && state.user && !state.user.demo) cloudSave();
+        renderAll();
+        if ($("#welcome-dlg")?.open) renderWelcomeDlg();
+        toast(L("✨ โหลดข้อมูลตัวอย่างครบทุกหมวดเรียบร้อยแล้ว! ลองคลิกดูตามเมนูต่างๆ ได้เลยครับ", "✨ Sample data loaded across all sections!"));
+      },
+      clearSampleData: () => {
+        if (!confirm(L("ต้องการล้างข้อมูลตัวอย่างในแอปทั้งหมด เพื่อเริ่มกรอกข้อมูลจริงของคุณใช่หรือไม่?", "Clear all sample data so you can start entering your own real data?"))) return;
+        state.tasks = [];
+        state.routines = [];
+        state.projects = [];
+        state.ideas = [];
+        state.planner = defaults().planner;
+        state.sampleCleared = true;
+        state.welcomeSeen = true;
+        save();
+        if (fb && state.user && !state.user.demo) cloudSave();
+        $("#welcome-dlg")?.close();
+        renderAll();
+        toast(L("🧹 ล้างข้อมูลตัวอย่างเรียบร้อยแล้ว — เริ่มกรอกข้อมูลจริงของคุณได้เลยครับ!", "🧹 Sample data cleared — ready for your own data!"));
+      },
       payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
       ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
       closeDlg: d => $("#" + d.id).close(),
@@ -6212,9 +6548,9 @@
           state.sub = { subscription_status: "trial", trial_start_at: Date.now(), owner_email: email };
           track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
         }
-        $("#demo-dlg").close(); seed(); save(); showApp();
+        $("#demo-dlg").close(); seed(); save(); showApp(true);
         if (state.sub.is_admin) toast(L(`👑 ยินดีต้อนรับ Admin ${name}! ได้รับสิทธิ์ฟรีตลอดชีพ`, `👑 Welcome Admin ${name}! Lifetime access granted`));
-        else toast(L(`👋 ยินดีต้อนรับ ${name}! เริ่มทดลองใช้ฟรี 7 วัน`, `👋 Welcome ${name}! Your 7-day free trial has started`));
+        else toast(L(`👋 ยินดีต้อนรับ ${name}! โหลดข้อมูลตัวอย่างและคู่มือเริ่มต้นใช้งานแล้ว`, `👋 Welcome ${name}! Sample data & quick-start guide loaded`));
       }
     };
     function addCrud(name, fd) {
@@ -9308,7 +9644,22 @@
 
     /* ===================== Auth & boot ===================== */
     function showAuth() { $("#app").hidden = true; $("#auth-screen").hidden = false; if ($("#paywall").open) $("#paywall").close(); }
-    function showApp() { $("#auth-screen").hidden = true; $("#app").hidden = false; seed(); renderAll(); }
+    function showApp(forceWelcome = false) {
+      $("#auth-screen").hidden = true;
+      $("#app").hidden = false;
+      seed();
+      renderAll();
+      let justLogged = false;
+      try {
+        justLogged = sessionStorage.getItem("fr.just_logged_in") === "1";
+        if (justLogged) sessionStorage.removeItem("fr.just_logged_in");
+      } catch {}
+      if ((forceWelcome || justLogged || !state.welcomeSeen) && !$("#paywall")?.open) {
+        renderWelcomeDlg();
+        const dlg = $("#welcome-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      }
+    }
     async function login() {
       const cb = $("#auth-consent-cb");
       const wrap = $("#auth-consent-wrap");
@@ -9323,11 +9674,13 @@
         try {
           // Request ONLY basic identity (name, email, avatar) on initial sign-in so Google never shows the unverified sensitive-scope warning.
           // Optional Calendar/Drive scopes are requested incrementally only when the user explicitly clicks Connect inside the app.
+          try { sessionStorage.setItem("fr.just_logged_in", "1"); } catch {}
           const prov = new fb.GoogleAuthProvider();
           prov.setCustomParameters({ prompt: "select_account" });
           await fb.signInWithPopup(fb.auth, prov);
         }
         catch (e) {
+          try { sessionStorage.removeItem("fr.just_logged_in"); } catch {}
           console.error(e);
           if (e.code === "auth/unauthorized-domain") {
             toast(L(`โดเมน ${location.hostname} ยังไม่ได้รับอนุญาตใน Firebase (เพิ่มใน Authorized domains)`, `Domain ${location.hostname} not authorized in Firebase Console`));
