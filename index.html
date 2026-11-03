@@ -6,7 +6,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS</title>
   <meta name="description"
-    content="FlowRecover x Life Planner: จัดตารางงานยืดหยุ่น กู้คืนงานเมื่อถูกขัดจังหวะ เลื่อนคิวอัตโนมัติ บริหารโปรเจค และสมุดวางแผนชีวิตครบวงจร ใช้งานง่ายด้วยมือเดียวบนมือถือ">
+    content="FlowRecover x Life Planner: จัดตารางงานยืดหยุ่น กู้คืนงานเมื่อถูกขัดจังหวะ เลื่อนคิวอัตโนมัติ บริหารโปรเจค และสมุดวางแผนชีวิตครบวงจร ใช้งานง่ายด้วยมือเดียวบนมือถือ (Adaptive Time-Blocking, Interrupt Recovery & All-in-One Life Planner OS)">
+  <meta name="keywords" content="FlowRecover, Life Planner, Time Blocking, Pomodoro Timer, Task Queue, Habit Tracker, Expense Tracker, Project Gantt Chart, Productivity App">
+  <link rel="canonical" href="https://flowrecover.web.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="FlowRecover x Life Planner">
+  <meta property="og:title" content="FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS">
+  <meta property="og:description" content="Focus on one thing at a time. Bookmark interruptions, auto-reflow your daily schedule, manage projects & Gantt timelines, and track habits & finances in one place.">
+  <meta property="og:url" content="https://flowrecover.web.app/">
+  <meta property="og:image" content="https://flowrecover.web.app/icon-512.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS">
+  <meta name="twitter:description" content="Adaptive time-blocking, 1-tap interrupt recovery with automatic schedule reflow, project Gantt charts, and all-in-one Life Planner.">
+  <meta name="twitter:image" content="https://flowrecover.web.app/icon-512.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "FlowRecover x Life Planner",
+    "applicationCategory": "ProductivityApplication",
+    "operatingSystem": "Web, iOS, Android, Chrome OS, macOS, Windows",
+    "url": "https://flowrecover.web.app/",
+    "image": "https://flowrecover.web.app/icon-512.png",
+    "description": "Adaptive time-blocking, interrupt recovery with automatic schedule reflow, project tracking, and all-in-one life planner.",
+    "offers": {
+      "@type": "AggregateOffer",
+      "lowPrice": "99",
+      "highPrice": "990",
+      "priceCurrency": "THB",
+      "offerCount": "3"
+    }
+  }
+  </script>
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2035,12 +2066,30 @@
       transition: all .3s;
       max-width: calc(100vw - 32px);
       text-align: center;
-      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .5)
+      box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap
     }
 
     #toast.show {
       opacity: 1;
+      pointer-events: auto;
       transform: translateX(-50%) translateY(0)
+    }
+
+    .toast-undo-btn {
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: var(--amber);
+      color: #1a1204;
+      font-weight: 800;
+      font-size: .8rem;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap
     }
 
     /* ---------- Animations ---------- */
@@ -2571,6 +2620,7 @@
           </form>
           <button class="icon-btn" data-act="openSearch" id="btn-global-search" title="ค้นหาทั่วทั้งแอป (Cmd+K / Ctrl+K)" aria-label="Search">🔍</button>
           <button class="icon-btn" data-act="openWelcome" id="btn-welcome" title="แนะนำการใช้งานเบื้องต้น & ข้อมูลตัวอย่าง" aria-label="Welcome guide">🧭</button>
+          <button class="btn btn-sm btn-emerald" data-act="installPwa" id="btn-install-pwa" hidden style="min-height:34px;padding:4px 10px;font-size:.76rem;white-space:nowrap">📲 Install</button>
           <button class="icon-btn badge-btn" data-act="ideas" id="btn-ideas">🗒️<b id="idea-count" hidden>0</b></button>
           <button class="lang-btn" data-act="lang" id="btn-lang"></button>
           <button class="icon-btn" data-act="theme" id="btn-theme">🌙</button>
@@ -2712,10 +2762,17 @@
     const b64d = s => { s = s.replace(/-/g, "+").replace(/_/g, "/"); return new TextDecoder().decode(Uint8Array.from(atob(s), c => c.charCodeAt(0))); };
 
     /* ===================== i18n ===================== */
-    let LANG = "th";
+    function detectBrowserLang() {
+      const navLangs = Array.isArray(navigator.languages) && navigator.languages.length ? navigator.languages : [navigator.language || "en"];
+      const primary = String(navLangs[0] || "en").toLowerCase();
+      return primary.startsWith("th") ? "th" : "en";
+    }
+    let LANG = detectBrowserLang();
     const L = (th, en) => LANG === "en" ? en : th;
     const locale = () => LANG === "en" ? "en-US" : "th-TH";
     const money = n => (Number(n) || 0).toLocaleString(locale(), { maximumFractionDigits: 2 });
+    const CURRENCIES = ["฿", "$", "€", "£", "¥"];
+    const curSym = () => state?.planner?.finance?.currency || (LANG === "en" ? "$" : "฿");
     const DAYS = { th: ["อา", "จ", "อ", "พ", "พฤ", "ศ", "ส"], en: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] };
     const MONTHS = { th: ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."], en: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] };
     const dayName = d => DAYS[LANG][d.getDay()];
@@ -2742,7 +2799,7 @@
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
         mood: {}, booster: "",
-        finance: { income: 0, goal: 50000, saved: 0 },
+        finance: { income: 0, goal: 50000, saved: 0, currency: "" },
         expenses: [], workouts: [], meals: [], trips: [], media: [], sleeps: []
       }
     });
@@ -2773,7 +2830,7 @@
     let state;
     try { state = hydrate(JSON.parse(localStorage.getItem(LS_KEY) || "null")); } catch { state = hydrate(null); }
     const urlLang = new URLSearchParams(location.search).get("lang");
-    state.lang = ["th", "en"].includes(urlLang) ? urlLang : state.lang || ((navigator.language || "th").toLowerCase().startsWith("th") ? "th" : "en");
+    state.lang = ["th", "en"].includes(urlLang) ? urlLang : state.lang || detectBrowserLang();
     LANG = state.lang;
     state.queueDate = dkey(); state.plannerDate = dkey();
     if (state.finView) state.finView.date = dkey();
@@ -2781,6 +2838,38 @@
     const P = () => state.planner;
 
     let fb = null, cloudTimer = null;
+    let globalStripeSettings = {};
+    try { globalStripeSettings = JSON.parse(localStorage.getItem("fr.global_stripe_settings") || "{}"); } catch {}
+    function applyCloudStripeSettings(d) {
+      if (!d || typeof d !== "object") return;
+      globalStripeSettings = {
+        card_30d: String(d.card_30d || "").trim(),
+        promptpay_30d: String(d.promptpay_30d || "").trim(),
+        card_90d: String(d.card_90d || "").trim(),
+        promptpay_90d: String(d.promptpay_90d || "").trim(),
+        card_365d: String(d.card_365d || "").trim(),
+        promptpay_365d: String(d.promptpay_365d || "").trim(),
+        admin_ntfy_topic: String(d.admin_ntfy_topic || "").trim()
+      };
+      try { localStorage.setItem("fr.global_stripe_settings", JSON.stringify(globalStripeSettings)); } catch {}
+      if ($("#pay-dlg")?.open) renderPayDlg();
+      if ($("#paywall")?.open) renderPaywall();
+      if ($("#account-dlg")?.open) renderAccount();
+    }
+    function getAdminNtfyTopic() {
+      return (globalStripeSettings?.admin_ntfy_topic || state.adminNtfyTopic || localStorage.getItem("fr.admin_ntfy") || "").trim();
+    }
+    async function notifyAdminEvent(title, message, tags = ["bell", "sparkles"]) {
+      const topic = getAdminNtfyTopic();
+      if (!topic) return false;
+      try {
+        const r = await fetch("https://ntfy.sh/", {
+          method: "POST",
+          body: JSON.stringify({ topic, title, message, tags, priority: 4 })
+        });
+        return r.ok;
+      } catch { return false; }
+    }
     function save() {
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { console.warn(e); }
       if (fb && state.user && !state.user.demo) { clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudSave, 1200); }
@@ -2807,33 +2896,39 @@
         days: 30,
         months: 1,
         price: 99,
+        usd: "$2.99",
+        priceDisplay: L("99฿", "99฿ (~$2.99 USD)"),
         badge: L("เริ่มต้น", "Starter"),
         badgeCls: "",
         title: L("รายเดือน (30 วัน)", "Monthly (30 Days)"),
-        sub: L("เฉลี่ย 3.3 ฿/วัน • ยืดหยุ่น", "3.3 ฿/day • Flexible"),
-        perDay: L("เฉลี่ย 3.30 ฿/วัน", "3.30 ฿/day")
+        sub: L("เฉลี่ย 3.3 ฿/วัน • ยืดหยุ่น", "~$2.99 USD • Flexible"),
+        perDay: L("เฉลี่ย 3.30 ฿/วัน", "3.30 ฿/day (~$0.10/d)")
       },
       "90d": {
         key: "90d",
         days: 90,
         months: 3,
         price: 269,
+        usd: "$7.99",
+        priceDisplay: L("269฿", "269฿ (~$7.99 USD)"),
         badge: L("🔥 ยอดนิยม (ประหยัด 28฿)", "🔥 Popular (Save 28฿)"),
         badgeCls: "",
         title: L("ราย 3 เดือน (90 วัน)", "Quarterly (90 Days)"),
-        sub: L("เฉลี่ย 89 ฿/เดือน • คุ้มค่าระยะกลาง", "~89 ฿/mo • Great value"),
-        perDay: L("เฉลี่ย 2.99 ฿/วัน", "2.99 ฿/day")
+        sub: L("เฉลี่ย 89 ฿/เดือน • คุ้มค่าระยะกลาง", "~89 ฿/mo (~$2.66/mo) • Great value"),
+        perDay: L("เฉลี่ย 2.99 ฿/วัน", "2.99 ฿/day (~$0.09/d)")
       },
       "365d": {
         key: "365d",
         days: 365,
         months: 12,
         price: 990,
+        usd: "$29.00",
+        priceDisplay: L("990฿", "990฿ (~$29 USD)"),
         badge: L("👑 คุ้มที่สุด (ฟรี 2 เดือน)", "👑 Best Value (2 Mo Free)"),
         badgeCls: "emerald",
         title: L("รายปี (365 วัน)", "Yearly (365 Days)"),
-        sub: L("เฉลี่ย 82.5 ฿/เดือน • ประหยัด 198฿", "~82.5 ฿/mo • Save 198฿"),
-        perDay: L("เฉลี่ย 2.71 ฿/วัน", "2.71 ฿/day")
+        sub: L("เฉลี่ย 82.5 ฿/เดือน • ประหยัด 198฿", "~82.5 ฿/mo (~$2.42/mo) • Save 198฿"),
+        perDay: L("เฉลี่ย 2.71 ฿/วัน", "2.71 ฿/day (~$0.08/d)")
       }
     });
     function getSelectedPkg() {
@@ -2859,6 +2954,13 @@
           await fb.setDoc(fb.doc(fb.db, "users", state.user.uid), patch, { merge: true });
         } catch (e) { console.warn("feedback save err:", e); }
       }
+      if (feedbackText && String(feedbackText).trim()) {
+        notifyAdminEvent(
+          "💬 FlowRecover: ความคิดเห็นใหม่จากลูกค้า",
+          `${state.user?.name || "User"} (${state.user?.email || "-"}) • แพ็กเกจ ${state.sub.selected_pkg || "30d"}: "${String(feedbackText).trim()}"`,
+          ["speech_balloon", "star"]
+        );
+      }
       if (!silent) toast(L("💬 ขอบคุณสำหรับความคิดเห็นครับ! บันทึกเรียบร้อยแล้ว 🙏", "💬 Thank you for your feedback! Saved 🙏"));
     }
     function subInfo() {
@@ -2883,7 +2985,12 @@
       let saved = {};
       try { saved = JSON.parse(localStorage.getItem("fr.stripe_links") || "{}"); } catch {}
       const custom = state.stripeLinks || {};
-      const pick = (pkgKey, kind) => (custom[pkgKey]?.[kind] || saved[pkgKey]?.[kind] || STRIPE_PACKAGE_LINKS[pkgKey]?.[kind] || "").trim();
+      const cloud = {
+        "30d": { card: globalStripeSettings?.card_30d || "", qr: globalStripeSettings?.promptpay_30d || "" },
+        "90d": { card: globalStripeSettings?.card_90d || "", qr: globalStripeSettings?.promptpay_90d || "" },
+        "365d": { card: globalStripeSettings?.card_365d || "", qr: globalStripeSettings?.promptpay_365d || "" }
+      };
+      const pick = (pkgKey, kind) => (cloud[pkgKey]?.[kind] || custom[pkgKey]?.[kind] || saved[pkgKey]?.[kind] || STRIPE_PACKAGE_LINKS[pkgKey]?.[kind] || "").trim();
       return {
         "30d": {
           card: pick("30d", "card") || pick("30d", "qr") || STRIPE_PAYMENT_LINK,
@@ -2933,6 +3040,11 @@
         const addMs = pkg.days * 864e5;
         state.sub = { ...state.sub, subscription_status: "pro", pro_pending_at: Date.now(), simulated: false, pro_until: isQr || pkg.days > 30 ? base + addMs : null };
         save(); track("Purchase", { value: pkg.price, currency: "THB" });
+        notifyAdminEvent(
+          "🎉 FlowRecover: ชำระเงิน PRO สำเร็จ!",
+          `${state.user?.name || "ลูกค้า"} (${state.user?.email || "-"}) ชำระแพ็กเกจ ${pkg.title} (${pkg.price}฿)`,
+          ["tada", "moneybag"]
+        );
         setTimeout(() => toast(L(`🎉 ชำระเงินสำเร็จ! เปิดใช้งานแพ็กเกจ ${pkg.title} เรียบร้อย`, `🎉 Payment successful! ${pkg.title} activated`)), 700);
       } else if (cancel) setTimeout(() => toast(L("ยกเลิกการชำระเงินแล้ว — ข้อมูลของคุณยังอยู่ครบ", "Payment cancelled — your data is safe")), 700);
       if (ok || cancel) {
@@ -3565,7 +3677,7 @@
       <button class="gbtn" data-act="login" id="btn-google-login">${GOOGLE_SVG}${L("เข้าสู่ระบบอย่างปลอดภัยด้วย Google", "Continue securely with Google")}</button>
       <button type="button" class="btn btn-sm" style="justify-content:center;min-height:42px" data-act="openDemoPreview" id="btn-auth-preview">👀 ${L("ทดลองใช้งานเบื้องต้นในเครื่อง (ไม่ต้องผูกบัญชี Google)", "Try local preview mode first (no Google account needed)")}</button>
     </div>
-    <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้นเริ่มต้นเพียง 99฿/เดือน", "🎁 Free for 7 days, no card required • then from 99฿/month")}</p>
+    <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้นเริ่มต้นเพียง 99฿/เดือน", "🎁 Free for 7 days, no card required • then from 99฿/month (~$2.99 USD)")}</p>
     <div class="auth-trust-box">
       <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
         <b style="font-size:.86rem;color:var(--emerald)">🛡️ ${L("คำมั่นสัญญาด้านความปลอดภัยและข้อมูลส่วนตัว", "Security & Privacy Guarantee")}</b>
@@ -3603,6 +3715,8 @@
       $("#btn-account").setAttribute("aria-label", L("บัญชีผู้ใช้", "Account"));
       $("#btn-lang").textContent = LANG === "th" ? "EN" : "TH";
       $("#btn-lang").setAttribute("aria-label", L("Switch to English", "เปลี่ยนเป็นภาษาไทย"));
+      const instBtn = $("#btn-install-pwa");
+      if (instBtn) instBtn.textContent = L("📲 ติดตั้งแอป", "📲 Install App");
       $("#demo-login-form").innerHTML = `
     <div class="dlg-head"><h2 id="demo-title">👀 ${L("ทดลองใช้งานในเครื่อง (โหมดตัวอย่าง)", "Local Preview / Demo Mode")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="demo-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
     <p class="muted sm">${L("คุณสามารถทดลองใช้งานฟีเจอร์ทั้งหมดได้ทันทีโดยไม่ต้องเชื่อมบัญชี Google ข้อมูลในโหมดนี้จะถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้ของคุณอย่างปลอดภัย (เมื่อพร้อมซิงก์ขึ้นคลาวด์ ค่อยกดเข้าสู่ระบบด้วย Google ภายหลังได้)", "Try all features immediately without connecting a Google account. Data in this mode is stored locally in your browser (you can sign in with Google anytime later to sync to the cloud).")}</p>
@@ -6040,7 +6154,7 @@
             <div class="pkg-card ${selKey === k ? "on" : ""}" data-act="selectProPkg" data-pkg="${k}" role="radio" aria-checked="${selKey === k}" tabindex="0">
               ${p.badge ? `<span class="pkg-badge ${p.badgeCls || ""}">${p.badge}</span>` : ""}
               <b>${p.title}</b>
-              <div class="pkg-price">${money(p.price)}฿</div>
+              <div class="pkg-price">${p.priceDisplay || (money(p.price) + "฿")}</div>
               <div class="pkg-sub">${p.perDay}</div>
               <div class="pkg-sub" style="color:${selKey === k ? "var(--amber)" : "var(--emerald)"};font-weight:700">${p.sub}</div>
               ${(isUserAdmin() || SHOW_OWNER_SIMULATOR) && !hasLnk ? `<span class="muted" style="font-size:.66rem;color:var(--rose)">⚙️ ${L("รอใส่ลิงก์ Stripe", "Needs Stripe link")}</span>` : ""}
@@ -6073,10 +6187,10 @@
         </form>
       </div>
 
-      <b class="sm" style="display:block;margin-top:4px">💳 ${L("2. เลือกช่องทางชำระเงินสำหรับแพ็กเกจ", "2. Choose payment method for")} <span class="amber">${pkg.title} (${money(pkg.price)}฿)</span></b>
+      <b class="sm" style="display:block;margin-top:4px">💳 ${L("2. เลือกช่องทางชำระเงินสำหรับแพ็กเกจ", "2. Choose payment method for")} <span class="amber">${pkg.title} (${pkg.priceDisplay || (money(pkg.price) + "฿")})</span></b>
       <div class="pay-opts">
-        <button class="pay-opt" data-act="pay" data-m="card" data-pkg="${selKey}" id="${ctx}-pay-card"><span class="pay-ico">💳</span><span><b>${L("บัตรเครดิต / เดบิต", "Credit / debit card")} (${pkg.title})</b><small>${L(`Visa • Mastercard • JCB — ชำระแพ็กเกจ ${pkg.days} วัน (${money(pkg.price)}฿)`, `Visa • Mastercard • JCB — ${pkg.days} days access (${money(pkg.price)}฿)`)}</small></span><em>${money(pkg.price)}฿</em></button>
-        <button class="pay-opt" data-act="pay" data-m="qr" data-pkg="${selKey}" id="${ctx}-pay-qr"><span class="pay-ico">📱</span><span><b>QR PromptPay (${pkg.title})</b><small>${L(`สแกนจ่ายผ่านแอปธนาคารไทย — ใช้งานได้เต็ม ${pkg.days} วัน (${money(pkg.price)}฿)`, `Scan with any Thai banking app — ${pkg.days} days of PRO access (${money(pkg.price)}฿)`)}</small></span><em>${money(pkg.price)}฿</em></button>
+        <button class="pay-opt" data-act="pay" data-m="card" data-pkg="${selKey}" id="${ctx}-pay-card"><span class="pay-ico">💳</span><span><b>${L("บัตรเครดิต / เดบิต / Apple Pay", "Credit / Debit Card / Apple Pay")} (${pkg.title})</b><small>${L(`Visa • Mastercard • JCB — ชำระแพ็กเกจ ${pkg.days} วัน (${money(pkg.price)}฿)`, `Visa • Mastercard • JCB • Apple Pay — ${pkg.days} days access (${pkg.priceDisplay || (money(pkg.price) + "฿")})`)}</small></span><em>${pkg.priceDisplay || (money(pkg.price) + "฿")}</em></button>
+        <button class="pay-opt" data-act="pay" data-m="qr" data-pkg="${selKey}" id="${ctx}-pay-qr"><span class="pay-ico">📱</span><span><b>QR PromptPay (${pkg.title})</b><small>${L(`สแกนจ่ายผ่านแอปธนาคารไทย — ใช้งานได้เต็ม ${pkg.days} วัน (${money(pkg.price)}฿)`, `Scan with any Thai banking app — ${pkg.days} days of PRO access (${pkg.priceDisplay || (money(pkg.price) + "฿")})`)}</small></span><em>${pkg.priceDisplay || (money(pkg.price) + "฿")}</em></button>
       </div>
       <p class="muted sm center">🔒 ${L("ชำระผ่าน Stripe อย่างปลอดภัย • อีเมลและแพ็กเกจของคุณถูกบันทึกให้อัตโนมัติ", "Secure checkout by Stripe • your email & selected package are saved automatically")}</p>
       <div class="row" style="justify-content:center;gap:8px;flex-wrap:wrap">
@@ -6106,7 +6220,7 @@
       <p class="muted">${L("เลือกแพ็กเกจรายเดือน (30 วัน) รายสามเดือน (90 วัน) หรือรายปี (365 วัน) เพื่อใช้งาน FlowRecover x Life Planner ต่อได้ทันที", "Choose a 30-day, 90-day, or 365-day plan to keep using FlowRecover x Life Planner")}</p></div>
     <div class="safe">🛡️ <b>${L("ข้อมูลทั้งหมดยังอยู่ครบ", "All your data is safe")}</b> — ${L("ตารางงาน โปรเจค และ Life Planner ของคุณถูกเก็บรักษาไว้อย่างปลอดภัยในบัญชี Google", "your schedule, projects and Life Planner are securely kept in your Google account")} <b>${esc(state.user?.email || "")}</b></div>
     <div class="price"><div class="row" style="justify-content:space-between"><b>FlowRecover PRO • ${pkg.title}</b><span class="pill pill-amber">${pkg.badge || L("สุดคุ้ม", "Best Value")}</span></div>
-      <div class="price-num">${money(pkg.price)}฿ <small>/ ${pkg.days} ${L("วัน", "days")} (${pkg.perDay})</small></div>
+      <div class="price-num">${pkg.priceDisplay || (money(pkg.price) + "฿")} <small>/ ${pkg.days} ${L("วัน", "days")} (${pkg.perDay})</small></div>
       <ul class="checks"><li>${L("Focus Cockpit + ปุ่มงานแทรก + Auto-Reflow + เสียงสมาธิ ไม่จำกัด", "Unlimited Focus Cockpit, interruption button, Auto-Reflow & ambient sound")}</li><li>${L("กิจวัตรทำซ้ำ, โปรเจค, ลิงก์แชร์ทีม, ผังเชื่อมโยง, ค้นหาด่วน Cmd+K", "Routines, projects, team share links, relationship map & Cmd+K search")}</li><li>${L("Life Planner ครบ 4 หมวด + บิลรายเดือนอัตโนมัติ", "Full 4-section Life Planner + recurring monthly bills")}</li><li>${L("แจ้งเตือนสมาร์ทวอทช์ & ซิงค์ทุกอุปกรณ์", "Smartwatch alerts & sync across devices")}</li></ul></div>
     ${payOptionsHTML("pw")}
     <div class="row" style="justify-content:center"><button class="link sm" data-act="logout" id="btn-paywall-logout">${L("ออกจากระบบ", "Sign out")}</button>${SHOW_OWNER_SIMULATOR ? '<button class="link sm" data-act="toggleSim" id="btn-paywall-sim">🛠 Owner Simulator</button>' : ""}<button class="link sm" data-act="openAdminDlg" id="btn-paywall-admin">🔑 Admin Key</button></div>
@@ -6207,6 +6321,16 @@
     <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
     ${s.is_admin ? `<div style="display:grid;gap:8px;padding:6px 0"><p class="muted sm center">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p><button class="btn btn-emerald" data-act="openUsersView" id="btn-account-users">👥 ${L("เปิดระบบจัดการผู้ใช้งาน (User Management)", "Open User Management Dashboard")}</button><button class="btn btn-amber" data-act="openStripeCfg" id="btn-account-stripe-cfg">⚙️ ${L("ตั้งค่าลิงก์ชำระเงิน Stripe (99฿ / 269฿ / 990฿)", "Configure Stripe Payment Links (99฿ / 269฿ / 990฿)")}</button><button class="btn" data-act="payChoose" id="btn-account-pay-preview">📦 ${L("เปิดดูหน้าต่างเลือกแพ็กเกจ PRO (30 / 90 / 365 วัน)", "Preview PRO Package Selector (30 / 90 / 365 days)")}</button></div>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("⏰ ต่ออายุล่วงหน้า / เปลี่ยนแพ็กเกจ (30 / 90 / 365 วัน)", "⏰ Renew early / Choose package (30 / 90 / 365 days)") : L("👑 เลือกแพ็กเกจ FlowRecover PRO (30 / 90 / 365 วัน)", "👑 Choose FlowRecover PRO Package (30 / 90 / 365 days)")}</b>${payOptionsHTML("ac")}`}
     <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button><span class="muted sm">•</span><button class="link sm muted" data-act="openLegal" data-tab="privacy">🛡️ ${L("นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน & ความรับผิดชอบ", "Privacy Policy • Terms & Disclaimer")}</button></div>
+    <div style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);display:grid;gap:8px">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
+        <b class="sm">📦 ${L("สำรองและกู้คืนข้อมูล (Backup & Restore JSON)", "Full Data Backup & Restore (.json)")}</b>
+        ${window.deferredPwaPrompt ? `<button type="button" class="btn btn-sm btn-emerald" data-act="installPwa">📲 ${L("ติดตั้งแอปลงเครื่อง", "Install App")}</button>` : ""}
+      </div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-sm grow" data-act="exportBackupJson" id="btn-export-json">⬇️ ${L("ดาวน์โหลดไฟล์สำรอง (.json)", "Export Backup (.json)")}</button>
+        <button type="button" class="btn btn-sm grow" data-act="importBackupJson" id="btn-import-json">⬆️ ${L("นำเข้าไฟล์สำรอง (.json)", "Restore Backup (.json)")}</button>
+      </div>
+    </div>
     ${simHTML("ac")}
     <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
     }
@@ -6475,10 +6599,21 @@
             <div class="row" style="justify-content:space-between"><b>👑 ${L("3. แพ็กเกจรายปี (365 วัน • 990฿)", "3. Yearly Package (365 Days • 990฿)")}</b>${links["365d"].qr ? `<span class="chip chip-emerald" style="font-size:.7rem">✓ ${L("ตั้งค่าแล้ว", "Configured")}</span>` : `<span class="chip chip-amber" style="font-size:.7rem">⚠️ ${L("วางลิงก์ 990฿ ที่นี่", "Paste 990฿ link here")}</span>`}</div>
             <label class="field"><span>🔗 ${L("ลิงก์ชำระเงิน Stripe ราคา 990฿ (ใช้ได้ทั้งปุ่มบัตรและปุ่ม QR PromptPay)", "990฿ Stripe Payment Link URL (works for both Card & QR)")}</span><input class="input mono sm" id="inp-stripe-365d" name="qr_365d" value="${esc(links["365d"].qr)}" placeholder="https://buy.stripe.com/... (${L("วางลิงก์ราคา 990 บาทที่นี่", "Paste 990 THB link here")})"></label>
           </div>
+
+          <div style="padding:12px;border-radius:14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.35);display:grid;gap:8px">
+            <div class="row" style="justify-content:space-between;flex-wrap:wrap;gap:6px">
+              <b>🔔 ${L("4. แจ้งเตือนเจ้าของระบบทันทีผ่าน ntfy (เมื่อมีลูกค้าสมัครใหม่ / ส่งฟีดแบ็ก / ชำระเงิน)", "4. Instant Admin Push Notifications via ntfy")}</b>
+              <span class="chip chip-emerald" style="font-size:.7rem">☁️ ${L("ซิงค์ขึ้น Cloud อัตโนมัติทุกเครื่อง", "Auto-synced to Cloud")}</span>
+            </div>
+            <label class="field">
+              <span>📡 ${L("ชื่อ ntfy Topic ของ Admin (เช่น flowrecover-admin-999)", "Admin ntfy Topic (e.g. flowrecover-admin-999)")}</span>
+              <input class="input mono sm" name="admin_ntfy_topic" value="${esc(getAdminNtfyTopic() || state.alerts?.topic || "")}" placeholder="${L("ใส่ชื่อ Topic ในแอป ntfy บนมือถือของคุณเพื่อรับแจ้งเตือนทันที", "Enter your ntfy topic to receive instant push notifications")}">
+            </label>
+          </div>
         </div>
         <div class="row" style="justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid var(--border)">
           <button type="button" class="btn" data-act="closeDlg" data-id="stripe-cfg-dlg">${L("ปิด", "Close")}</button>
-          <button type="submit" class="btn btn-emerald">💾 ${L("บันทึกลิงก์ Stripe ทั้งหมด", "Save Stripe Links")}</button>
+          <button type="submit" class="btn btn-emerald">☁️ ${L("บันทึกลิงก์ Stripe ขึ้นระบบคลาวด์ (ใช้ได้ทุกเครื่องทันที)", "Save & Sync Stripe Links to Cloud")}</button>
         </div>`;
     }
     function renderIdeas() {
@@ -6502,10 +6637,95 @@
     }
 
     /* ===================== Actions ===================== */
-    let toastT;
-    function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800); }
+    let toastT, lastUndoFn = null;
+    function toast(msg, undoFn = null) {
+      const t = $("#toast");
+      if (!t) return;
+      lastUndoFn = typeof undoFn === "function" ? undoFn : null;
+      if (lastUndoFn) {
+        t.innerHTML = `<span>${esc(msg)}</span><button type="button" class="toast-undo-btn" data-act="undoToast">↩️ ${L("เลิกทำ (Undo)", "Undo")}</button>`;
+      } else {
+        t.textContent = msg;
+      }
+      t.classList.add("show");
+      clearTimeout(toastT);
+      toastT = setTimeout(() => { t.classList.remove("show"); lastUndoFn = null; }, lastUndoFn ? 7000 : 2800);
+    }
     const rerender = () => { save(); renderView(); };
     const A = {
+      undoToast: () => {
+        if (typeof lastUndoFn === "function") {
+          const fn = lastUndoFn;
+          lastUndoFn = null;
+          $("#toast")?.classList.remove("show");
+          fn();
+          rerender();
+          toast(L("↩️ กู้คืนรายการที่ลบเรียบร้อยแล้ว!", "↩️ Item restored!"));
+        }
+      },
+      installPwa: async () => {
+        const promptEv = window.deferredPwaPrompt;
+        if (!promptEv) {
+          toast(L("💡 บน iPhone/iPad กดปุ่ม แชร์ (Share) แล้วเลือก “เพิ่มไปยังหน้าจอโฮม (Add to Home Screen)” ได้เลยครับ", "💡 On iOS Safari, tap Share → Add to Home Screen to install"));
+          return;
+        }
+        try {
+          promptEv.prompt();
+          const res = await promptEv.userChoice;
+          if (res?.outcome === "accepted") {
+            window.deferredPwaPrompt = null;
+            const b = $("#btn-install-pwa");
+            if (b) b.hidden = true;
+            toast(L("🎉 ติดตั้งแอป FlowRecover ลงเครื่องเรียบร้อยแล้ว!", "🎉 FlowRecover installed!"));
+          }
+        } catch {}
+      },
+      exportBackupJson: () => {
+        const dataStr = JSON.stringify(state, null, 2);
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json;charset=utf-8" }));
+        a.download = `FlowRecover_Backup_${dkey()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        toast(L("📦 ดาวน์โหลดไฟล์สำรองข้อมูล (.json) เรียบร้อยแล้ว", "📦 Downloaded full backup (.json)"));
+      },
+      importBackupJson: () => {
+        const inp = document.createElement("input");
+        inp.type = "file";
+        inp.accept = ".json,application/json";
+        inp.onchange = async e => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          try {
+            const txt = await file.text();
+            const parsed = JSON.parse(txt);
+            if (!parsed || typeof parsed !== "object") throw new Error("Invalid JSON");
+            const keepUser = state.user;
+            const keepSub = state.sub;
+            state = hydrate({ ...parsed, user: keepUser, sub: keepSub });
+            state.queueDate = dkey();
+            state.plannerDate = dkey();
+            if (state.finView) state.finView.date = dkey();
+            if (state.habitView) state.habitView.date = dkey();
+            save();
+            if (fb && state.user && !state.user.demo) await cloudSave();
+            renderAll();
+            if ($("#account-dlg")?.open) renderAccount();
+            toast(L("✅ นำเข้าและกู้คืนข้อมูลจากไฟล์สำรองเรียบร้อยแล้ว!", "✅ Backup restored successfully!"));
+          } catch (err) {
+            toast(L("❌ ไฟล์สำรองไม่ถูกต้อง: ", "❌ Invalid backup file: ") + (err.message || err));
+          }
+        };
+        inp.click();
+      },
+      setCurrency: d => {
+        P().finance ||= {};
+        P().finance.currency = d.v || "฿";
+        rerender();
+        toast(L(`💱 เปลี่ยนสกุลเงินเป็น ${curSym()} แล้ว`, `💱 Currency set to ${curSym()}`));
+      },
       tab: d => { state.tab = d.tab; save(); renderView(); scrollTo({ top: 0, behavior: "smooth" }); },
       lang: () => {
         LANG = state.lang = LANG === "th" ? "en" : "th"; save();
@@ -6856,7 +7076,13 @@
       habitExport: () => habitExport(),
       mood: d => { const k = dkey(); P().mood[k] = P().mood[k] === d.v ? "" : d.v; rerender(); },
       addSave: d => { const F = P().finance; F.saved = Math.max(0, (Number(F.saved) || 0) + Number(d.v)); rerender(); if (Number(d.v) > 0) toast(L(`🐷 ออมเพิ่ม ${money(d.v)} ฿`, `🐷 Saved ${money(d.v)} ฿ more`)); },
-      delCrud: d => { P()[d.name] = P()[d.name].filter(r => r.id !== d.id); rerender(); },
+      delCrud: d => {
+        const list = P()[d.name] || [];
+        const item = list.find(r => r.id === d.id);
+        P()[d.name] = list.filter(r => r.id !== d.id);
+        rerender();
+        if (item) toast(L("🗑️ ลบรายการแล้ว", "🗑️ Entry deleted"), () => { (P()[d.name] ||= []).push(item); });
+      },
       guide: d => { state.guideTopic = Number(d.v); rerender(); if (innerWidth < 860) $("#guide-detail")?.scrollIntoView({ behavior: "smooth", block: "start" }); },
       guideGo: d => {
         const g = GUIDE_GO[Number(d.v)];
@@ -6880,7 +7106,12 @@
         state.tasks.push({ id: uid(), title: x.text, date, start: toMin(suggestStart(date)), dur: 30, projectId: null, priority: "secondary", done: false, bookmark: "" });
         state.ideas = state.ideas.filter(i => i.id !== d.id); save(); renderIdeas(); renderTopbar(); renderView(); toast(L("📅 เพิ่มไอเดียเข้าคิววันนี้แล้ว", "📅 Idea added to today's queue"));
       },
-      delIdea: d => { state.ideas = state.ideas.filter(i => i.id !== d.id); save(); renderIdeas(); renderTopbar(); },
+      delIdea: d => {
+        const item = state.ideas.find(i => i.id === d.id);
+        state.ideas = state.ideas.filter(i => i.id !== d.id);
+        save(); renderIdeas(); renderTopbar();
+        if (item) toast(L("🗑️ ลบไอเดียแล้ว", "🗑️ Idea deleted"), () => { state.ideas.push(item); save(); renderIdeas(); renderTopbar(); });
+      },
       randTopic: () => { state.alerts.topic = "flowrecover-" + uid(); save(); $("#ntfy-topic").value = state.alerts.topic; toast(L("🎲 สุ่มชื่อ Topic แล้ว — Subscribe ชื่อนี้ในแอป ntfy", "🎲 Topic generated — subscribe to it in the ntfy app")); },
       testNtfy: async () => {
         if (!state.alerts.topic.trim()) { toast(L("ใส่ชื่อ ntfy Topic ก่อน (หรือกด 🎲)", "Enter an ntfy topic first (or tap 🎲)")); $("#ntfy-topic")?.focus(); return; }
@@ -6931,7 +7162,7 @@
         if (state.sub.is_admin) toast(L(`👑 ยินดีต้อนรับ Admin ${name}! ได้รับสิทธิ์ฟรีตลอดชีพ`, `👑 Welcome Admin ${name}! Lifetime access granted`));
         else toast(L(`👋 ยินดีต้อนรับ ${name}! โหลดข้อมูลตัวอย่างและคู่มือเริ่มต้นใช้งานแล้ว`, `👋 Welcome ${name}! Sample data & quick-start guide loaded`));
       },
-      saveStripeLinks: fd => {
+      saveStripeLinks: async fd => {
         const clean = v => String(v || "").trim();
         const next = {
           "30d": {
@@ -6947,15 +7178,39 @@
             card: clean(fd.qr_365d)
           }
         };
+        const adminTopic = clean(fd.admin_ntfy_topic);
         state.stripeLinks = next;
-        try { localStorage.setItem("fr.stripe_links", JSON.stringify(next)); } catch {}
+        state.adminNtfyTopic = adminTopic;
+        try {
+          localStorage.setItem("fr.stripe_links", JSON.stringify(next));
+          if (adminTopic) localStorage.setItem("fr.admin_ntfy", adminTopic);
+        } catch {}
+        const cloudDoc = {
+          card_30d: next["30d"].card,
+          promptpay_30d: next["30d"].qr,
+          card_90d: next["90d"].card,
+          promptpay_90d: next["90d"].qr,
+          card_365d: next["365d"].card,
+          promptpay_365d: next["365d"].qr,
+          admin_ntfy_topic: adminTopic,
+          updated_by: state.user?.email || "admin",
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : Date.now()
+        };
+        applyCloudStripeSettings(cloudDoc);
         save();
-        if (fb && state.user && !state.user.demo) cloudSave();
+        if (fb && state.user && !state.user.demo) {
+          cloudSave();
+          if (isUserAdmin() && fb.setDoc && fb.doc) {
+            try {
+              await fb.setDoc(fb.doc(fb.db, "settings", "stripe"), cloudDoc, { merge: true });
+            } catch (e) { console.warn("settings/stripe save err:", e); }
+          }
+        }
         $("#stripe-cfg-dlg")?.close();
         if ($("#pay-dlg")?.open) renderPayDlg();
         if ($("#paywall")?.open) renderPaywall();
         if ($("#account-dlg")?.open) renderAccount();
-        toast(L("💾 บันทึกลิงก์ชำระเงิน Stripe สำหรับทั้ง 3 แพ็กเกจเรียบร้อยแล้ว!", "💾 Saved Stripe Payment Links for all 3 packages!"));
+        toast(L("☁️ บันทึกลิงก์ชำระเงิน Stripe ขึ้นระบบคลาวด์แล้ว (ลูกค้าทุกเครื่องเห็นลิงก์ใหม่ทันที)!", "☁️ Saved & synced Stripe Payment Links to Cloud for all devices!"));
       }
     };
     function addCrud(name, fd) {
@@ -8465,7 +8720,13 @@
       return `<div class="grid">
     <div class="grid grid-2b">
       <article class="card">
-        <div class="card-head"><h3>💰 ${L("สรุปงบเดือน", "Monthly budget")} ${monthLabel()}</h3></div>
+        <div class="card-head" style="flex-wrap:wrap;gap:6px">
+          <h3>💰 ${L("สรุปงบเดือน", "Monthly budget")} ${monthLabel()}</h3>
+          <div class="row" style="gap:4px;align-items:center">
+            <span class="muted sm">${L("สกุลเงิน:", "Currency:")}</span>
+            ${CURRENCIES.map(cs => `<button type="button" class="btn btn-sm ${curSym() === cs ? "btn-amber" : ""}" data-act="setCurrency" data-v="${cs}" style="min-height:24px;padding:1px 7px;font-size:.74rem">${cs}</button>`).join("")}
+          </div>
+        </div>
         <div class="money">
           <div class="stat"><b class="emerald mono">${money(inc)}</b><span>Income${L(" รายรับ", "")}</span></div>
           <div class="stat"><b class="rose mono">${money(expM)}</b><span>Expense${L(" รายจ่าย", "")}</span></div>
@@ -9169,8 +9430,9 @@
         const list = getCgList(d.sec, d.key, d.sub);
         const idx = list.findIndex(x => x.id === d.id);
         if (idx >= 0) {
-          list.splice(idx, 1);
+          const [removedItem] = list.splice(idx, 1);
           rerender();
+          if (removedItem) toast(L("🗑️ ลบรายการแล้ว", "🗑️ Item deleted"), () => { list.splice(idx, 0, removedItem); });
         }
       },
       mfGroupDel: d => {
@@ -9278,8 +9540,8 @@
       },
       delTask: d => {
         const t = state.tasks.find(x => x.id === d.id); if (!t) return;
-        if (!confirm(t.gcalId ? L("ลบงานนี้? (จะลบออกจาก Google Calendar ด้วย)", "Delete this task? (it will also be removed from Google Calendar)") : L("ลบงานนี้?", "Delete this task?"))) return;
         state.tasks = state.tasks.filter(x => x.id !== d.id); rerender();
+        toast(L(`🗑️ ลบงาน "${trunc(t.title, 20)}" แล้ว`, `🗑️ Deleted "${trunc(t.title, 20)}"`), () => { state.tasks.push(t); });
         if (t.gcalId) gSyncChanges(true).then(n => { if (n) toast(L("🗑️ ลบออกจาก Google Calendar แล้ว", "🗑️ Removed from Google Calendar")); })
           .catch(e => { if (e?.message !== "demo") toast(L("⏳ จะลบใน Google Calendar ให้อัตโนมัติเมื่อเชื่อมต่อครั้งถัดไป", "⏳ It will be removed from Google Calendar next time you connect")); });
       },
@@ -9359,10 +9621,24 @@
         }
       },
       delTxn: d => {
-        if (!confirm(L("ลบรายการนี้?", "Delete this entry?"))) return;
-        if (d.id.includes("~")) { const [rid, f] = d.id.split("~"), r = P().expenses.find(x => x.id === rid); if (r) { r[f] = 0; if (!expSum(r)) P().expenses = P().expenses.filter(x => x !== r); } }
-        else P().txns = (P().txns || []).filter(x => x.id !== d.id);
-        rerender();
+        if (d.id.includes("~")) {
+          const [rid, f] = d.id.split("~"), r = P().expenses.find(x => x.id === rid);
+          if (r) {
+            const oldVal = r[f];
+            r[f] = 0;
+            if (!expSum(r)) P().expenses = P().expenses.filter(x => x !== r);
+            rerender();
+            toast(L("🗑️ ลบรายการแล้ว", "🗑️ Entry deleted"), () => {
+              if (!P().expenses.includes(r)) P().expenses.push(r);
+              r[f] = oldVal;
+            });
+          }
+        } else {
+          const item = (P().txns || []).find(x => x.id === d.id);
+          P().txns = (P().txns || []).filter(x => x.id !== d.id);
+          rerender();
+          if (item) toast(L(`🗑️ ลบรายการ "${trunc(item.note || item.cat, 18)}" แล้ว`, `🗑️ Deleted "${trunc(item.note || item.cat, 18)}"`), () => { (P().txns ||= []).push(item); });
+        }
       },
       taxMode: d => { TAXY().mode = d.v; rerender(); },
       taxFromFin: () => {
@@ -9857,9 +10133,10 @@
         toast(L(`⚡ ลงบันทึกรายจ่ายประจำ ${unpaid.length} รายการ (รวม ${money(sum)} ฿) เรียบร้อยแล้ว`, `⚡ Posted ${unpaid.length} fixed bills (${money(sum)} ฿)`));
       },
       delFixedBill: d => {
-        if (!confirm(L("ลบรายการบิลประจำรายเดือนนี้?", "Remove this recurring monthly bill?"))) return;
+        const item = (P().fixedBills || []).find(x => x.id === d.id);
         P().fixedBills = (P().fixedBills || []).filter(x => x.id !== d.id);
         rerender();
+        if (item) toast(L(`🗑️ ลบบิลประจำ "${trunc(item.title, 18)}" แล้ว`, `🗑️ Removed bill "${trunc(item.title, 18)}"`), () => { (P().fixedBills ||= []).push(item); });
       }
     });
     Object.assign(FORMS, {
@@ -10300,6 +10577,12 @@
         auth: auth.getAuth(a), db: fs.getFirestore(a), GoogleAuthProvider: auth.GoogleAuthProvider, signInWithPopup: auth.signInWithPopup, signOut: auth.signOut, reauthenticateWithPopup: auth.reauthenticateWithPopup,
         doc: fs.doc, getDoc: fs.getDoc, setDoc: fs.setDoc, updateDoc: fs.updateDoc, collection: fs.collection, getDocs: fs.getDocs, onSnapshot: fs.onSnapshot, serverTimestamp: fs.serverTimestamp
       };
+      // Live-sync global Stripe links & admin notification settings across all devices
+      try {
+        fb.onSnapshot(fb.doc(fb.db, "settings", "stripe"), s => {
+          if (s.exists()) applyCloudStripeSettings(s.data());
+        }, () => {});
+      } catch {}
       let unsub = null;
       auth.onAuthStateChanged(fb.auth, async u => {
         unsub?.(); unsub = null;
@@ -10326,6 +10609,11 @@
             });
             state.sub = { subscription_status: "trial", trial_start_at: Date.now(), pro_pending_at: state.sub.pro_pending_at, pro_until: state.sub.pro_until };
             track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
+            notifyAdminEvent(
+              "🆕 FlowRecover: มีผู้ใช้ใหม่สมัครเข้าระบบ!",
+              `${u.displayName || "New User"} (${u.email || "-"}) เริ่มทดลองใช้ฟรี 7 วันแล้ว`,
+              ["new", "bust_in_silhouette"]
+            );
           } else {
             const prev = snap.data() || {};
             fb.setDoc(uref, {
@@ -10343,8 +10631,9 @@
           unsub = fb.onSnapshot(uref, s => s.exists() && applyServerSub(s.data()));
           const ds = await fb.getDoc(fb.doc(fb.db, "users", u.uid, "data", "main"));
           if (ds.exists()) {
-            const keep = { user: state.user, sub: state.sub, lang: state.lang };
+            const keep = { user: state.user, sub: state.sub, lang: state.lang || detectBrowserLang() };
             state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep });
+            state.lang = state.lang || detectBrowserLang();
             state.queueDate = dkey();
             state.plannerDate = dkey();
             if (state.finView) state.finView.date = dkey();
@@ -10355,8 +10644,9 @@
             }
           } else {
             if (switched) {
-              const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang };
+              const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang || detectBrowserLang() };
               state = hydrate(keep);
+              state.lang = state.lang || detectBrowserLang();
               state.queueDate = dkey();
               state.plannerDate = dkey();
               if (state.finView) state.finView.date = dkey();
@@ -10368,6 +10658,7 @@
             cloudSave();
           }
         } catch (e) { console.error(e); toast(L("โหลดข้อมูลจากคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องชั่วคราว", "Couldn't load cloud data — using local data for now")); }
+        state.lang = state.lang || detectBrowserLang();
         LANG = state.lang; save(); renderStatic(); showApp(isBrandNewUser && !isUserAdmin());
       });
     }
@@ -10387,6 +10678,29 @@
     }, 1000);
     document.addEventListener("visibilitychange", () => { if (!document.hidden && state.user) { renderBanner(); checkPaywall(); checkAlerts(); if (state.tab === "focus") renderView(); } });
 
+    /* ---------- PWA Service Worker & Install Prompt ---------- */
+    window.deferredPwaPrompt = null;
+    window.addEventListener("beforeinstallprompt", e => {
+      e.preventDefault();
+      window.deferredPwaPrompt = e;
+      const b = $("#btn-install-pwa");
+      if (b) {
+        b.hidden = false;
+        b.textContent = L("📲 ติดตั้งแอป", "📲 Install App");
+      }
+      if ($("#account-dlg")?.open) renderAccount();
+    });
+    window.addEventListener("appinstalled", () => {
+      window.deferredPwaPrompt = null;
+      const b = $("#btn-install-pwa");
+      if (b) b.hidden = true;
+    });
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js").catch(() => {});
+      });
+    }
+
     /* ---------- Boot ---------- */
     applyTheme();
     loadPixel();
@@ -10396,7 +10710,28 @@
       renderStatic();
       handleStripeReturn();
       checkAdminUrl();
-      const legalParam = new URLSearchParams(location.search).get("legal");
+      const qBoot = new URLSearchParams(location.search);
+      const extTask = qBoot.get("ext_task");
+      if (extTask && extTask.trim()) {
+        const date = dkey();
+        const startMin = toMin(suggestStart(date));
+        state.tasks.push({
+          id: uid(),
+          title: extTask.trim(),
+          date,
+          start: startMin,
+          dur: Number(qBoot.get("ext_dur")) || 45,
+          projectId: null,
+          priority: "main",
+          done: false,
+          bookmark: qBoot.get("ext_url") ? `🔗 ${qBoot.get("ext_url")}` : ""
+        });
+        save();
+        ["ext_task", "ext_dur", "ext_url"].forEach(k => qBoot.delete(k));
+        history.replaceState(null, "", location.pathname + (qBoot.toString() ? "?" + qBoot : "") + location.hash);
+        setTimeout(() => toast(L(`📅 เพิ่มงานจาก Chrome Extension เข้าคิววันนี้แล้ว!`, `📅 Added task from Chrome Extension to today's queue!`)), 600);
+      }
+      const legalParam = qBoot.get("legal");
       if (legalParam && ["privacy", "terms", "disclaimer"].includes(legalParam)) {
         setTimeout(() => A.openLegal({ tab: legalParam }), 80);
       }

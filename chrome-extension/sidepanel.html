@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowRecover Side Panel</title>
+  <link rel="stylesheet" href="ext.css">
+</head>
+<body class="sidepanel-mode">
+  <header class="hdr">
+    <div class="brand">
+      <img src="icons/icon48.png" alt="FlowRecover">
+      <div>
+        <div class="brand-title">FlowRecover Companion</div>
+        <div class="brand-sub" id="lbl-sub">Side Panel • Always-On Context</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <button class="btn" id="btn-lang" title="Switch Language">🌐 EN</button>
+    </div>
+  </header>
+
+  <section class="card">
+    <div class="card-title">
+      <span id="lbl-timer-title">⏱️ Deep Focus Timer</span>
+      <span class="badge" id="lbl-timer-status">READY</span>
+    </div>
+    <div class="timer-box">
+      <div class="timer-digits" id="timer-digits">25:00</div>
+      <div class="timer-task" id="timer-task">Select or type a task to start focusing</div>
+      <div class="timer-controls">
+        <button class="btn pri" id="btn-start-25">▶ 25m Pomodoro</button>
+        <button class="btn" id="btn-start-50">⚡ 50m Deep</button>
+        <button class="btn danger" id="btn-stop-timer" style="display:none">⏹ Stop</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">
+      <span id="lbl-bm-title">🔖 Context Bookmark (Interrupted?)</span>
+    </div>
+    <div class="inp-row">
+      <input type="text" class="inp" id="inp-bookmark" placeholder="Where were you? What's next step?">
+      <button class="btn ok" id="btn-save-bm">Save</button>
+    </div>
+    <div class="list" id="bm-list"></div>
+  </section>
+
+  <section class="card">
+    <div class="card-title">
+      <span id="lbl-task-title">📋 Quick Task Queue</span>
+      <span class="badge" id="task-count">0</span>
+    </div>
+    <div class="inp-row">
+      <input type="text" class="inp" id="inp-task" placeholder="Add a quick task...">
+      <button class="btn pri" id="btn-add-task">+ Add</button>
+    </div>
+    <div class="list" id="task-list"></div>
+  </section>
+
+  <div class="footer-bar">
+    <button class="btn pri" id="btn-open-webapp">🚀 Open Full FlowRecover App (Web)</button>
+  </div>
+
+  <script src="ext.js"></script>
+</body>
+</html>
+

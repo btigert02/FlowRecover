@@ -43,6 +43,19 @@ service cloud.firestore {
     // Collection: pending_subscriptions
     // Document ID: {email}
     // Fields: Written exclusively by Cloud Functions (Admin SDK); read-only for Admin.
+    //
+    // Collection: settings
+    // Document ID: {docId} (e.g., 'stripe')
+    // Fields:
+    //   - card_30d: string (optional, <= 500 chars) - Stripe Payment Link for 30-day card plan
+    //   - promptpay_30d: string (optional, <= 500 chars) - Stripe Payment Link for 30-day PromptPay plan
+    //   - card_90d: string (optional, <= 500 chars) - Stripe Payment Link for 90-day card plan
+    //   - promptpay_90d: string (optional, <= 500 chars) - Stripe Payment Link for 90-day PromptPay plan
+    //   - card_365d: string (optional, <= 500 chars) - Stripe Payment Link for 365-day card plan
+    //   - promptpay_365d: string (optional, <= 500 chars) - Stripe Payment Link for 365-day PromptPay plan
+    //   - admin_ntfy_topic: string (optional, <= 500 chars) - Optional admin notification topic
+    //   - updated_by: string (optional, <= 500 chars) - Email of admin who updated settings
+    //   - updated_at: timestamp | int (optional) - Timestamp of last settings update
     // ===============================================================
 
     // ===============================================================
@@ -145,6 +158,19 @@ service cloud.firestore {
         && (!('updated_at' in data) || data.updated_at is timestamp);
     }
 
+    function isValidSettingsDoc(data) {
+      return data.keys().size() <= 20
+        && isValidOptionalString('card_30d', 500)
+        && isValidOptionalString('promptpay_30d', 500)
+        && isValidOptionalString('card_90d', 500)
+        && isValidOptionalString('promptpay_90d', 500)
+        && isValidOptionalString('card_365d', 500)
+        && isValidOptionalString('promptpay_365d', 500)
+        && isValidOptionalString('admin_ntfy_topic', 500)
+        && isValidOptionalString('updated_by', 500)
+        && (!('updated_at' in data) || data.updated_at == null || data.updated_at is timestamp || data.updated_at is int);
+    }
+
     // ===============================================================
     // Collection Rules
     // ===============================================================
@@ -175,6 +201,12 @@ service cloud.firestore {
     match /pending_subscriptions/{email} {
       allow read: if isAdmin();
       allow write: if false;
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update: if isAdmin() && isValidSettingsDoc(request.resource.data);
+      allow delete: if isAdmin();
     }
   }
 }
