@@ -3477,13 +3477,13 @@
         }
         el.className = "banner pro";
         const until = s.is_admin ? L(" • สิทธิ์ Admin ฟรีตลอดชีพ 👑", " • Lifetime Admin 👑") : s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
-        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><div class="row" style="gap:8px;align-items:center">${s.is_admin ? `<button class="btn btn-sm btn-emerald" data-act="openUsersView" id="banner-users" style="min-height:28px;padding:2px 10px;font-size:.78rem">👥 ${L("จัดการผู้ใช้ (Users)", "Manage Users")}</button>` : ""}<button class="link sm" data-act="${s.is_admin ? "account" : "payChoose"}" id="banner-manage">${s.is_admin ? L("บัญชี", "Account") : L("ต่ออายุ / แพ็กเกจ", "Packages / Renew")}</button></div>`;
+        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">${(s.is_admin || SHOW_OWNER_SIMULATOR) ? `<button class="btn btn-sm btn-amber" data-act="openStripeCfg" id="banner-stripe-cfg" style="min-height:28px;padding:2px 10px;font-size:.78rem">⚙️ ${L("ตั้งค่าลิงก์ Stripe", "Stripe Links")}</button>` : ""}${s.is_admin ? `<button class="btn btn-sm btn-emerald" data-act="openUsersView" id="banner-users" style="min-height:28px;padding:2px 10px;font-size:.78rem">👥 ${L("จัดการผู้ใช้ (Users)", "Manage Users")}</button>` : ""}<button class="btn btn-sm" data-act="payChoose" id="banner-packages" style="min-height:28px;padding:2px 10px;font-size:.78rem">📦 ${L("ดูหน้าแพ็กเกจ", "Packages")}</button><button class="link sm" data-act="account" id="banner-manage">${L("บัญชี", "Account")}</button></div>`;
         return;
       }
       if (s.expired) { el.className = "banner expired"; el.innerHTML = `<span>🔒 ${s.lapsed ? L("แพ็กเกจ PRO หมดอายุ", "PRO pass expired") : L("หมดเวลาทดลองใช้ฟรี 7 วัน", "7-day free trial ended")}</span>${proBtn("banner-pay")}`; return; }
       const d = Math.floor(s.rem / 864e5), h = Math.floor(s.rem % 864e5 / 36e5), m = Math.floor(s.rem % 36e5 / 6e4);
       el.className = "banner trial" + (s.rem < 3 * 864e5 ? " urgent" : "");
-      el.innerHTML = `<div class="banner-row"><span class="banner-text">${s.rem < 3 * 864e5 ? "🔔 " + L("ใกล้หมดเวลาทดลองใช้! เหลือ", "Trial ending soon:") : "🎁 " + L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span>${proBtn("banner-pay")}</div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
+      el.innerHTML = `<div class="banner-row"><span class="banner-text">${s.rem < 3 * 864e5 ? "🔔 " + L("ใกล้หมดเวลาทดลองใช้! เหลือ", "Trial ending soon:") : "🎁 " + L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span><div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">${(isUserAdmin() || SHOW_OWNER_SIMULATOR) ? `<button class="btn btn-sm" data-act="openStripeCfg" id="banner-trial-stripe-cfg" style="min-height:28px;padding:2px 10px;font-size:.76rem;border-color:rgba(245,158,11,.5);color:var(--amber)">⚙️ ${L("ตั้งค่าลิงก์ Stripe", "Stripe Links")}</button>` : ""}${proBtn("banner-pay")}</div></div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
     }
 
     /* ---------- 🎧 Ambient Focus Sound & 🎙️ Voice Input & 🔍 Global Search ---------- */
@@ -5639,6 +5639,7 @@
             <p>${L("ตรวจสอบรายชื่อผู้ใช้งาน ประเภทบัญชี (ฟรี / รายเดือน 30 วัน / ราย 3 เดือน 90 วัน / รายปี 365 วัน) แจ้งเตือนต่ออายุ และดูความคิดเห็นจากลูกค้า", "Monitor registered users, package types (Free / 30d / 90d / 365d), expiring passes, and customer feedback")}</p>
           </div>
           <div class="row" style="gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm btn-amber" data-act="openStripeCfg" id="btn-users-stripe-cfg">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button>
             <button class="btn btn-sm" data-act="refreshAdminUsers" id="btn-users-refresh">${adminUsersState.loading ? "⏳ " + L("กำลังโหลด…", "Loading…") : "🔄 " + L("รีเฟรชข้อมูล", "Refresh")}</button>
             <button class="btn btn-sm btn-emerald" data-act="exportAdminUsers" id="btn-users-export">⬇️ ${L("ส่งออก Excel (.csv)", "Export CSV")}</button>
           </div>
@@ -5752,13 +5753,18 @@
       const sLinks = getStripeLinks();
       const curPkgHasLink = !!(sLinks[selKey]?.qr || sLinks[selKey]?.card);
       return `
+      ${(isUserAdmin() || SHOW_OWNER_SIMULATOR) ? `
+      <div style="padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.45);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <div style="font-size:.82rem">
+          <b style="color:var(--amber)">⚙️ ${L("สำหรับเจ้าของระบบ: ตั้งค่าลิงก์ชำระเงิน Stripe แยกตามราคา", "Owner: Configure Stripe Payment Links by Package")}</b>
+          <div class="muted" style="font-size:.74rem">${L("ใส่ลิงก์ https://buy.stripe.com/... ของราคา 99฿ (30 วัน), 269฿ (90 วัน) และ 990฿ (365 วัน)", "Set Stripe Payment Link URLs for 99฿, 269฿, and 990฿ packages")}</div>
+        </div>
+        <button type="button" class="btn btn-sm btn-amber" data-act="openStripeCfg" data-pkg="${selKey}">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button>
+      </div>` : ""}
       <div style="margin:6px 0 4px">
         <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:6px">
           <b class="sm">📦 ${L("1. เลือกแพ็กเกจที่ต้องการ (30 / 90 / 365 วัน)", "1. Choose Your Package (30 / 90 / 365 Days)")}</b>
-          <div class="row" style="gap:6px;align-items:center">
-            ${(isUserAdmin() || SHOW_OWNER_SIMULATOR) ? `<button type="button" class="btn btn-sm" style="min-height:26px;padding:2px 8px;font-size:.72rem;border-color:rgba(245,158,11,.45);color:var(--amber)" data-act="openStripeCfg">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button>` : ""}
-            <span class="chip chip-amber" style="font-size:.7rem">${L("ต่ออายุสะสมวันเพิ่มได้ทันที", "Days stack automatically")}</span>
-          </div>
+          <span class="chip chip-amber" style="font-size:.7rem">${L("ต่ออายุสะสมวันเพิ่มได้ทันที", "Days stack automatically")}</span>
         </div>
         <div class="pkg-grid" role="radiogroup" aria-label="${L("เลือกแพ็กเกจ PRO", "Select PRO package")}">
           ${Object.entries(pkgs).map(([k, p]) => {
@@ -5816,7 +5822,7 @@
     }
     function simHTML(ctx) {
       if (!SHOW_OWNER_SIMULATOR) return "";
-      return `<div class="owner"><b>🛠 Owner Simulator <span class="muted sm">(${L("สำหรับเจ้าของระบบ", "for the owner")})</span></b>
+      return `<div class="owner"><div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><b>🛠 Owner Simulator <span class="muted sm">(${L("สำหรับเจ้าของระบบ", "for the owner")})</span></b><button type="button" class="btn btn-sm btn-amber" style="min-height:26px;padding:2px 8px;font-size:.74rem" data-act="openStripeCfg">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button></div>
     <div class="sim">
       <button data-act="sim" data-v="1" id="${ctx}-sim-1">① ${L("เพิ่งเริ่มทดลองใช้ฟรี", "Trial just started")}<br><span class="muted">${L("เหลือ 7 วัน", "7 days left")}</span></button>
       <button data-act="sim" data-v="2" id="${ctx}-sim-2">② ${L("ทดลองใช้ใกล้หมด", "Trial ending")}<br><span class="muted">${L("เหลือ 1 วัน", "1 day left")}</span></button>
@@ -5932,7 +5938,7 @@
     <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:1.3rem">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || "?").charAt(0).toUpperCase())}</div>
       <div class="grow"><b>${esc(u.name || "")}</b><div class="muted sm">${esc(u.email || "")}</div></div></div>
     <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
-    ${s.is_admin ? `<div style="display:grid;gap:8px;padding:6px 0"><p class="muted sm center">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p><button class="btn btn-emerald" data-act="openUsersView" id="btn-account-users">👥 ${L("เปิดระบบจัดการผู้ใช้งาน (User Management)", "Open User Management Dashboard")}</button></div>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("⏰ ต่ออายุล่วงหน้า / เปลี่ยนแพ็กเกจ (30 / 90 / 365 วัน)", "⏰ Renew early / Choose package (30 / 90 / 365 days)") : L("👑 เลือกแพ็กเกจ FlowRecover PRO (30 / 90 / 365 วัน)", "👑 Choose FlowRecover PRO Package (30 / 90 / 365 days)")}</b>${payOptionsHTML("ac")}`}
+    ${s.is_admin ? `<div style="display:grid;gap:8px;padding:6px 0"><p class="muted sm center">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p><button class="btn btn-emerald" data-act="openUsersView" id="btn-account-users">👥 ${L("เปิดระบบจัดการผู้ใช้งาน (User Management)", "Open User Management Dashboard")}</button><button class="btn btn-amber" data-act="openStripeCfg" id="btn-account-stripe-cfg">⚙️ ${L("ตั้งค่าลิงก์ชำระเงิน Stripe (99฿ / 269฿ / 990฿)", "Configure Stripe Payment Links (99฿ / 269฿ / 990฿)")}</button><button class="btn" data-act="payChoose" id="btn-account-pay-preview">📦 ${L("เปิดดูหน้าต่างเลือกแพ็กเกจ PRO (30 / 90 / 365 วัน)", "Preview PRO Package Selector (30 / 90 / 365 days)")}</button></div>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("⏰ ต่ออายุล่วงหน้า / เปลี่ยนแพ็กเกจ (30 / 90 / 365 วัน)", "⏰ Renew early / Choose package (30 / 90 / 365 days)") : L("👑 เลือกแพ็กเกจ FlowRecover PRO (30 / 90 / 365 วัน)", "👑 Choose FlowRecover PRO Package (30 / 90 / 365 days)")}</b>${payOptionsHTML("ac")}`}
     <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button><span class="muted sm">•</span><button class="link sm muted" data-act="openLegal" data-tab="privacy">🛡️ ${L("นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน & ความรับผิดชอบ", "Privacy Policy • Terms & Disclaimer")}</button></div>
     ${simHTML("ac")}
     <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
