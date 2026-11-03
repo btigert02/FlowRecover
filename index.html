@@ -1815,6 +1815,65 @@
       height: 22px
     }
 
+    .auth-consent {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(16, 185, 129, .08);
+      border: 1px solid rgba(16, 185, 129, .28);
+      text-align: left;
+      font-size: .84rem;
+      line-height: 1.5;
+      transition: border-color .2s, background .2s
+    }
+
+    .auth-consent.warn {
+      background: rgba(251, 113, 133, .12);
+      border-color: var(--rose)
+    }
+
+    .auth-consent input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: var(--emerald);
+      cursor: pointer;
+      flex-shrink: 0
+    }
+
+    .auth-trust-box {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      text-align: left;
+      display: grid;
+      gap: 8px;
+      font-size: .82rem;
+      line-height: 1.55
+    }
+
+    .auth-trust-list {
+      list-style: none;
+      display: grid;
+      gap: 6px;
+      padding: 0;
+      margin: 0
+    }
+
+    .auth-trust-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      color: var(--muted)
+    }
+
+    .auth-trust-list li b {
+      color: var(--text)
+    }
+
     /* ---------- Dialogs ---------- */
     dialog {
       margin: auto;
@@ -2575,6 +2634,9 @@
   <dialog id="legal-dlg" closedby="any" aria-labelledby="legal-dlg-title" style="width:min(760px,95vw)">
     <div class="dlg-body" id="legal-dlg-body"></div>
   </dialog>
+  <dialog id="gperm-dlg" closedby="any" aria-labelledby="gperm-dlg-title" style="width:min(640px,95vw)">
+    <div class="dlg-body" id="gperm-dlg-body"></div>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -3061,8 +3123,37 @@
       <div><b>${L("🗂️ โปรเจค & แชร์ทีม", "🗂️ Projects & team sharing")}</b>${L("ความคืบหน้า + ผังเชื่อมโยง", "Progress + relationship map")}</div>
       <div><b>📔 Life Planner</b>${L("เป้าหมาย นิสัย การเงิน สุขภาพ", "Goals, habits, money, health")}</div>
     </div>
-    <button class="gbtn" data-act="login" id="btn-google-login">${GOOGLE_SVG}${L("เข้าสู่ระบบด้วย Google", "Continue with Google")}</button>
-    <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้น 99฿/เดือน", "🎁 Free for 7 days, no card required • then 99฿/month")}</p>
+    <label class="auth-consent" id="auth-consent-wrap" for="auth-consent-cb">
+      <input type="checkbox" id="auth-consent-cb" checked>
+      <span>
+        <b>${L("ฉันได้อ่านและยอมรับ", "I have read and agree to the")}</b>
+        <button type="button" class="link sm" style="text-decoration:underline;padding:0 2px" data-act="openLegal" data-tab="privacy">${L("นโยบายความเป็นส่วนตัว", "Privacy Policy")}</button>,
+        <button type="button" class="link sm" style="text-decoration:underline;padding:0 2px" data-act="openLegal" data-tab="terms">${L("เงื่อนไขการใช้งาน", "Terms of Service")}</button>
+        ${L("และ", "and")}
+        <button type="button" class="link sm" style="text-decoration:underline;padding:0 2px" data-act="openLegal" data-tab="disclaimer">${L("ขอบเขตความรับผิดชอบ", "Disclaimer")}</button>
+        <span class="muted" style="display:block;font-size:.78rem;margin-top:2px">${L("✓ การเข้าสู่ระบบใช้เฉพาะชื่อและอีเมลพื้นฐาน • ไม่เก็บรหัสผ่าน • ไม่ขอสิทธิ์เข้าถึงไฟล์ส่วนตัว", "✓ Basic sign-in uses only your name & email • No password stored • No file access requested on login")}</span>
+      </span>
+    </label>
+    <div style="display:grid;gap:8px">
+      <button class="gbtn" data-act="login" id="btn-google-login">${GOOGLE_SVG}${L("เข้าสู่ระบบอย่างปลอดภัยด้วย Google", "Continue securely with Google")}</button>
+      <button type="button" class="btn btn-sm" style="justify-content:center;min-height:42px" data-act="openDemoPreview" id="btn-auth-preview">👀 ${L("ทดลองใช้งานเบื้องต้นในเครื่อง (ไม่ต้องผูกบัญชี Google)", "Try local preview mode first (no Google account needed)")}</button>
+    </div>
+    <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้นเริ่มต้นเพียง 99฿/เดือน", "🎁 Free for 7 days, no card required • then from 99฿/month")}</p>
+    <div class="auth-trust-box">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
+        <b style="font-size:.86rem;color:var(--emerald)">🛡️ ${L("คำมั่นสัญญาด้านความปลอดภัยและข้อมูลส่วนตัว", "Security & Privacy Guarantee")}</b>
+        <span class="chip chip-emerald" style="font-size:.7rem;padding:2px 8px">Google OAuth 2.0 • PDPA</span>
+      </div>
+      <ul class="auth-trust-list">
+        <li><span>🔐</span><span><b>${L("เข้าสู่ระบบมาตรฐานสากล:", "Verified Identity Only:")}</b> ${L("ยืนยันตัวตนผ่าน Google โดยตรง แอปไม่เห็นรหัสผ่าน และขอเฉพาะชื่อกับอีเมลเพื่อสร้างบัญชีของคุณเท่านั้น", "Sign in directly via Google. We never see your password and only use your basic name & email.")}</span></li>
+        <li><span>🛡️</span><span><b>${L("ข้อมูลเป็นความลับ 100%:", "100% Private & Encrypted:")}</b> ${L("ตารางงานและข้อมูลการเงินถูกเข้ารหัสแยกเฉพาะบัญชีคุณ ไม่นำไปขาย โฆษณา หรือเปิดเผยแก่บุคคลที่สาม", "Your tasks and financial logs are isolated to your account and never sold or shared with third parties.")}</span></li>
+        <li><span>🔌</span><span><b>${L("สิทธิ์ Calendar / Drive เลือกเปิดเองทีหลังได้:", "Optional Calendar / Drive Sync:")}</b> ${L("ไม่บังคับขอสิทธิ์ตอนล็อกอิน จะขออนุญาตเฉพาะเมื่อคุณกดใช้งานฟีเจอร์ซิงก์ปฏิทินหรือแนบไฟล์ในหน้าโปรเจคเท่านั้น", "Never requested at login — only asked if you explicitly click to sync Calendar or attach Drive files inside Projects.")}</span></li>
+      </ul>
+      <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:6px;border-top:1px solid var(--border)">
+        <button type="button" class="link sm" style="color:var(--amber)" data-act="openGPermGuide">ℹ️ ${L("ทำไมจึงปลอดภัย? ดูคำอธิบายการเชื่อมต่อ Google", "Why is it safe? View Google connection guide")}</button>
+        <a href="/privacy.html" target="_blank" rel="noopener" class="link sm muted">↗ ${L("อ่านเอกสารฉบับเต็ม", "Full Legal Page")}</a>
+      </div>
+    </div>
     <div class="pay-badges"><span class="chip">💳 ${L("บัตรเครดิต/เดบิต", "Credit/Debit card")}</span><span class="chip">📱 QR PromptPay</span><span class="chip">🔒 Stripe</span></div>
     <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--border)">
       <button type="button" class="link sm muted" data-act="openLegal" data-tab="privacy">🔒 ${L("นโยบายความเป็นส่วนตัว", "Privacy Policy")}</button>
@@ -3086,11 +3177,11 @@
       $("#btn-lang").textContent = LANG === "th" ? "EN" : "TH";
       $("#btn-lang").setAttribute("aria-label", L("Switch to English", "เปลี่ยนเป็นภาษาไทย"));
       $("#demo-login-form").innerHTML = `
-    <div class="dlg-head"><h2 id="demo-title">${L("เข้าสู่ระบบ (โหมดสาธิต)", "Sign in (demo mode)")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="demo-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
-    <p class="muted sm">${L("ยังไม่ได้ใส่ค่า Firebase Config จึงจำลองการล็อกอิน Google ข้อมูลจะถูกเก็บในเบราว์เซอร์นี้ (ดูวิธีเชื่อมต่อจริงใน SETUP.md)", "Firebase isn't configured yet, so Google sign-in is simulated and data is stored in this browser (see SETUP.md to connect).")}</p>
-    <label class="field"><span>${L("ชื่อที่แสดง", "Display name")}</span><input class="input" name="name" id="demo-name" required autocomplete="name"></label>
-    <label class="field"><span>${L("อีเมล Google", "Google email")}</span><input class="input" name="email" id="demo-email" type="email" required placeholder="you@gmail.com" autocomplete="email"></label>
-    <button class="btn btn-amber btn-xl" type="submit" id="btn-demo-login">${L("เริ่มทดลองใช้ฟรี 7 วัน", "Start 7-day free trial")}</button>`;
+    <div class="dlg-head"><h2 id="demo-title">👀 ${L("ทดลองใช้งานในเครื่อง (โหมดตัวอย่าง)", "Local Preview / Demo Mode")}</h2><button type="button" class="icon-btn" data-act="closeDlg" data-id="demo-dlg" aria-label="${L("ปิด", "Close")}">✕</button></div>
+    <p class="muted sm">${L("คุณสามารถทดลองใช้งานฟีเจอร์ทั้งหมดได้ทันทีโดยไม่ต้องเชื่อมบัญชี Google ข้อมูลในโหมดนี้จะถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้ของคุณอย่างปลอดภัย (เมื่อพร้อมซิงก์ขึ้นคลาวด์ ค่อยกดเข้าสู่ระบบด้วย Google ภายหลังได้)", "Try all features immediately without connecting a Google account. Data in this mode is stored locally in your browser (you can sign in with Google anytime later to sync to the cloud).")}</p>
+    <label class="field"><span>${L("ชื่อเล่น / ชื่อที่แสดง", "Display name")}</span><input class="input" name="name" id="demo-name" value="${L("ผู้ทดลองใช้งาน", "Guest User")}" required autocomplete="name"></label>
+    <label class="field"><span>${L("อีเมล (สำหรับอ้างอิงในเครื่อง)", "Email (for local profile)")}</span><input class="input" name="email" id="demo-email" type="email" value="guest@flowrecover.app" required placeholder="you@gmail.com" autocomplete="email"></label>
+    <button class="btn btn-amber btn-xl" type="submit" id="btn-demo-login">🚀 ${L("เข้าสู่หน้าทดลองใช้งานทันที (ฟรี 7 วัน)", "Enter Local Preview Now (7-day trial)")}</button>`;
     }
 
     /* ===================== Rendering ===================== */
@@ -5672,6 +5763,46 @@
           <button type="button" class="btn btn-amber" data-act="closeDlg" data-id="legal-dlg">✓ ${L("รับทราบและปิดหน้าต่าง", "Got it, Close")}</button>
         </div>`;
     }
+    function renderGPermDlg(showConnectBtn = false) {
+      const b = $("#gperm-dlg-body");
+      if (!b) return;
+      const canConnect = showConnectBtn || (!!state.user && !state.user.demo);
+      b.innerHTML = `
+        <div class="dlg-head">
+          <h2 id="gperm-dlg-title">🛡️ ${L("ความโปร่งใสในการเข้าสู่ระบบ & การเชื่อมต่อ Google", "Google Sign-In & Optional Permissions Guide")}</h2>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="gperm-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <div style="display:grid;gap:12px;font-size:.88rem;line-height:1.6;max-height:66dvh;overflow-y:auto;padding-right:4px">
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3)">
+            <b style="color:var(--emerald)">✅ ${L("1. การเข้าสู่ระบบหน้าแรก (Basic Google Sign-In) — ปลอดภัย 100%", "1. Initial Google Sign-In — 100% Safe & Basic Identity Only")}</b>
+            <p class="sm" style="margin-top:4px">${L("เมื่อคุณกดปุ่ม “เข้าสู่ระบบอย่างปลอดภัยด้วย Google” ในหน้าแรก ระบบจะขอเฉพาะข้อมูลยืนยันตัวตนพื้นฐาน ได้แก่ ชื่อที่แสดง, อีเมล และรูปโปรไฟล์ เท่านั้น ไม่มีการขอสิทธิ์เข้าถึง Google Drive หรือ Google Calendar ในขั้นตอนนี้ คุณจึงเข้าใช้งานแอปได้อย่างรวดเร็วและปลอดภัย", "When you click “Continue securely with Google” on the login screen, we request ONLY basic identity (name, email, and profile picture). No Google Drive or Calendar permissions are requested at sign-in.")}</p>
+          </div>
+          <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border)">
+            <b style="color:var(--amber)">🔌 ${L("2. สิทธิ์เสริม Google Calendar & Google Drive (ขอเมื่อคุณกดใช้งานเองเท่านั้น)", "2. Optional Google Calendar & Drive Sync (On-Demand Only)")}</b>
+            <p class="muted sm" style="margin-top:4px">${L("เฉพาะเมื่อคุณเข้าไปที่หน้า “คิวงาน” หรือ “โปรเจค” แล้วกดปุ่มเชื่อมต่อปฏิทินหรือแนบไฟล์จาก Drive ด้วยตนเอง ระบบจึงจะขออนุญาตสิทธิ์เพิ่มเติมดังนี้:", "Only when you explicitly click Connect Calendar or Attach from Drive inside the app will Google ask for these optional permissions:")}</p>
+            <ul style="padding-left:18px;margin-top:6px;display:grid;gap:4px">
+              <li><b>📅 Google Calendar (<code>calendar.events</code>):</b> ${L("ใช้เพื่อส่งบล็อกงาน/ขั้นตอนโปรเจคเข้าปฏิทิน และดึงนัดหมายมาแสดงในคิวงานตามที่คุณกดสั่ง", "Used strictly to push your tasks/project steps to your calendar and pull events at your command.")}</li>
+              <li><b>📂 Google Drive (<code>drive.file</code> / <code>drive.readonly</code>):</b> ${L("ใช้เพื่อแสดงรายชื่อไฟล์ในหน้าต่างเลือกไฟล์แนบเข้าโปรเจค หรืออัปโหลดไฟล์งานที่คุณเลือกเองเท่านั้น แอปจะไม่แก้ไขหรือลบไฟล์ส่วนตัวของคุณเด็ดขาด", "Used only so you can browse and attach project reference links or upload files you select. We never modify or delete your personal files.")}</li>
+            </ul>
+          </div>
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.28)">
+            <b style="color:var(--sky)">💡 ${L("3. ขั้นตอนการอนุญาตสิทธิ์เชื่อมต่อ Calendar / Drive (กรณีขึ้นหน้าต่างแจ้งเตือนจาก Google)", "3. How to Authorize Calendar / Drive (If Google Shows a Developer Prompt)")}</b>
+            <p class="muted sm" style="margin-top:4px">${L("เนื่องจากฟีเจอร์เชื่อมต่อปฏิทินและไดรฟ์โดยตรงเป็นฟีเจอร์ระดับลึกของนักพัฒนา หาก Google แสดงหน้าต่างสอบถามความมั่นใจ คุณสามารถกดอนุญาตตาม 3 ขั้นตอนง่ายๆ ดังนี้ครับ:", "When connecting Calendar or Drive for the first time, if Google displays a verification prompt, simply follow these 3 safe steps:")}</p>
+            <ol style="padding-left:18px;margin-top:6px;display:grid;gap:6px">
+              <li>${L("คลิกที่ลิงก์ <b>“Advanced” (ขั้นสูง)</b> มุมซ้ายล่างของหน้าต่าง Google", "Click <b>“Advanced”</b> at the bottom-left of the Google popup.")}</li>
+              <li>${L("คลิก <b>“Go to flowrecover-app.firebaseapp.com”</b> เพื่อยืนยันว่าคุณต้องการเชื่อมต่อกับแอป FlowRecover", "Click <b>“Go to flowrecover-app.firebaseapp.com”</b> to confirm you trust FlowRecover.")}</li>
+              <li>${L("ติ๊ก ☑️ <b>Select all (เลือกทั้งหมด)</b> แล้วกด <b>Continue (ดำเนินการต่อ)</b> เพียงครั้งเดียว ระบบจะจำสิทธิ์ให้อัตโนมัติ", "Check ☑️ <b>Select all</b> and click <b>Continue</b> once — your connection will be remembered automatically.")}</li>
+            </ol>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border)">
+          <button type="button" class="link sm muted" data-act="openLegal" data-tab="privacy">🔒 ${L("อ่านนโยบายความเป็นส่วนตัวฉบับเต็ม", "Read Full Privacy Policy")}</button>
+          <div class="row" style="gap:8px;flex-wrap:wrap">
+            ${canConnect ? `<button type="button" class="btn btn-emerald" data-act="gConnectProceed" id="btn-gperm-proceed">${GOOGLE_SVG ? `<span class="link-ico">${GOOGLE_SVG}</span>` : "🔗"} ${L("ดำเนินการเชื่อมต่อ Calendar & Drive ตอนนี้", "Proceed to Connect Calendar & Drive")}</button>` : ""}
+            <button type="button" class="btn ${canConnect ? "" : "btn-amber"}" data-act="closeDlg" data-id="gperm-dlg">✓ ${L("เข้าใจแล้ว", "Got it")}</button>
+          </div>
+        </div>`;
+    }
     function renderIdeas() {
       $("#ideas-body").innerHTML = `
     <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
@@ -5707,6 +5838,7 @@
         if ($("#pay-dlg").open) renderPayDlg();
         if ($("#ideas-dlg").open) renderIdeas();
         if ($("#legal-dlg")?.open) renderLegalDlg();
+        if ($("#gperm-dlg")?.open) renderGPermDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
@@ -5714,6 +5846,8 @@
       openAdminDlg: () => { renderAdminDlg(); $("#admin-dlg").showModal(); },
       openLegal: d => { renderLegalDlg(d?.tab || "privacy"); const dlg = $("#legal-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       legalTab: d => { renderLegalDlg(d?.tab || "privacy"); },
+      openGPermGuide: d => { renderGPermDlg(d?.connect === "1"); const dlg = $("#gperm-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      openDemoPreview: () => { const dlg = $("#demo-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
       ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
       closeDlg: d => $("#" + d.id).close(),
@@ -6425,6 +6559,7 @@
       <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
         <button class="btn btn-sm" data-act="gConnect" id="btn-g-connect"><span class="link-ico">${GOOGLE_SVG}</span>${on ? L("ซิงก์ / ต่ออายุสิทธิ์อัตโนมัติ", "Sync / Refresh connection") : L("เชื่อมต่อบัญชี Google (ครั้งเดียว)", "Connect Google (One-time)")}</button>
         <button class="btn btn-sm btn-emerald" data-act="gcalSyncAll" id="btn-gcal-all">📆 ${L(`ส่งขั้นตอนที่เชื่อมไว้ (${linked})`, `Push linked steps (${linked})`)}</button>
+        <button type="button" class="btn btn-sm" data-act="openGPermGuide" data-connect="1" title="${L("คำอธิบายความปลอดภัยและวิธีอนุญาตสิทธิ์", "Security & authorization guide")}">🛡️ ${L("คำอธิบายสิทธิ์ & วิธีเชื่อมต่อ", "Permission Guide")}</button>
         <label class="row" style="gap:6px;align-items:center;flex:1;min-width:210px"><span class="muted sm">📅 Calendar ID</span><input class="input grow" id="gcal-id" data-bind="gcal.calendarId" value="${esc(state.gcal.calendarId)}" placeholder="primary" autocapitalize="off" spellcheck="false" style="flex:1;min-width:0"></label>
       </div>
       ${state.gcal.lastSync ? `<p class="muted sm" style="margin-top:6px">✓ ${L("ส่งล่าสุด", "Last push")} ${fmtDT(state.gcal.lastSync)}</p>` : ""}
@@ -8350,7 +8485,19 @@
         if (t.gcalId) gSyncChanges(true).then(n => { if (n) toast(L("🗑️ ลบออกจาก Google Calendar แล้ว", "🗑️ Removed from Google Calendar")); })
           .catch(e => { if (e?.message !== "demo") toast(L("⏳ จะลบใน Google Calendar ให้อัตโนมัติเมื่อเชื่อมต่อครั้งถัดไป", "⏳ It will be removed from Google Calendar next time you connect")); });
       },
-      gConnect: () => { googleToken(["cal", "drive", "driveRead"], !isGoogleConsented()).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive เรียบร้อยแล้ว (จำสิทธิ์อัตโนมัติ)", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast); },
+      gConnect: () => {
+        if (!isGoogleConsented()) {
+          renderGPermDlg(true);
+          const dlg = $("#gperm-dlg");
+          if (dlg && !dlg.open) dlg.showModal();
+          return;
+        }
+        googleToken(["cal", "drive", "driveRead"], false).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive เรียบร้อยแล้ว (จำสิทธิ์อัตโนมัติ)", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast);
+      },
+      gConnectProceed: () => {
+        $("#gperm-dlg")?.close();
+        googleToken(["cal", "drive", "driveRead"], !isGoogleConsented()).then(() => { toast(L("✅ เชื่อมต่อ Google Calendar & Drive เรียบร้อยแล้ว (จำสิทธิ์อัตโนมัติ)", "✅ Google Calendar & Drive connected")); renderView(); gSyncChanges().catch(() => { }); }).catch(gErrToast);
+      },
       gcalPull: d => {
         const a = d.a || state.queueDate || dkey(), b = d.b || a;
         if (b > a && !confirm(L(`ดึงนัดหมายจาก Google Calendar ช่วง ${fmtShort(a)} – ${fmtShort(b)} เข้าคิวงาน?`, `Pull Google Calendar events from ${fmtShort(a)} – ${fmtShort(b)} into the queue?`))) return;
@@ -9163,18 +9310,29 @@
     function showAuth() { $("#app").hidden = true; $("#auth-screen").hidden = false; if ($("#paywall").open) $("#paywall").close(); }
     function showApp() { $("#auth-screen").hidden = true; $("#app").hidden = false; seed(); renderAll(); }
     async function login() {
+      const cb = $("#auth-consent-cb");
+      const wrap = $("#auth-consent-wrap");
+      if (cb && !cb.checked) {
+        wrap?.classList.add("warn");
+        cb.focus();
+        toast(L("⚠️ กรุณาติ๊กยอมรับนโยบายความเป็นส่วนตัวและเงื่อนไขการใช้งานก่อนเข้าสู่ระบบครับ", "⚠️ Please accept the Privacy Policy and Terms of Service before signing in"));
+        return;
+      }
+      wrap?.classList.remove("warn");
       if (fb) {
         try {
-          const prov = new fb.GoogleAuthProvider(), all = Object.values(G_SCOPES);
-          all.forEach(s => prov.addScope(s));
-          const res = await fb.signInWithPopup(fb.auth, prov);
-          const cred = fb.GoogleAuthProvider.credentialFromResult?.(res);
-          if (cred?.accessToken) saveGTok(cred.accessToken, all);
+          // Request ONLY basic identity (name, email, avatar) on initial sign-in so Google never shows the unverified sensitive-scope warning.
+          // Optional Calendar/Drive scopes are requested incrementally only when the user explicitly clicks Connect inside the app.
+          const prov = new fb.GoogleAuthProvider();
+          prov.setCustomParameters({ prompt: "select_account" });
+          await fb.signInWithPopup(fb.auth, prov);
         }
         catch (e) {
           console.error(e);
           if (e.code === "auth/unauthorized-domain") {
             toast(L(`โดเมน ${location.hostname} ยังไม่ได้รับอนุญาตใน Firebase (เพิ่มใน Authorized domains)`, `Domain ${location.hostname} not authorized in Firebase Console`));
+          } else if (e.code === "auth/popup-closed-by-user" || e.code === "auth/cancelled-popup-request") {
+            toast(L("ยกเลิกการเข้าสู่ระบบ", "Sign-in cancelled"));
           } else {
             toast(L("เข้าสู่ระบบไม่สำเร็จ: ", "Sign-in failed: ") + (e.code || e.message));
           }
