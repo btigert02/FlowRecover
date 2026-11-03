@@ -2776,6 +2776,8 @@
     state.lang = ["th", "en"].includes(urlLang) ? urlLang : state.lang || ((navigator.language || "th").toLowerCase().startsWith("th") ? "th" : "en");
     LANG = state.lang;
     state.queueDate = dkey(); state.plannerDate = dkey();
+    if (state.finView) state.finView.date = dkey();
+    if (state.habitView) state.habitView.date = dkey();
     const P = () => state.planner;
 
     let fb = null, cloudTimer = null;
@@ -8451,6 +8453,9 @@
       const goal = Number(F.goal) || 0, saved = Number(F.saved) || 0, sp = goal ? Math.min(100, Math.round(saved / goal * 100)) : 0;
       const D = finData(), V = finView(), XC = XCAT(), IC = ICAT();
       const incRows = mon.filter(x => x.type === "inc").sort((x, y) => (y.date || "").localeCompare(x.date || "") || (y.ts || 0) - (x.ts || 0));
+      const expRows = mon.filter(x => x.type === "exp").sort((x, y) => (y.date || "").localeCompare(x.date || "") || (y.ts || 0) - (x.ts || 0));
+      const listFilter = V.listFilter || "all";
+      const filteredRows = listFilter === "exp" ? D.rows.filter(x => x.type === "exp") : listFilter === "inc" ? D.rows.filter(x => x.type === "inc") : D.rows;
       const curD = parseD(mk + "-01"), prevDateObj = new Date(curD.getFullYear(), curD.getMonth() - 1, 1);
       const prevMk = dkey(prevDateObj).slice(0, 7);
       const prevMonInc = allTxns().filter(x => (x.date || "").startsWith(prevMk) && x.type === "inc");
@@ -8507,6 +8512,42 @@
             </div>
           </form>
         </div>
+
+        <div class="inc-box" style="margin-top:12px">
+          <div class="inc-head">
+            <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
+              <b>🧾 ${L("รายการรายจ่ายเดือนนี้", "This month's expenses")}</b>
+              <span class="chip chip-rose"><b>−${money(expM)} ฿</b> (${expRows.length} ${L("รายการ", "items")})</span>
+            </div>
+          </div>
+
+          ${expRows.length ? `<ul class="inc-list" style="max-height:260px;overflow-y:auto">${expRows.map(x => {
+            const C = XC[x.cat] || XC.other;
+            return `<li class="inc-item"><span>${C[0]}</span><div class="grow"><b>${esc(x.note || C[1])}</b><small>${fmtDate(x.date)} • ${C[1]}</small></div><b class="mono rose">−${money(x.amount)} ฿</b>${x.legacy ? `<button class="icon-btn" data-act="editItem" data-kind="crud" data-name="expenses" data-id="${esc(x.id.split("~")[0])}" id="exed-${esc(x.id)}" title="${L("แก้ไขรายการ", "Edit entry")}" aria-label="${L("แก้ไขรายการ", "Edit entry")}">✏️</button>` : `<button class="icon-btn" data-act="editItem" data-kind="txn" data-id="${esc(x.id)}" id="exed-${esc(x.id)}" title="${L("แก้ไขรายการ", "Edit entry")}" aria-label="${L("แก้ไขรายการ", "Edit entry")}">✏️</button>`}<button class="icon-btn" data-act="delTxn" data-id="${esc(x.id)}" id="exrm-${esc(x.id)}" aria-label="${L("ลบรายการ", "Delete entry")}">✕</button></li>`;
+          }).join("")}</ul>` : `<p class="empty sm" style="padding:6px 0">${L("ยังไม่มีรายการรายจ่ายเดือนนี้ — พิมพ์รายจ่ายด้านล่างหรือบันทึกจากฟอร์มได้เลย", "No expense entries for this month yet — add one below")}</p>`}
+
+          <form class="form-grid" data-form="addMonthExpense" id="form-month-expense" autocomplete="off" style="margin-top:10px;gap:6px">
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <input class="input" name="note" id="mexp-note" placeholder="${L("ชื่อรายจ่าย เช่น ข้าวกลางวัน, กาแฟ, ค่าน้ำมัน, ค่าไฟ", "Expense note, e.g. Lunch, Coffee, Fuel, Utilities")}" style="flex:1.5;min-width:140px">
+              <input class="input" name="amount" id="mexp-amount" type="number" inputmode="decimal" step="any" min="0" placeholder="${L("จำนวนเงิน (฿)", "Amount (฿)")}" style="flex:1;min-width:100px" required>
+            </div>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <select class="input" name="cat" id="mexp-cat" style="flex:1.2;min-width:130px">${catOpts("exp")}</select>
+              <input class="input" type="date" name="date" id="mexp-date" value="${dkey()}" style="flex:1;min-width:120px">
+              <button class="btn btn-rose" type="submit" id="btn-add-mexp" style="white-space:nowrap">➖ ${L("เพิ่มรายจ่าย", "Add expense")}</button>
+            </div>
+            <div class="inc-presets">
+              <small class="muted" style="align-self:center;margin-right:2px">${L("เลือกด่วน:", "Quick:")}</small>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="food" data-note="${L("ค่าอาหาร/เครื่องดื่ม", "Food & drinks")}">🍜 ${L("อาหาร", "Food")}</button>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="food" data-note="${L("กาแฟ/เครื่องดื่ม", "Coffee/Drink")}">☕ ${L("กาแฟ", "Coffee")}</button>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="transport" data-note="${L("ค่าเดินทาง/น้ำมัน", "Transport/Fuel")}">🚌 ${L("เดินทาง", "Transport")}</button>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="shop" data-note="${L("ของใช้/ช้อปปิ้ง", "Shopping")}">🛍️ ${L("ของใช้", "Shopping")}</button>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="bills" data-note="${L("ค่าน้ำ/ค่าไฟ/เน็ต", "Utilities/Internet")}">💡 ${L("บิล/น้ำไฟ", "Bills")}</button>
+              <button type="button" class="btn btn-sm" data-act="mexpPreset" data-cat="home" data-note="${L("ค่าที่พัก/ค่าเช่า", "Rent/Housing")}">🏠 ${L("ที่พัก", "Housing")}</button>
+            </div>
+          </form>
+        </div>
+
         <div class="inc-box" style="margin-top:12px">
           <div class="inc-head">
             <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
@@ -8539,6 +8580,10 @@
               <input class="input" name="dueDay" type="number" min="1" max="31" value="1" placeholder="${L("วันที่ครบกำหนด", "Due day")}" title="${L("วันที่ครบกำหนดของทุกเดือน (1-31)", "Day of month (1-31)")}" style="width:86px">
               <button class="btn btn-amber" type="submit" style="white-space:nowrap">＋ ${L("เพิ่มบิลประจำ", "Add Fixed Bill")}</button>
             </div>
+            <label class="row sm muted" style="gap:6px;align-items:center;cursor:pointer;margin-top:2px">
+              <input type="checkbox" name="postNow" value="1" checked>
+              <span>${L("ลงบัญชีจ่ายเดือนนี้ทันที (บันทึกเข้ารายการรายจ่ายเดือนนี้เลย)", "Also log as paid in this month's expenses immediately")}</span>
+            </label>
           </form>
         </div>
       </article>
@@ -8575,7 +8620,21 @@
         })()}</article>
     </div>
     <div class="grid grid-2b">
-      <article class="card"><h3>💸 ${L("บันทึกรายรับ-รายจ่าย", "Log income & expenses")}</h3>${txnForm()}</article>
+      <article class="card">
+        <h3>💸 ${L("บันทึกรายรับ-รายจ่าย", "Log income & expenses")}</h3>
+        ${txnForm()}
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
+          <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <b class="sm">📒 ${L("รายการที่บันทึกไว้", "Recorded entries")} • ${finTitle()} <span class="chip">${filteredRows.length}</span></b>
+            <div class="row" style="gap:4px">
+              <button type="button" class="btn btn-sm ${listFilter === "all" ? "btn-amber" : ""}" data-act="finListFilter" data-v="all" style="padding:2px 8px;min-height:26px;font-size:.75rem">${L("ทั้งหมด", "All")} (${D.rows.length})</button>
+              <button type="button" class="btn btn-sm ${listFilter === "exp" ? "btn-rose" : ""}" data-act="finListFilter" data-v="exp" style="padding:2px 8px;min-height:26px;font-size:.75rem">➖ ${L("รายจ่าย", "Expenses")} (${D.rows.filter(x => x.type === "exp").length})</button>
+              <button type="button" class="btn btn-sm ${listFilter === "inc" ? "btn-emerald" : ""}" data-act="finListFilter" data-v="inc" style="padding:2px 8px;min-height:26px;font-size:.75rem">➕ ${L("รายรับ", "Income")} (${D.rows.filter(x => x.type === "inc").length})</button>
+            </div>
+          </div>
+          ${filteredRows.length ? `<ul class="txns" style="max-height:260px;overflow-y:auto">${filteredRows.slice(0, 20).map(txnRow).join("")}</ul>` : `<p class="empty sm" style="padding:8px 0">${L("ยังไม่มีรายการในช่วงนี้ — กรอกฟอร์มด้านบนแล้วกด ＋ บันทึกรายการได้เลย", "No entries in this period yet — submit the form above")}</p>`}
+        </div>
+      </article>
       <article class="card"><div class="card-head" style="flex-wrap:wrap;gap:8px"><h3>📊 ${L("สรุปรายรับ-รายจ่าย", "Income & expense summary")}</h3></div>
         <div class="seg" role="tablist">${ranges.map(([k, l]) => `<button class="${V.range === k ? "on" : ""}" data-act="finRange" data-v="${k}" id="fr-${k}">${l}</button>`).join("")}</div>
         <div class="row" style="gap:6px;align-items:center;justify-content:center;margin:10px 0"><button class="icon-btn" data-act="finNav" data-v="-1" id="fin-prev" aria-label="${L("ก่อนหน้า", "Previous")}">‹</button><b style="min-width:150px;text-align:center">${finTitle()}</b><button class="icon-btn" data-act="finNav" data-v="1" id="fin-next" aria-label="${L("ถัดไป", "Next")}">›</button><button class="btn btn-sm" data-act="finNow" id="fin-now">${L("ปัจจุบัน", "Now")}</button></div>
@@ -9326,6 +9385,16 @@
         if (c && d.cat) c.value = d.cat;
         if (a) a.focus();
       },
+      mexpPreset: d => {
+        const n = $("#mexp-note"), c = $("#mexp-cat"), a = $("#mexp-amount");
+        if (n && d.note) n.value = d.note;
+        if (c && d.cat) c.value = d.cat;
+        if (a) a.focus();
+      },
+      finListFilter: d => {
+        finView().listFilter = d.v || "all";
+        rerender();
+      },
       convertLegacyInc: () => {
         const F = P().finance, v = Number(F.income);
         if (!(v > 0)) return;
@@ -9742,7 +9811,7 @@
         toast(L(`📅 เพิ่ม "${trunc(title, 24)}" เข้าคิววันนี้ (${fmt(startMin)} น.) แล้ว!`, `📅 Queued "${trunc(title, 24)}" at ${fmt(startMin)}!`));
       },
       postOneBill: d => {
-        const mk = dkey().slice(0, 7);
+        const today = dkey(), mk = today.slice(0, 7);
         const b = (P().fixedBills || []).find(x => x.id === d.id);
         if (!b) return;
         b.paidMonths ||= {};
@@ -9751,17 +9820,19 @@
         (P().txns ||= []).push({
           id: uid(),
           ts: Date.now(),
-          date: dkey(),
+          date: today,
           type: "exp",
           cat: b.cat || "bills",
           amount: Number(b.amount) || 0,
           note: `🔄 ${b.title}`
         });
+        finView().date = today;
+        if (finView().listFilter === "inc") finView().listFilter = "all";
         rerender();
         toast(L(`✅ ลงบันทึกรายจ่าย "${b.title}" (${money(b.amount)} ฿) เข้าเดือนนี้แล้ว`, `✅ Posted "${b.title}" (${money(b.amount)} ฿)`));
       },
       postAllBills: () => {
-        const mk = dkey().slice(0, 7);
+        const today = dkey(), mk = today.slice(0, 7);
         const unpaid = (P().fixedBills || []).filter(b => !b.paidMonths?.[mk]);
         if (!unpaid.length) { toast(L("ลงบัญชีรายจ่ายประจำเดือนนี้ครบแล้ว", "All fixed bills already posted")); return; }
         let sum = 0;
@@ -9773,13 +9844,15 @@
           (P().txns ||= []).push({
             id: uid(),
             ts: Date.now(),
-            date: dkey(),
+            date: today,
             type: "exp",
             cat: b.cat || "bills",
             amount: amt,
             note: `🔄 ${b.title}`
           });
         });
+        finView().date = today;
+        if (finView().listFilter === "inc") finView().listFilter = "all";
         rerender();
         toast(L(`⚡ ลงบันทึกรายจ่ายประจำ ${unpaid.length} รายการ (รวม ${money(sum)} ฿) เรียบร้อยแล้ว`, `⚡ Posted ${unpaid.length} fixed bills (${money(sum)} ฿)`));
       },
@@ -9978,24 +10051,49 @@
       addRoutine: fd => { const r = makeRoutine(fd); if (!r) return; rerender(); routineToast(r); },
       toRoutine: fd => { const r = makeRoutine(fd); if (!r) return; $("#routine-dlg").close(); rerender(); routineToast(r); },
       addMonthIncome: fd => {
-        const amount = Number(fd.amount); if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
+        const amount = Number(String(fd.amount || "").replace(/,/g, "").trim());
+        if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
         const cat = fd.cat || "salary";
         const note = (fd.note || "").trim() || (ICAT()[cat] || ICAT().other)[1];
-        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: fd.date || dkey(), type: "inc", cat, amount, note });
+        const txDate = fd.date || dkey();
+        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: txDate, type: "inc", cat, amount, note });
+        finView().date = txDate;
+        if (finView().listFilter === "exp") finView().listFilter = "all";
         rerender();
         toast(L(`➕ บันทึกรายรับ "${note}" ${money(amount)} ฿ แล้ว`, `➕ Income "${note}" ${money(amount)} ฿ saved`));
         setTimeout(() => $("#minc-note")?.focus(), 40);
+      },
+      addMonthExpense: fd => {
+        const amount = Number(String(fd.amount || "").replace(/,/g, "").trim());
+        if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
+        const cat = fd.cat || "food";
+        const note = (fd.note || "").trim() || (XCAT()[cat] || XCAT().other)[1];
+        const txDate = fd.date || dkey();
+        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: txDate, type: "exp", cat, amount, note });
+        finView().date = txDate;
+        if (finView().listFilter === "inc") finView().listFilter = "all";
+        rerender();
+        toast(L(`➖ บันทึกรายจ่าย "${note}" ${money(amount)} ฿ แล้ว`, `➖ Expense "${note}" ${money(amount)} ฿ saved`));
+        setTimeout(() => $("#mexp-note")?.focus(), 40);
       },
       driveSearch: fd => {
         driveBrowser.q = (fd.q || "").trim();
         loadDriveFiles(false);
       },
       addTxn: fd => {
-        const amount = Number(fd.amount); if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
+        const amount = Number(String(fd.amount || "").replace(/,/g, "").trim());
+        if (!(amount > 0)) { toast(L("ใส่จำนวนเงินมากกว่า 0", "Enter an amount above 0")); return; }
         const type = fd.type === "inc" ? "inc" : "exp";
-        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: fd.date || dkey(), type, cat: fd.cat || "other", amount, note: (fd.note || "").trim() });
-        finView().kind = type; rerender();
-        toast(type === "inc" ? L(`➕ บันทึกรายรับ ${money(amount)} ฿ แล้ว`, `➕ Income ${money(amount)} ฿ saved`) : L(`➖ บันทึกรายจ่าย ${money(amount)} ฿ แล้ว`, `➖ Expense ${money(amount)} ฿ saved`));
+        const cat = fd.cat || "other";
+        const defaultLabel = ((type === "inc" ? ICAT() : XCAT())[cat] || (type === "inc" ? ICAT().other : XCAT().other))[1];
+        const note = (fd.note || "").trim() || defaultLabel;
+        const txDate = fd.date || dkey();
+        (P().txns ||= []).push({ id: uid(), ts: Date.now(), date: txDate, type, cat, amount, note });
+        finView().kind = type;
+        finView().date = txDate;
+        if (finView().listFilter && finView().listFilter !== "all" && finView().listFilter !== type) finView().listFilter = "all";
+        rerender();
+        toast(type === "inc" ? L(`➕ บันทึกรายรับ "${note}" ${money(amount)} ฿ แล้ว`, `➕ Income "${note}" ${money(amount)} ฿ saved`) : L(`➖ บันทึกรายจ่าย "${note}" ${money(amount)} ฿ แล้ว`, `➖ Expense "${note}" ${money(amount)} ฿ saved`));
         setTimeout(() => $("#txn-amount")?.focus(), 40);
       },
       userSearch: fd => {
@@ -10059,20 +10157,36 @@
       },
       addFixedBill: (fd, f) => {
         const title = (fd.title || "").trim();
-        const amount = Number(fd.amount);
+        const amount = Number(String(fd.amount || "").replace(/,/g, "").trim());
         if (!title || !(amount > 0)) return;
         const dueDay = Math.max(1, Math.min(31, Number(fd.dueDay) || 1));
+        const today = dkey(), mk = today.slice(0, 7);
+        const postNow = !!fd.postNow;
+        const paidMonths = postNow ? { [mk]: true } : {};
         (P().fixedBills ||= []).push({
           id: uid(),
           title,
           amount,
           cat: fd.cat || "bills",
           dueDay,
-          paidMonths: {}
+          paidMonths
         });
+        if (postNow) {
+          (P().txns ||= []).push({
+            id: uid(),
+            ts: Date.now(),
+            date: today,
+            type: "exp",
+            cat: fd.cat || "bills",
+            amount,
+            note: `🔄 ${title}`
+          });
+          finView().date = today;
+          if (finView().listFilter === "inc") finView().listFilter = "all";
+        }
         f.reset();
         rerender();
-        toast(L(`🔄 เพิ่มบิลประจำ "${title}" (${money(amount)} ฿/เดือน) แล้ว`, `🔄 Added fixed bill "${title}" (${money(amount)} ฿/mo)`));
+        toast(postNow ? L(`🔄 เพิ่มบิลประจำ "${title}" และลงบัญชีรายจ่ายเดือนนี้ (${money(amount)} ฿) แล้ว`, `🔄 Added fixed bill "${title}" and posted (${money(amount)} ฿) to this month`) : L(`🔄 เพิ่มบิลประจำ "${title}" (${money(amount)} ฿/เดือน) แล้ว`, `🔄 Added fixed bill "${title}" (${money(amount)} ฿/mo)`));
       }
     });
 
@@ -10233,6 +10347,8 @@
             state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep });
             state.queueDate = dkey();
             state.plannerDate = dkey();
+            if (state.finView) state.finView.date = dkey();
+            if (state.habitView) state.habitView.date = dkey();
             if (!state.explicitSampleLoaded && (hasAnyRealUserData() || isUserAdmin())) {
               const removed = purgeSampleItemsOnly();
               if (removed > 0) cloudSave();
@@ -10243,6 +10359,8 @@
               state = hydrate(keep);
               state.queueDate = dkey();
               state.plannerDate = dkey();
+              if (state.finView) state.finView.date = dkey();
+              if (state.habitView) state.habitView.date = dkey();
             }
             if (isBrandNewUser && !isUserAdmin()) {
               seed(true);
