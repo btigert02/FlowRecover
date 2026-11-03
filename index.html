@@ -2862,14 +2862,15 @@
     function subInfo() {
       const s = state.sub;
       if (s.is_admin || s.plan === "lifetime_admin") {
-        return { pro: true, until: null, is_admin: true, proRemDays: null, expiringSoon: false, proExpiringSoon: false };
+        return { pro: true, until: null, is_admin: true, is_free_grant: false, proRemDays: null, expiringSoon: false, proExpiringSoon: false };
       }
       if (s.subscription_status === "pro") {
         if (s.pro_until && Date.now() > s.pro_until) return { pro: false, rem: 0, trialRemDays: 0, pct: 0, expired: true, lapsed: true, expiringSoon: false, trialExpiringSoon: false };
         const remPro = s.pro_until ? s.pro_until - Date.now() : null;
         const proRemDays = remPro !== null ? Math.max(1, Math.ceil(remPro / 864e5)) : null;
         const expiringSoon = remPro !== null && remPro > 0 && remPro <= 5 * 864e5;
-        return { pro: true, until: s.pro_until || null, remPro, proRemDays, expiringSoon, proExpiringSoon: expiringSoon };
+        const isFreeGrant = s.plan === "free_grant" || s.plan === "extended_trial" || (typeof s.pro_months === "number" && s.pro_months === 0);
+        return { pro: true, until: s.pro_until || null, is_free_grant: isFreeGrant, remPro, proRemDays, expiringSoon, proExpiringSoon: expiringSoon };
       }
       const rem = (s.trial_start_at || Date.now()) + TRIAL_MS - Date.now();
       const trialRemDays = rem > 0 ? Math.max(1, Math.ceil(rem / 864e5)) : 0;
@@ -2961,6 +2962,8 @@
       state.sub = {
         ...state.sub,
         subscription_status: status,
+        plan: d.plan || state.sub.plan || "",
+        pro_months: typeof d.pro_months === "number" ? d.pro_months : state.sub.pro_months,
         trial_start_at: start,
         pro_until: until,
         selected_pkg: d.selected_pkg || state.sub.selected_pkg || "30d",
@@ -3476,8 +3479,8 @@
           return;
         }
         el.className = "banner pro";
-        const until = s.is_admin ? L(" • สิทธิ์ Admin ฟรีตลอดชีพ 👑", " • Lifetime Admin 👑") : s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
-        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">${(s.is_admin || SHOW_OWNER_SIMULATOR) ? `<button class="btn btn-sm btn-amber" data-act="openStripeCfg" id="banner-stripe-cfg" style="min-height:28px;padding:2px 10px;font-size:.78rem">⚙️ ${L("ตั้งค่าลิงก์ Stripe", "Stripe Links")}</button>` : ""}${s.is_admin ? `<button class="btn btn-sm btn-emerald" data-act="openUsersView" id="banner-users" style="min-height:28px;padding:2px 10px;font-size:.78rem">👥 ${L("จัดการผู้ใช้ (Users)", "Manage Users")}</button>` : ""}<button class="btn btn-sm" data-act="payChoose" id="banner-packages" style="min-height:28px;padding:2px 10px;font-size:.78rem">📦 ${L("ดูหน้าแพ็กเกจ", "Packages")}</button><button class="link sm" data-act="account" id="banner-manage">${L("บัญชี", "Account")}</button></div>`;
+        const until = s.is_admin ? L(" • สิทธิ์ Admin ฟรีตลอดชีพ 👑", " • Lifetime Admin 👑") : s.is_free_grant && s.until ? L(` • 🎁 สิทธิ์ใช้ฟรีพิเศษ ถึง ${fmtDate(dkey(new Date(s.until)))} (เหลือ ${s.proRemDays} วัน)`, ` • 🎁 Free Pass until ${fmtDate(dkey(new Date(s.until)))} (${s.proRemDays}d left)`) : s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
+        el.innerHTML = `<span>${s.is_free_grant ? "🎁" : "👑"} <b>FlowRecover PRO</b>${until}</span><div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">${(s.is_admin || SHOW_OWNER_SIMULATOR) ? `<button class="btn btn-sm btn-amber" data-act="openStripeCfg" id="banner-stripe-cfg" style="min-height:28px;padding:2px 10px;font-size:.78rem">⚙️ ${L("ตั้งค่าลิงก์ Stripe", "Stripe Links")}</button>` : ""}${s.is_admin ? `<button class="btn btn-sm btn-emerald" data-act="openUsersView" id="banner-users" style="min-height:28px;padding:2px 10px;font-size:.78rem">👥 ${L("จัดการผู้ใช้ (Users)", "Manage Users")}</button>` : ""}<button class="btn btn-sm" data-act="payChoose" id="banner-packages" style="min-height:28px;padding:2px 10px;font-size:.78rem">📦 ${L("ดูหน้าแพ็กเกจ", "Packages")}</button><button class="link sm" data-act="account" id="banner-manage">${L("บัญชี", "Account")}</button></div>`;
         return;
       }
       if (s.expired) { el.className = "banner expired"; el.innerHTML = `<span>🔒 ${s.lapsed ? L("แพ็กเกจ PRO หมดอายุ", "PRO pass expired") : L("หมดเวลาทดลองใช้ฟรี 7 วัน", "7-day free trial ended")}</span>${proBtn("banner-pay")}`; return; }
@@ -5328,18 +5331,50 @@
       const proUntilMs = tsMs(u.pro_until);
       const now = Date.now();
 
-      // Calculate months subscribed
-      let proMonths = Number(u.pro_months) || 0;
-      if (!proMonths && (u.subscription_status === "pro" || proSinceMs > 0) && !isAdm) {
-        if (proSinceMs > 0) {
-          const endRef = proUntilMs > proSinceMs ? proUntilMs : now;
-          proMonths = Math.max(1, Math.ceil((endRef - proSinceMs) / PASS_MS));
-        } else {
-          proMonths = 1;
+      const noteStr = String(u.admin_note || "");
+      const hasExplicitZeroMonths = typeof u.pro_months === "number" && u.pro_months === 0;
+      const isFreeGrant = !isAdm && (
+        u.plan === "free_grant" ||
+        u.plan === "extended_trial" ||
+        (u.subscription_status === "pro" && hasExplicitZeroMonths) ||
+        (u.subscription_status === "pro" && !u.stripe_customer_id && !u.stripe_subscription_id && (/ใช้ฟรี|ให้.*ฟรี|ทดลอง|ทดสอบ|tester|free/i.test(noteStr) || email === "ekkaluk.sv01@gmail.com"))
+      );
+
+      // Calculate paid months subscribed (0 for Free Grant / Extended Trial / Admin)
+      let proMonths = 0;
+      let freeGrantMonths = 0;
+      let freeGrantDaysTotal = 0;
+      if (isFreeGrant) {
+        proMonths = 0;
+        const startRef = proSinceMs || createdMs || now;
+        const endRef = proUntilMs > startRef ? proUntilMs : now + 30 * 864e5;
+        freeGrantDaysTotal = Math.max(1, Math.round((endRef - startRef) / 864e5));
+        freeGrantMonths = Math.max(1, Math.round(freeGrantDaysTotal / 30));
+      } else if (!isAdm) {
+        proMonths = Number(u.pro_months) || 0;
+        if (!proMonths && !hasExplicitZeroMonths && (u.subscription_status === "pro" || proSinceMs > 0)) {
+          if (proSinceMs > 0) {
+            const endRef = proUntilMs > proSinceMs ? proUntilMs : now;
+            proMonths = Math.max(1, Math.ceil((endRef - proSinceMs) / PASS_MS));
+          } else {
+            proMonths = 1;
+          }
         }
       }
 
-      let statusKey = "trial"; // admin | pro | trial | expired
+      // Calculate estimated revenue (0฿ for Free Grant / Trial / Admin)
+      let estRevenue = 0;
+      if (!isAdm && !isFreeGrant && proMonths > 0) {
+        if (u.plan === "promptpay_365d" && proMonths % 12 === 0) {
+          estRevenue = (proMonths / 12) * 990;
+        } else if (u.plan === "promptpay_90d" && proMonths % 3 === 0) {
+          estRevenue = (proMonths / 3) * 269;
+        } else {
+          estRevenue = proMonths * 99;
+        }
+      }
+
+      let statusKey = "trial"; // admin | pro | free_grant | trial | expired
       let statusBadge = "";
       let planLabel = "";
       let detailLabel = "";
@@ -5351,6 +5386,25 @@
         statusBadge = `<span class="pill pill-emerald">👑 Admin • ${L("ฟรีตลอดชีพ", "Lifetime")}</span>`;
         planLabel = L("สิทธิ์ Admin ตลอดชีพ", "Lifetime Admin");
         detailLabel = L("ใช้งานได้ไม่จำกัด", "Unlimited access");
+      } else if (isFreeGrant && u.subscription_status === "pro" && (!proUntilMs || proUntilMs > now)) {
+        statusKey = "free_grant";
+        const durTxt = freeGrantDaysTotal >= 360
+          ? L("1 ปี", "1 yr")
+          : freeGrantMonths >= 1 && Math.abs(freeGrantDaysTotal - freeGrantMonths * 30) <= 5
+          ? `${freeGrantMonths} ${L("เดือน", "mo")}`
+          : `${freeGrantDaysTotal} ${L("วัน", "d")}`;
+        statusBadge = `<span class="pill pill-sky">🎁 ${L(`ใช้ฟรีพิเศษ (${durTxt})`, `Free Grant (${durTxt})`)}</span>`;
+        planLabel = L("🎁 สิทธิ์ใช้ฟรีพิเศษ / ทดสอบระบบ (0฿)", "🎁 Free Grant / System Tester (0฿)");
+        if (proUntilMs) {
+          remDays = Math.max(0, Math.ceil((proUntilMs - now) / 864e5));
+          expiringSoon = remDays <= 5;
+          detailLabel = L(`ใช้ฟรีถึง ${fmtDate(dkey(new Date(proUntilMs)))} (เหลือ ${remDays} วัน)`, `Free until ${fmtDate(dkey(new Date(proUntilMs)))} (${remDays}d left)`);
+          if (expiringSoon) {
+            statusBadge += ` <span class="pill pill-amber">⚠️ ${L(`ใกล้หมด (${remDays} วัน)`, `Expiring (${remDays}d)`)}</span>`;
+          }
+        } else {
+          detailLabel = L("สิทธิ์ใช้ฟรีพิเศษ (ไม่คิดค่าใช้จ่าย)", "Complimentary Free Access (0฿)");
+        }
       } else if (u.subscription_status === "pro" && (!proUntilMs || proUntilMs > now)) {
         statusKey = "pro";
         statusBadge = `<span class="pill pill-emerald">💎 PRO (${proMonths} ${L("เดือน", "mo")})</span>`;
@@ -5362,7 +5416,7 @@
           ? L("📱 QR PromptPay (ราย 3 เดือน 90 วัน)", "📱 QR PromptPay (90d)")
           : u.plan === "promptpay_30d"
           ? L("📱 QR PromptPay (รายเดือน 30 วัน)", "📱 QR PromptPay (30d)")
-          : L("💎 สมาชิก PRO", "💎 Active PRO");
+          : L("💎 สมาชิก PRO (ชำระเงินแล้ว)", "💎 Paid PRO Member");
         if (proUntilMs) {
           remDays = Math.max(0, Math.ceil((proUntilMs - now) / 864e5));
           expiringSoon = remDays <= 5;
@@ -5378,8 +5432,8 @@
         const lapsedPro = u.subscription_status === "pro" && proUntilMs && proUntilMs <= now;
         if (lapsedPro || u.subscription_status === "canceled" || remMs <= 0) {
           statusKey = "expired";
-          statusBadge = `<span class="pill pill-rose">🔒 ${lapsedPro ? L("PRO หมดอายุ", "PRO Expired") : u.subscription_status === "canceled" ? L("ยกเลิก PRO", "Canceled") : L("หมดทดลองฟรี", "Trial Expired")}</span>`;
-          planLabel = lapsedPro ? L("เคยสมัคร PRO", "Past PRO Member") : L("🎁 ทดลองใช้ฟรี 7 วัน (หมดเวลา)", "🎁 7-Day Free Trial (Ended)");
+          statusBadge = `<span class="pill pill-rose">🔒 ${lapsedPro ? (isFreeGrant ? L("หมดสิทธิ์ใช้ฟรีพิเศษ", "Free Grant Ended") : L("PRO หมดอายุ", "PRO Expired")) : u.subscription_status === "canceled" ? L("ยกเลิก PRO", "Canceled") : L("หมดทดลองฟรี", "Trial Expired")}</span>`;
+          planLabel = lapsedPro ? (isFreeGrant ? L("🎁 เคยได้รับสิทธิ์ใช้ฟรีพิเศษ", "🎁 Past Free Grant") : L("เคยสมัคร PRO", "Past PRO Member")) : L("🎁 ทดลองใช้ฟรี 7 วัน (หมดเวลา)", "🎁 7-Day Free Trial (Ended)");
           detailLabel = proUntilMs ? L(`หมดอายุเมื่อ ${fmtDate(dkey(new Date(proUntilMs)))}`, `Expired ${fmtDate(dkey(new Date(proUntilMs)))}`) : L(`เริ่มทดลองเมื่อ ${fmtDate(dkey(new Date(trialStartMs)))}`, `Trial started ${fmtDate(dkey(new Date(trialStartMs)))}`);
         } else {
           statusKey = "trial";
@@ -5397,6 +5451,9 @@
         ...u,
         email,
         isAdm,
+        isFreeGrant,
+        freeGrantMonths,
+        freeGrantDaysTotal,
         statusKey,
         statusBadge,
         planLabel,
@@ -5405,7 +5462,7 @@
         expiringSoon,
         selPkgLabel,
         proMonths,
-        estRevenue: proMonths * 99,
+        estRevenue,
         createdMs,
         trialStartMs,
         lastLoginMs,
@@ -5444,7 +5501,25 @@
         const snap = await fb.getDocs(fb.collection(fb.db, "users"));
         const list = [];
         snap.forEach(docSnap => {
-          list.push({ uid: docSnap.id, ...docSnap.data() });
+          const d = { uid: docSnap.id, ...docSnap.data() };
+          // Auto-normalize free grant accounts (e.g., Ekkaluk Porngsai) so Firestore stores plan="free_grant" & pro_months=0
+          const em = (d.email || "").toLowerCase();
+          const note = String(d.admin_note || "");
+          if (
+            d.subscription_status === "pro" &&
+            !d.is_admin &&
+            !d.stripe_customer_id &&
+            !d.stripe_subscription_id &&
+            (em === "ekkaluk.sv01@gmail.com" || /ใช้ฟรี|ให้.*ฟรี|ทดลอง|ทดสอบ|tester/i.test(note)) &&
+            (d.plan !== "free_grant" || Number(d.pro_months) > 0)
+          ) {
+            d.plan = "free_grant";
+            d.pro_months = 0;
+            if (isUserAdmin() && fb?.setDoc && fb?.doc) {
+              fb.setDoc(fb.doc(fb.db, "users", d.uid), { plan: "free_grant", pro_months: 0 }, { merge: true }).catch(() => {});
+            }
+          }
+          list.push(d);
         });
         // Ensure current logged-in user is in the list
         if (state.user?.uid && !list.some(x => x.uid === state.user.uid)) {
@@ -5498,12 +5573,34 @@
           ${u.selPkgLabel ? `<div>📦 <b>${L("แพ็กเกจที่ลูกค้าเลือกไว้ล่าสุด:", "Last selected package:")}</b> <span class="sky">${esc(u.selPkgLabel)}</span></div>` : ""}
           ${u.user_feedback ? `<div style="margin-top:4px">💬 <b>${L("ความคิดเห็นจากลูกค้า:", "Customer Feedback:")}</b> “${esc(u.user_feedback)}” ${u.user_feedback_at ? `<span class="muted sm">(${fmtDT(tsMs(u.user_feedback_at))})</span>` : ""}</div>` : ""}
         </div>` : ""}
+
+        <div style="padding:10px 12px;border-radius:12px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);display:grid;gap:8px">
+          <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
+            <b style="font-size:.86rem;color:var(--sky)">🎁 ${L("กำหนดสิทธิ์ให้ใช้ฟรี / ทดลองระบบมากกว่า 1 เดือน (0฿ ไม่คิดเงิน)", "Grant Free Access / Extended System Trial (0฿ No Charge)")}</b>
+            <span class="chip chip-sky" style="font-size:.68rem">${L("ไม่นำไปคิดยอดรายได้สะสม", "Excluded from revenue")}</span>
+          </div>
+          <div class="row" style="gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky)" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="1">🎁 ${L("ใช้ฟรี 1 เดือน (30 วัน)", "Free 1 mo (30d)")}</button>
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky)" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="2">🎁 ${L("ใช้ฟรี 2 เดือน (60 วัน)", "Free 2 mo (60d)")}</button>
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky)" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="3">🎁 ${L("ใช้ฟรี 3 เดือน (90 วัน)", "Free 3 mo (90d)")}</button>
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky)" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="6">🎁 ${L("ใช้ฟรี 6 เดือน (180 วัน)", "Free 6 mo (180d)")}</button>
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky)" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="12">🎁 ${L("ใช้ฟรี 1 ปี (365 วัน)", "Free 1 yr (365d)")}</button>
+          </div>
+          <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
+            <span class="muted sm">${L("หรือกำหนดจำนวนวันใช้ฟรีเอง:", "Or set custom free days:")}</span>
+            <input class="input" type="number" id="custom-free-days-inp" min="1" max="3650" value="${u.remDays > 7 ? u.remDays : 60}" style="width:95px;min-height:32px;padding:4px 8px;font-size:.84rem">
+            <span class="muted sm">${L("วัน", "days")}</span>
+            <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.55);background:rgba(56,189,248,.16);color:#e0f2fe" data-act="adminCustomFreeDays" data-uid="${esc(u.uid)}">✨ ${L("ตั้งวันใช้ฟรีตามจำนวนนี้ (0฿)", "Apply Custom Free Days (0฿)")}</button>
+          </div>
+        </div>
+
         <div class="form-grid">
           <label class="field">
             <span>🏷️ ${L("สถานะแพ็กเกจ (Account Status)", "Account Status")}</span>
             <select class="input" name="status">
-              <option value="trial" ${u.statusKey === "trial" ? "selected" : ""}>🎁 ${L("ทดลองใช้ฟรี 7 วัน (Free Trial)", "7-Day Free Trial")}</option>
-              <option value="pro" ${u.statusKey === "pro" ? "selected" : ""}>💎 ${L("สมาชิก PRO (Active PRO)", "Active PRO")}</option>
+              <option value="trial" ${u.statusKey === "trial" ? "selected" : ""}>🎁 ${L("ทดลองใช้ฟรี 7 วันมาตรฐาน (7-Day Trial)", "7-Day Free Trial")}</option>
+              <option value="free_grant" ${u.statusKey === "free_grant" ? "selected" : ""}>🎁 ${L("สิทธิ์ใช้ฟรีพิเศษ / ทดสอบระบบ (0฿ ไม่คิดเงิน)", "Free Grant / System Tester (0฿)")}</option>
+              <option value="pro" ${u.statusKey === "pro" ? "selected" : ""}>💎 ${L("สมาชิก PRO ชำระเงินแล้ว (Paid PRO)", "Paid PRO Member")}</option>
               <option value="admin" ${u.statusKey === "admin" ? "selected" : ""}>👑 ${L("Admin ฟรีตลอดชีพ (Lifetime Admin)", "Lifetime Admin")}</option>
               <option value="canceled" ${u.statusKey === "expired" ? "selected" : ""}>🔒 ${L("หมดอายุ / ยกเลิก (Expired / Canceled)", "Expired / Canceled")}</option>
             </select>
@@ -5511,34 +5608,35 @@
           <label class="field">
             <span>💳 ${L("รูปแบบการสมัคร (Plan Type)", "Plan Type")}</span>
             <select class="input" name="plan">
-              <option value="trial" ${!u.plan || u.plan === "trial" ? "selected" : ""}>🎁 ${L("บัญชีทดลองฟรี (Free Trial)", "Free Trial")}</option>
-              <option value="card_subscription" ${u.plan === "card_subscription" ? "selected" : ""}>💳 ${L("บัตรเครดิต/เดบิต รายเดือน", "Credit/Debit Card Monthly")}</option>
-              <option value="promptpay_30d" ${u.plan === "promptpay_30d" ? "selected" : ""}>📱 ${L("QR PromptPay รายเดือน (30 วัน)", "QR PromptPay (30 Days)")}</option>
-              <option value="promptpay_90d" ${u.plan === "promptpay_90d" ? "selected" : ""}>📱 ${L("QR PromptPay ราย 3 เดือน (90 วัน)", "QR PromptPay (90 Days)")}</option>
-              <option value="promptpay_365d" ${u.plan === "promptpay_365d" ? "selected" : ""}>📱 ${L("QR PromptPay รายปี (365 วัน)", "QR PromptPay (365 Days)")}</option>
-              <option value="lifetime_admin" ${u.plan === "lifetime_admin" ? "selected" : ""}>👑 ${L("ฟรีตลอดชีพ (Lifetime)", "Lifetime Access")}</option>
+              <option value="trial" ${!u.plan || u.plan === "trial" ? "selected" : ""}>🎁 ${L("บัญชีทดลองฟรี 7 วัน (0฿)", "7-Day Free Trial (0฿)")}</option>
+              <option value="free_grant" ${u.isFreeGrant || u.plan === "free_grant" || u.plan === "extended_trial" ? "selected" : ""}>🎁 ${L("สิทธิ์ใช้ฟรีพิเศษ / ทดสอบระบบ (0฿ ไม่ตัดเงิน)", "Free Grant / Tester (0฿ No Charge)")}</option>
+              <option value="card_subscription" ${!u.isFreeGrant && u.plan === "card_subscription" ? "selected" : ""}>💳 ${L("บัตรเครดิต/เดบิต รายเดือน (99฿)", "Credit/Debit Card Monthly (99฿)")}</option>
+              <option value="promptpay_30d" ${!u.isFreeGrant && u.plan === "promptpay_30d" ? "selected" : ""}>📱 ${L("QR PromptPay รายเดือน 30 วัน (99฿)", "QR PromptPay 30d (99฿)")}</option>
+              <option value="promptpay_90d" ${!u.isFreeGrant && u.plan === "promptpay_90d" ? "selected" : ""}>📱 ${L("QR PromptPay ราย 3 เดือน 90 วัน (269฿)", "QR PromptPay 90d (269฿)")}</option>
+              <option value="promptpay_365d" ${!u.isFreeGrant && u.plan === "promptpay_365d" ? "selected" : ""}>📱 ${L("QR PromptPay รายปี 365 วัน (990฿)", "QR PromptPay 365d (990฿)")}</option>
+              <option value="lifetime_admin" ${u.plan === "lifetime_admin" ? "selected" : ""}>👑 ${L("ฟรีตลอดชีพ (Lifetime Admin)", "Lifetime Access")}</option>
             </select>
           </label>
           <label class="field">
-            <span>🗓️ ${L("จำนวนเดือนที่ซื้อ PRO สะสม (เดือน)", "Total PRO Months Purchased")}</span>
-            <input class="input" type="number" name="pro_months" min="0" max="1200" value="${u.proMonths}">
+            <span>🗓️ ${L("จำนวนเดือนที่ซื้อ PRO จริง (ใช้ฟรีใส่ 0)", "Paid PRO Months (0 for Free Grant)")}</span>
+            <input class="input" type="number" name="pro_months" min="0" max="1200" value="${u.isFreeGrant ? 0 : u.proMonths}">
           </label>
           <label class="field">
-            <span>⏳ ${L("วันหมดอายุ PRO (เว้นว่าง = ต่ออายุอัตโนมัติ)", "PRO Valid Until (optional)")}</span>
+            <span>⏳ ${L("วันหมดอายุสิทธิ์ (PRO / ใช้ฟรีถึงวันที่)", "Valid Until Date")}</span>
             <input class="input" type="date" name="pro_until" value="${u.proUntilMs ? untilDate : ""}">
           </label>
           <label class="field full">
-            <span>📝 ${L("บันทึกช่วยจำของ Admin (เช่น ช่องทางโอน / หมายเหตุ)", "Admin Note (optional)")}</span>
-            <input class="input" name="admin_note" value="${esc(u.admin_note || "")}" placeholder="${L("เช่น โอนผ่าน PromptPay 3 เดือน / ลูกค้า VIP", "e.g. Paid 3 months via PromptPay / VIP user")}">
+            <span>📝 ${L("บันทึกช่วยจำของ Admin (เช่น ให้ใช้ฟรี 1 ปี / ผู้ทดสอบระบบ / ช่องทางโอน)", "Admin Note (e.g. Free 1 yr / Beta tester / Payment note)")}</span>
+            <input class="input" name="admin_note" value="${esc(u.admin_note || "")}" placeholder="${L("เช่น ให้ใช้ฟรี 1 ปี / ทดลองระบบ 3 เดือน / โอนผ่าน PromptPay", "e.g. Free 1 year / Beta tester 3 months / Paid via PromptPay")}">
           </label>
         </div>
         <div class="row" style="gap:6px;flex-wrap:wrap;padding:8px 10px;border-radius:12px;background:var(--surface-2)">
-          <small class="muted" style="margin-right:4px">⚡ ${L("ปรับด่วน:", "Quick grant:")}</small>
-          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1">＋30 ${L("วัน (1 ด.)", "d (1 mo)")}</button>
-          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="3">＋90 ${L("วัน (3 ด.)", "d (3 mo)")}</button>
-          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="12">＋365 ${L("วัน (1 ปี)", "d (1 yr)")}</button>
+          <small class="muted" style="margin-right:4px">💎 ${L("กรณีลูกค้าชำระเงินจริง:", "Paid PRO grant:")}</small>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1">💎 ${L("จ่ายแล้ว +1 ด. (99฿)", "Paid +1m (99฿)")}</button>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="3">💎 ${L("จ่ายแล้ว +3 ด. (269฿)", "Paid +3m (269฿)")}</button>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="12">💎 ${L("จ่ายแล้ว +1 ปี (990฿)", "Paid +1y (990฿)")}</button>
           <button type="button" class="btn btn-sm" data-act="adminQuickTrial" data-uid="${esc(u.uid)}">↺ ${L("รีเซ็ตทดลองฟรี 7 วัน", "Reset 7d Trial")}</button>
-          <button type="button" class="btn btn-sm" data-act="adminCopyRemind" data-uid="${esc(u.uid)}">📋 ${L("คัดลอกข้อความแจ้งเตือนต่ออายุ", "Copy Renewal Reminder")}</button>
+          <button type="button" class="btn btn-sm" data-act="adminCopyRemind" data-uid="${esc(u.uid)}">📋 ${L("คัดลอกแจ้งเตือน", "Copy Reminder")}</button>
         </div>
         <div class="row" style="margin-top:6px;gap:8px">
           <button class="btn btn-amber grow" type="submit">💾 ${L("บันทึกข้อมูลผู้ใช้", "Save User")}</button>
@@ -5614,18 +5712,20 @@
 
       const totalUsers = all.length;
       const proUsers = all.filter(u => u.statusKey === "pro");
+      const freeGrantUsers = all.filter(u => u.statusKey === "free_grant");
       const trialUsers = all.filter(u => u.statusKey === "trial");
       const expiredUsers = all.filter(u => u.statusKey === "expired");
       const expiringUsers = all.filter(u => u.expiringSoon);
       const feedbackUsers = all.filter(u => u.user_feedback);
       const adminUsers = all.filter(u => u.statusKey === "admin");
-      const totalProMonths = all.reduce((s, u) => s + (u.isAdm ? 0 : u.proMonths), 0);
-      const totalRevenue = totalProMonths * 99;
+      const totalProMonths = all.reduce((s, u) => s + (u.isAdm || u.isFreeGrant ? 0 : u.proMonths), 0);
+      const totalRevenue = all.reduce((s, u) => s + (u.isAdm || u.isFreeGrant ? 0 : u.estRevenue), 0);
 
       const filters = [
         ["all", `👥 ${L("ทั้งหมด", "All")} (${totalUsers})`],
-        ["pro", `💎 ${L("สมาชิก PRO", "PRO")} (${proUsers.length})`],
-        ["trial", `🎁 ${L("ทดลองฟรี", "Free Trial")} (${trialUsers.length})`],
+        ["pro", `💎 ${L("สมาชิก PRO (จ่ายเงิน)", "Paid PRO")} (${proUsers.length})`],
+        ["free_grant", `🎁 ${L("ใช้ฟรีพิเศษ/ทดสอบ", "Free Grant")} (${freeGrantUsers.length})`],
+        ["trial", `⏳ ${L("ทดลองฟรี 7 วัน", "7d Trial")} (${trialUsers.length})`],
         ["expiring", `⚠️ ${L("ใกล้หมดอายุ", "Expiring Soon")} (${expiringUsers.length})`],
         ["expired", `🔒 ${L("หมดอายุ", "Expired")} (${expiredUsers.length})`],
         ["feedback", `💬 ${L("มีความคิดเห็น", "Feedback")} (${feedbackUsers.length})`],
@@ -5636,7 +5736,7 @@
         <div class="view-head">
           <div>
             <h1>👥 ${L("ระบบจัดการผู้ใช้งาน (User Management)", "User & Subscription Management")}</h1>
-            <p>${L("ตรวจสอบรายชื่อผู้ใช้งาน ประเภทบัญชี (ฟรี / รายเดือน 30 วัน / ราย 3 เดือน 90 วัน / รายปี 365 วัน) แจ้งเตือนต่ออายุ และดูความคิดเห็นจากลูกค้า", "Monitor registered users, package types (Free / 30d / 90d / 365d), expiring passes, and customer feedback")}</p>
+            <p>${L("แยกสถานะชัดเจนระหว่าง ลูกค้าชำระเงินจริง (PRO) • ผู้ได้รับสิทธิ์ใช้ฟรีพิเศษ/ทดสอบระบบ (0฿ ไม่คิดยอดเงิน) • และผู้ใช้ทดลองฟรี 7 วัน", "Clearly separates Paid PRO subscribers, Complimentary Free Grants / System Testers (0฿), and 7-day Free Trial users")}</p>
           </div>
           <div class="row" style="gap:8px;flex-wrap:wrap">
             <button class="btn btn-sm btn-amber" data-act="openStripeCfg" id="btn-users-stripe-cfg">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button>
@@ -5648,11 +5748,11 @@
         <div class="grid">
           <div class="kpis">
             <div class="kpi"><b class="sky">${totalUsers}</b><span>👥 ${L("ผู้ใช้ทั้งหมดที่ลงทะเบียน", "Total Registered Users")}</span></div>
-            <div class="kpi"><b class="emerald">${proUsers.length}</b><span>💎 ${L("สมาชิก PRO ปัจจุบัน", "Active PRO Members")}</span></div>
-            <div class="kpi"><b class="amber">${trialUsers.length}</b><span>🎁 ${L("กำลังทดลองใช้ฟรี 7 วัน", "Active 7-Day Free Trial")}</span></div>
+            <div class="kpi"><b class="emerald">${proUsers.length}</b><span>💎 ${L("สมาชิก PRO (ชำระเงินจริง)", "Paid PRO Members")}</span></div>
+            <div class="kpi"><b class="amber">${trialUsers.length} / ${freeGrantUsers.length}</b><span>🎁 ${L("ทดลอง 7 วัน / ใช้ฟรีพิเศษ (0฿)", "7d Trial / Free Grant (0฿)")}</span></div>
             <div class="kpi"><b class="rose">${expiringUsers.length} / ${expiredUsers.length}</b><span>⚠️ ${L("ใกล้หมดอายุ / หมดอายุแล้ว", "Expiring Soon / Expired")}</span></div>
-            <div class="kpi"><b class="violet">${totalProMonths} ${L("เดือน", "mo")}</b><span>🗓️ ${L("จำนวนเดือน PRO สะสมรวม", "Total PRO Months Sold")}</span></div>
-            <div class="kpi"><b class="emerald">${money(totalRevenue)} ฿</b><span>💰 ${L("ยอดรายได้สะสมโดยประมาณ", "Est. Total Revenue")}</span></div>
+            <div class="kpi"><b class="violet">${totalProMonths} ${L("เดือน", "mo")}</b><span>🗓️ ${L("จำนวนเดือน PRO ที่ขายได้จริง", "Paid PRO Months Sold")}</span></div>
+            <div class="kpi"><b class="emerald">${money(totalRevenue)} ฿</b><span>💰 ${L("ยอดรายได้สะสมจริง (ไม่รวมสิทธิ์ฟรี)", "Actual Revenue (Excl. Free Grants)")}</span></div>
           </div>
 
           ${adminUsersState.err ? `<div class="warn-box">⚠️ ${L("ไม่สามารถดึงรายชื่อทั้งหมดจากคลาวด์ได้:", "Couldn't load all users from cloud:")} ${esc(adminUsersState.err)}</div>` : ""}
@@ -5676,9 +5776,9 @@
                       <th style="text-align:left;padding:10px 8px">👤 ${L("ผู้ใช้งาน & ความคิดเห็น", "User & Feedback")}</th>
                       <th style="text-align:left;padding:10px 8px">🏷️ ${L("สถานะบัญชี", "Status")}</th>
                       <th style="text-align:left;padding:10px 8px">💳 ${L("รูปแบบการลงทะเบียน / แพ็กเกจ", "Plan / Package")}</th>
-                      <th style="text-align:center;padding:10px 8px">🗓️ ${L("ซื้อรายเดือนแล้ว", "PRO Months")}</th>
+                      <th style="text-align:center;padding:10px 8px">🗓️ ${L("ซื้อรายเดือนแล้ว / ยอดชำระ", "Paid Months / Revenue")}</th>
                       <th style="text-align:left;padding:10px 8px">📅 ${L("สมัครเมื่อ / ล็อกอินล่าสุด", "Registered / Last Login")}</th>
-                      <th style="text-align:right;padding:10px 8px">⚙️ ${L("จัดการ", "Actions")}</th>
+                      <th style="text-align:right;padding:10px 8px">⚙️ ${L("จัดการสิทธิ์ (ฟรี / จ่ายเงิน)", "Manage Access")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -5710,7 +5810,10 @@
                           <div class="muted sm">🔑 ${u.auth_provider === "demo" ? L("โหมดสาธิต", "Demo") : "Google Sign-In"}</div>
                         </td>
                         <td style="text-align:center;padding:10px 8px;vertical-align:middle">
-                          ${u.isAdm ? `<span class="chip chip-emerald">∞ ${L("ตลอดชีพ", "Lifetime")}</span>` : u.proMonths > 0 ? `
+                          ${u.isAdm ? `<span class="chip chip-emerald">∞ ${L("ตลอดชีพ", "Lifetime")}</span>` : u.isFreeGrant ? `
+                            <div><span class="chip chip-sky" style="font-size:.75rem">🎁 ${L("ให้ใช้ฟรี / ทดสอบ", "Free Grant")}</span></div>
+                            <div class="muted sm" style="margin-top:2px">0 ${L("เดือน", "mo")} (0 ฿)</div>
+                          ` : u.proMonths > 0 ? `
                             <div><b class="emerald mono" style="font-size:1.05rem">${u.proMonths} ${L("เดือน", "mo")}</b></div>
                             <div class="muted sm">(${money(u.estRevenue)} ฿)</div>
                           ` : `<span class="muted">0 ${L("เดือน", "mo")} (${L("ฟรี", "Free")})</span>`}
@@ -5720,12 +5823,19 @@
                           <div class="muted sm">🟢 ${L("ล่าสุด:", "Last seen:")} ${u.lastLoginMs ? fmtDT(u.lastLoginMs) : "-"} (${u.loginCount} ${L("ครั้ง", "logins")})</div>
                         </td>
                         <td style="text-align:right;padding:10px 8px;vertical-align:middle">
-                          <div class="row" style="justify-content:flex-end;gap:5px;flex-wrap:wrap">
-                            <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1" title="${L("เพิ่ม PRO +1 เดือน (30 วัน)", "Add +1 PRO month")}">＋1${L("ด.", "m")}</button>
-                            <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="3" title="${L("เพิ่ม PRO +3 เดือน (90 วัน)", "Add +3 PRO months")}">＋3${L("ด.", "m")}</button>
-                            <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="12" title="${L("เพิ่ม PRO +12 เดือน (365 วัน)", "Add +12 PRO months")}">＋1${L("ปี", "y")}</button>
-                            <button type="button" class="btn btn-sm" data-act="adminCopyRemind" data-uid="${esc(u.uid)}" title="${L("คัดลอกข้อความแจ้งเตือนวันหมดอายุพร้อมแพ็กเกจ 30/90/365 วัน", "Copy renewal reminder message")}">📋 ${L("แจ้งเตือน", "Remind")}</button>
-                            <button type="button" class="btn btn-sm" data-act="adminEditUser" data-uid="${esc(u.uid)}">✏️ ${L("จัดการ", "Edit")}</button>
+                          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                            <div class="row" style="justify-content:flex-end;gap:4px;flex-wrap:wrap">
+                              <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky);padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="1" title="${L("ให้ทดลองใช้ฟรี 1 เดือน (30 วัน) โดยไม่คิดค่าใช้จ่าย (0฿)", "Grant 1 month free access (0฿)")}">🎁${L("ฟรี+1ด.", "Free+1m")}</button>
+                              <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky);padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="3" title="${L("ให้ทดลองใช้ฟรี 3 เดือน (90 วัน) โดยไม่คิดค่าใช้จ่าย (0฿)", "Grant 3 months free access (0฿)")}">🎁${L("ฟรี+3ด.", "Free+3m")}</button>
+                              <button type="button" class="btn btn-sm" style="border-color:rgba(56,189,248,.45);color:var(--sky);padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickFree" data-uid="${esc(u.uid)}" data-m="12" title="${L("ให้ใช้ฟรี 1 ปี (365 วัน) โดยไม่คิดค่าใช้จ่าย (0฿)", "Grant 1 year free access (0฿)")}">🎁${L("ฟรี+1ปี", "Free+1y")}</button>
+                            </div>
+                            <div class="row" style="justify-content:flex-end;gap:4px;flex-wrap:wrap">
+                              <button type="button" class="btn btn-sm btn-emerald" style="padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1" title="${L("ลูกค้าชำระเงินแล้ว +1 เดือน (99฿)", "Paid PRO +1 month (99฿)")}">💎+1${L("ด.", "m")}</button>
+                              <button type="button" class="btn btn-sm btn-emerald" style="padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="3" title="${L("ลูกค้าชำระเงินแล้ว +3 เดือน (269฿)", "Paid PRO +3 months (269฿)")}">💎+3${L("ด.", "m")}</button>
+                              <button type="button" class="btn btn-sm btn-emerald" style="padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="12" title="${L("ลูกค้าชำระเงินแล้ว +1 ปี (990฿)", "Paid PRO +1 year (990฿)")}">💎+1${L("ปี", "y")}</button>
+                              <button type="button" class="btn btn-sm" style="padding:2px 7px;min-height:26px;font-size:.74rem" data-act="adminCopyRemind" data-uid="${esc(u.uid)}" title="${L("คัดลอกข้อความแจ้งเตือนวันหมดอายุ", "Copy renewal reminder")}">📋</button>
+                              <button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:26px;font-size:.74rem" data-act="adminEditUser" data-uid="${esc(u.uid)}">✏️ ${L("จัดการ", "Edit")}</button>
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -9103,17 +9213,83 @@
         renderUsers();
       },
       adminEditUser: d => openAdminUserEditDlg(d.uid),
+      adminQuickFree: async d => {
+        const uidKey = d.uid;
+        const addM = Math.max(1, Number(d.m) || 1);
+        const raw = adminUsersState.users.find(x => x.uid === uidKey);
+        if (!raw) return;
+        const u = classifyUserRecord(raw);
+        const addDays = addM === 12 ? 365 : addM === 6 ? 180 : addM === 3 ? 90 : addM * 30;
+        const baseMs = u.isFreeGrant && u.proUntilMs > Date.now() ? u.proUntilMs : Date.now();
+        const nextUntil = new Date(baseMs + addDays * 864e5);
+        const durLabel = addM === 12 ? L("1 ปี (365 วัน)", "1 year (365d)") : `${addM} ${L("เดือน", "mo")} (${addDays} ${L("วัน", "d")})`;
+        const defaultNote = L(`ให้ใช้ฟรีพิเศษ ${durLabel} (ไม่มีค่าใช้จ่าย 0฿)`, `Free grant ${durLabel} (0฿)`);
+        const patch = {
+          subscription_status: "pro",
+          plan: "free_grant",
+          is_admin: false,
+          pro_months: 0,
+          pro_until: nextUntil,
+          pro_since: raw.pro_since || new Date(),
+          admin_note: (raw.admin_note || "").trim() || defaultNote,
+          granted_by: state.user?.email || "admin",
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : new Date()
+        };
+        try {
+          if (fb?.setDoc && fb?.doc) {
+            await fb.setDoc(fb.doc(fb.db, "users", uidKey), patch, { merge: true });
+          }
+          Object.assign(raw, patch, { updated_at: Date.now() });
+          $("#user-edit-dlg")?.close();
+          renderUsers();
+          toast(L(`🎁 กำหนดสิทธิ์ใช้ฟรีพิเศษ (${durLabel} • 0฿ ไม่คิดเงิน) ให้ ${u.name || u.email} เรียบร้อยแล้ว`, `🎁 Granted free access (${durLabel} • 0฿) to ${u.name || u.email}`));
+        } catch (e) {
+          console.error(e);
+          toast(L("อัปเดตสิทธิ์ใช้ฟรีไม่สำเร็จ: ", "Failed to grant free access: ") + (e.message || e));
+        }
+      },
+      adminCustomFreeDays: async d => {
+        const uidKey = d.uid;
+        const raw = adminUsersState.users.find(x => x.uid === uidKey);
+        if (!raw) return;
+        const days = Math.max(1, Math.min(3650, Number($("#custom-free-days-inp")?.value) || 60));
+        const nextUntil = new Date(Date.now() + days * 864e5);
+        const defaultNote = L(`ให้ทดลองใช้ฟรีพิเศษ ${days} วัน (0฿ ไม่คิดเงิน)`, `Extended free trial ${days} days (0฿)`);
+        const patch = {
+          subscription_status: "pro",
+          plan: "free_grant",
+          is_admin: false,
+          pro_months: 0,
+          pro_until: nextUntil,
+          pro_since: raw.pro_since || new Date(),
+          admin_note: ($("#user-edit-form input[name='admin_note']")?.value || raw.admin_note || "").trim() || defaultNote,
+          granted_by: state.user?.email || "admin",
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : new Date()
+        };
+        try {
+          if (fb?.setDoc && fb?.doc) {
+            await fb.setDoc(fb.doc(fb.db, "users", uidKey), patch, { merge: true });
+          }
+          Object.assign(raw, patch, { updated_at: Date.now() });
+          $("#user-edit-dlg")?.close();
+          renderUsers();
+          toast(L(`🎁 ตั้งสิทธิ์ใช้ฟรีพิเศษ ${days} วัน (0฿ ไม่คิดเงิน) ให้ ${raw.name || raw.email} เรียบร้อยแล้ว`, `🎁 Set ${days} days free access (0฿) for ${raw.name || raw.email}`));
+        } catch (e) {
+          console.error(e);
+          toast(L("อัปเดตสิทธิ์ไม่สำเร็จ: ", "Failed to update user: ") + (e.message || e));
+        }
+      },
       adminQuickMonths: async d => {
         const uidKey = d.uid;
         const addM = Math.max(1, Number(d.m) || 1);
         const raw = adminUsersState.users.find(x => x.uid === uidKey);
         if (!raw) return;
         const u = classifyUserRecord(raw);
-        const baseMs = Math.max(Date.now(), u.proUntilMs || 0);
+        const baseMs = Math.max(Date.now(), (!u.isFreeGrant && u.proUntilMs) ? u.proUntilMs : 0);
         const addDaysMs = addM === 12 ? 365 * 864e5 : addM === 3 ? 90 * 864e5 : addM * PASS_MS;
         const nextUntil = new Date(baseMs + addDaysMs);
-        const nextMonths = (u.proMonths || 0) + addM;
-        const nextPlan = addM === 12 ? "promptpay_365d" : addM === 3 ? "promptpay_90d" : (u.plan && u.plan !== "trial" && u.plan !== "lifetime_admin" ? u.plan : "promptpay_30d");
+        const nextMonths = (u.isFreeGrant ? 0 : (u.proMonths || 0)) + addM;
+        const nextPlan = addM === 12 ? "promptpay_365d" : addM === 3 ? "promptpay_90d" : (u.plan && u.plan !== "trial" && u.plan !== "free_grant" && u.plan !== "lifetime_admin" ? u.plan : "promptpay_30d");
         const patch = {
           subscription_status: "pro",
           plan: nextPlan,
@@ -9132,7 +9308,7 @@
           Object.assign(raw, patch, { updated_at: Date.now() });
           $("#user-edit-dlg")?.close();
           renderUsers();
-          toast(L(`💎 เพิ่มสิทธิ์ PRO +${addM} เดือน ให้ ${u.name || u.email} เรียบร้อย (รวม ${nextMonths} เดือน)`, `💎 Granted +${addM} PRO months to ${u.name || u.email} (Total: ${nextMonths} mo)`));
+          toast(L(`💎 เพิ่มสิทธิ์ PRO (ชำระเงินแล้ว +${addM} เดือน) ให้ ${u.name || u.email} เรียบร้อย (รวม ${nextMonths} เดือน)`, `💎 Granted +${addM} Paid PRO months to ${u.name || u.email} (Total: ${nextMonths} mo)`));
         } catch (e) {
           console.error(e);
           toast(L("อัปเดตสิทธิ์ไม่สำเร็จ: ", "Failed to update user: ") + (e.message || e));
@@ -9680,11 +9856,20 @@
         if (!raw) return;
         const st = fd.status || "trial";
         const isAdm = st === "admin" || fd.plan === "lifetime_admin";
-        const subStatus = isAdm ? "pro" : (st === "pro" ? "pro" : st === "canceled" ? "canceled" : "trial");
-        const plan = isAdm ? "lifetime_admin" : (fd.plan || (subStatus === "pro" ? "promptpay_30d" : "trial"));
-        const proMonths = Math.max(0, Number(fd.pro_months) || 0);
+        const isFreeGrant = !isAdm && (st === "free_grant" || fd.plan === "free_grant" || fd.plan === "extended_trial" || (st === "pro" && Number(fd.pro_months) === 0));
+        const subStatus = isAdm || isFreeGrant || st === "pro" ? "pro" : st === "canceled" ? "canceled" : "trial";
+        const plan = isAdm
+          ? "lifetime_admin"
+          : isFreeGrant
+          ? "free_grant"
+          : (fd.plan && fd.plan !== "free_grant" ? fd.plan : (subStatus === "pro" ? "promptpay_30d" : "trial"));
+        const proMonths = isAdm || isFreeGrant || subStatus !== "pro" ? 0 : Math.max(1, Number(fd.pro_months) || 1);
         const untilStr = (fd.pro_until || "").trim();
-        const proUntilDate = untilStr ? new Date(untilStr + "T23:59:59") : null;
+        const proUntilDate = untilStr
+          ? new Date(untilStr + "T23:59:59")
+          : isFreeGrant
+          ? (raw.pro_until ? new Date(tsMs(raw.pro_until)) : new Date(Date.now() + 30 * 864e5))
+          : null;
         const patch = {
           subscription_status: subStatus,
           plan,
