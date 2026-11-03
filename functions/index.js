@@ -61,10 +61,15 @@ exports.stripeWebhook = onRequest(
           if (s.payment_status !== "paid") break; // async methods: wait for async_payment_succeeded
           const email = (s.customer_details?.email || s.customer_email || "").toLowerCase();
           const ref = await findUserRef({ uid: s.client_reference_id, email, customerId: s.customer });
+          const curDoc = ref ? await ref.get() : null;
+          const curData = curDoc?.exists ? curDoc.data() : {};
+          const prevMonths = Number(curData?.pro_months) || 0;
           const data = {
             subscription_status: "pro",
             stripe_customer_id: s.customer || null,
-            pro_since: FieldValue.serverTimestamp(),
+            pro_since: curData?.pro_since || FieldValue.serverTimestamp(),
+            last_paid_at: FieldValue.serverTimestamp(),
+            pro_months: prevMonths + 1,
           };
           if (s.mode === "subscription") {
             // 💳 Card subscription — auto-renews until customer.subscription.deleted
@@ -73,7 +78,7 @@ exports.stripeWebhook = onRequest(
             data.pro_until = FieldValue.delete();
           } else {
             // 📱 PromptPay one-time payment — 30-day pass (extends any remaining time)
-            const current = ref ? (await ref.get()).data()?.pro_until?.toMillis?.() : 0;
+            const current = curData?.pro_until?.toMillis?.() || 0;
             const base = Math.max(Date.now(), current || 0);
             data.plan = "promptpay_30d";
             data.pro_until = admin.firestore.Timestamp.fromMillis(base + PASS_MS);

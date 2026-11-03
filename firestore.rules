@@ -2,31 +2,167 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid} (Firebase Auth UID)
+    // Fields:
+    //   - email: string (required on create, <= 320 chars) - User email address (PII)
+    //   - name: string (required on create, <= 200 chars) - Display name
+    //   - photo: string (required on create, <= 2048 chars) - Profile avatar URL
+    //   - subscription_status: string (required on create, 'trial' on user create; admin/webhook managed thereafter)
+    //   - trial_start_at: timestamp (required on create, immutable for regular users)
+    //   - created_at: timestamp (required on create, immutable for regular users)
+    //   - last_login_at: timestamp | int (optional) - Last sign-in timestamp
+    //   - login_count: int (optional, >= 0) - Number of sign-ins
+    //   - auth_provider: string (optional, <= 100 chars) - Auth provider identifier (e.g., 'google.com')
+    //   - updated_at: timestamp (optional) - Last profile update timestamp
+    //   - pro_since: timestamp (optional, admin/webhook only)
+    //   - pro_until: timestamp (optional, admin/webhook only)
+    //   - pro_months: number (optional, admin only)
+    //   - plan: string (optional, <= 100 chars, admin/webhook only)
+    //   - stripe_customer_id: string (optional, <= 200 chars, admin/webhook only)
+    //   - stripe_subscription_id: string (optional, <= 200 chars, admin/webhook only)
+    //   - is_admin: bool (optional, admin only)
+    //   - admin_note: string (optional, <= 1000 chars, admin only)
+    //   - granted_by: string (optional, <= 320 chars, admin only)
+    //   - granted_at: timestamp (optional, admin only)
+    //   - canceled_at: timestamp (optional, admin/webhook only)
+    //
+    // Subcollection: users/{uid}/data
+    // Document ID: {docId} (e.g., 'main')
+    // Fields:
+    //   - payload: string (required, <= 950000 chars) - Serialized JSON app state
+    //   - updated_at: timestamp (optional) - Server timestamp of save
+    //
+    // Collection: pending_subscriptions
+    // Document ID: {email}
+    // Fields: Written exclusively by Cloud Functions (Admin SDK); read-only for Admin.
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['btigert02@gmail.com'];
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    function isValidOptionalString(field, maxLen) {
+      return !(field in request.resource.data)
+        || request.resource.data[field] == null
+        || (request.resource.data[field] is string && request.resource.data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in both create and update)
+    // ===============================================================
+
+    function isValidUserProfile(data) {
+      return (!('email' in data) || (data.email is string && data.email.size() <= 320))
+        && (!('name' in data) || (data.name is string && data.name.size() <= 200))
+        && (!('photo' in data) || (data.photo is string && data.photo.size() <= 2048))
+        && (!('auth_provider' in data) || (data.auth_provider is string && data.auth_provider.size() <= 100))
+        && (!('last_login_at' in data) || data.last_login_at is timestamp || data.last_login_at is int)
+        && (!('login_count' in data) || (data.login_count is int && data.login_count >= 0 && data.login_count <= 1000000))
+        && (!('updated_at' in data) || data.updated_at is timestamp);
+    }
+
+    function isValidUserCreate(data) {
+      return hasRequiredFields(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at'])
+        && hasOnlyAllowedFields(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at', 'last_login_at', 'login_count', 'auth_provider'])
+        && data.subscription_status == 'trial'
+        && data.trial_start_at == request.time
+        && data.created_at == request.time
+        && isValidUserProfile(data);
+    }
+
+    function isValidUserUpdate(data) {
+      return areImmutableFieldsUnchanged([
+          'subscription_status', 'trial_start_at', 'stripe_customer_id', 'stripe_subscription_id',
+          'pro_since', 'pro_until', 'pro_months', 'plan', 'is_admin', 'admin_note',
+          'canceled_at', 'created_at', 'granted_by', 'granted_at'
+        ])
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['email', 'name', 'photo', 'last_login_at', 'login_count', 'auth_provider', 'updated_at'])
+        && isValidUserProfile(data);
+    }
+
+    function isValidAdminUserWrite(data) {
+      return data.keys().size() <= 30
+        && isValidUserProfile(data)
+        && isValidOptionalString('subscription_status', 50)
+        && isValidOptionalString('plan', 100)
+        && isValidOptionalString('stripe_customer_id', 200)
+        && isValidOptionalString('stripe_subscription_id', 200)
+        && isValidOptionalString('admin_note', 1000)
+        && isValidOptionalString('granted_by', 320)
+        && (!('pro_months' in data) || data.pro_months == null || (data.pro_months is number && data.pro_months >= 0 && data.pro_months <= 1200))
+        && (!('is_admin' in data) || data.is_admin is bool);
+    }
+
+    function isValidUserData(data) {
+      return hasRequiredFields(['payload'])
+        && hasOnlyAllowedFields(['payload', 'updated_at'])
+        && data.payload is string
+        && data.payload.size() <= 950000
+        && (!('updated_at' in data) || data.updated_at is timestamp);
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
     match /users/{uid} {
-      allow read: if request.auth != null && request.auth.uid == uid;
+      allow read: if isOwner(uid) || isAdmin();
 
-      // First Google sign-in: client may only create a 'trial' record stamped with server time
-      allow create: if request.auth != null && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['email', 'name', 'photo', 'trial_start_at', 'subscription_status', 'created_at'])
-        && request.resource.data.subscription_status == 'trial'
-        && request.resource.data.trial_start_at == request.time
-        && request.resource.data.created_at == request.time;
+      // First Google sign-in: regular user may only create a 'trial' record stamped with server time;
+      // Admin may create or provision user documents directly.
+      allow create: if (isOwner(uid) && isValidUserCreate(request.resource.data))
+        || (isAdmin() && isValidAdminUserWrite(request.resource.data));
 
-      // Profile edits allowed, but billing fields are writable ONLY by the Stripe webhook (Admin SDK)
-      allow update: if request.auth != null && request.auth.uid == uid
-        && !request.resource.data.diff(resource.data).affectedKeys()
-             .hasAny(['subscription_status', 'trial_start_at', 'stripe_customer_id', 'stripe_subscription_id', 'pro_since', 'pro_until', 'plan', 'canceled_at', 'created_at']);
+      // Profile & login metadata edits allowed for owner (billing/privilege fields locked);
+      // Admin may update subscription status, pro_months, pro_until, plan, is_admin, etc.
+      allow update: if (isOwner(uid) && isValidUserUpdate(request.resource.data))
+        || (isAdmin() && isValidAdminUserWrite(request.resource.data));
 
-      allow delete: if false;
+      allow delete: if isAdmin();
 
       // App data (tasks, projects, Life Planner)
       match /data/{docId} {
-        allow read, write: if request.auth != null && request.auth.uid == uid;
+        allow read: if isOwner(uid) || isAdmin();
+        allow create, update: if (isOwner(uid) || isAdmin()) && isValidUserData(request.resource.data);
+        allow delete: if isOwner(uid) || isAdmin();
       }
     }
 
     match /pending_subscriptions/{email} {
-      allow read, write: if false;
+      allow read: if isAdmin();
+      allow write: if false;
     }
   }
 }

@@ -2429,6 +2429,7 @@
         <section class="view" id="view-calendar" hidden></section>
         <section class="view" id="view-report" hidden></section>
         <section class="view" id="view-guide" hidden></section>
+        <section class="view" id="view-users" hidden></section>
       </main>
     </div>
   </div>
@@ -2468,6 +2469,9 @@
   </dialog>
   <dialog id="drive-dlg" closedby="any" aria-labelledby="drive-dlg-title" style="width:min(680px,95vw)">
     <div class="dlg-body" id="drive-dlg-body"></div>
+  </dialog>
+  <dialog id="user-edit-dlg" closedby="any" aria-labelledby="user-edit-dlg-title">
+    <form class="dlg-body" data-form="adminSaveUser" id="user-edit-form" autocomplete="off"></form>
   </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
@@ -2634,7 +2638,7 @@
     }
     function grantAdminLifetime(notify = true) {
       state.sub = { ...state.sub, subscription_status: "pro", plan: "lifetime_admin", is_admin: true, pro_until: null, simulated: false };
-      save(); renderBanner(); checkPaywall(); if ($("#account-dlg").open) renderAccount();
+      save(); renderStatic(); renderBanner(); checkPaywall(); if ($("#account-dlg").open) renderAccount();
       if (notify) toast(L("🎉 ปลดล็อกสิทธิ์ Admin ฟรีตลอดชีพเรียบร้อยแล้ว!", "🎉 Lifetime Admin PRO unlocked successfully!"));
     }
     function checkAdminUrl() {
@@ -2840,6 +2844,7 @@
 
     /* ===================== Static UI (i18n) ===================== */
     const GOOGLE_SVG = `<svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+    const isUserAdmin = () => !!(state.sub?.is_admin || state.sub?.plan === "lifetime_admin" || ADMIN_EMAILS.some(e => e.toLowerCase() === (state.user?.email || "").toLowerCase()));
     function renderStatic() {
       document.documentElement.lang = LANG;
       document.title = L("FlowRecover x Life Planner — จัดตารางงานยืดหยุ่น & สมุดวางแผนชีวิต", "FlowRecover x Life Planner — Adaptive Time-Blocking & Life Planner OS");
@@ -2863,6 +2868,7 @@
     ${FIREBASE_READY ? "" : `<p class="muted sm">${L("⚙️ โหมดสาธิต: ยังไม่ได้ตั้งค่า Firebase (ดู SETUP.md)", "⚙️ Demo mode: Firebase not configured (see SETUP.md)")}</p>`}
   </div>`;
       const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["calendar", "📆", L("ปฏิทิน", "Calendar")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
+      if (isUserAdmin()) tabs.push(["users", "👥", L("จัดการผู้ใช้", "Users")]);
       $("#bottom-nav").setAttribute("aria-label", L("เมนูหลัก", "Main menu"));
       $("#bottom-nav").innerHTML = `<div class="brand side-brand"><span class="brand-logo"><img src="/icon-192.png?v=2" alt="FlowRecover"></span><span class="brand-word">FlowRecover</span></div>` +
         tabs.map(([k, i, l]) => `<button class="nav-btn ${state.tab === k ? "on" : ""}" data-act="tab" data-tab="${k}" id="nav-${k}"><span class="ico">${i}</span>${l}</button>`).join("");
@@ -2901,7 +2907,7 @@
       if (s.pro) {
         el.className = "banner pro";
         const until = s.is_admin ? L(" • สิทธิ์ Admin ฟรีตลอดชีพ 👑", " • Lifetime Admin 👑") : s.until ? L(` • ใช้ได้ถึง ${fmtDate(dkey(new Date(s.until)))}`, ` • active until ${fmtDate(dkey(new Date(s.until)))}`) : L(" • สมาชิกรายเดือน 99฿", " • 99฿ monthly member");
-        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><button class="link sm" data-act="${s.is_admin ? "account" : s.until ? "payChoose" : "account"}" id="banner-manage">${s.is_admin ? L("บัญชี", "Account") : s.until ? L("ต่ออายุ", "Renew") : L("จัดการ", "Manage")}</button>`;
+        el.innerHTML = `<span>👑 <b>FlowRecover PRO</b>${until}</span><div class="row" style="gap:8px;align-items:center">${s.is_admin ? `<button class="btn btn-sm btn-emerald" data-act="openUsersView" id="banner-users" style="min-height:28px;padding:2px 10px;font-size:.78rem">👥 ${L("จัดการผู้ใช้ (Users)", "Manage Users")}</button>` : ""}<button class="link sm" data-act="${s.is_admin ? "account" : s.until ? "payChoose" : "account"}" id="banner-manage">${s.is_admin ? L("บัญชี", "Account") : s.until ? L("ต่ออายุ", "Renew") : L("จัดการ", "Manage")}</button></div>`;
         return;
       }
       if (s.expired) { el.className = "banner expired"; el.innerHTML = `<span>🔒 ${s.lapsed ? L("แพ็กเกจ PRO หมดอายุ", "PRO pass expired") : L("หมดเวลาทดลองใช้ฟรี 7 วัน", "7-day free trial ended")}</span>${proBtn("banner-pay")}`; return; }
@@ -2910,13 +2916,15 @@
       el.innerHTML = `<div class="banner-row"><span class="banner-text">🎁 ${L("ทดลองฟรี เหลือ", "Free trial:")} <b class="mono">${L(`${d} วัน ${h} ชม. ${m} น.`, `${d}d ${h}h ${m}m left`)}</b></span>${proBtn("banner-pay")}</div><div class="trial-bar" role="progressbar" aria-valuenow="${Math.round(s.pct * 100)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${(s.pct * 100).toFixed(1)}%"></i></div>`;
     }
     function renderView() {
-      ["focus", "queue", "calendar", "projects", "planner", "report", "guide"].forEach(t => {
+      ["focus", "queue", "calendar", "projects", "planner", "report", "guide", "users"].forEach(t => {
         const v = $(`#view-${t}`), on = state.tab === t, nb = $(`#nav-${t}`);
-        if (!v || !nb) return;
-        v.hidden = !on; nb.classList.toggle("on", on);
-        if (on) nb.setAttribute("aria-current", "page"); else nb.removeAttribute("aria-current");
+        if (v) v.hidden = !on;
+        if (nb) {
+          nb.classList.toggle("on", on);
+          if (on) nb.setAttribute("aria-current", "page"); else nb.removeAttribute("aria-current");
+        }
       });
-      ({ focus: renderFocus, queue: renderQueue, calendar: renderCalendar, projects: renderProjects, planner: renderPlanner, report: renderReport, guide: renderGuide })[state.tab]?.();
+      ({ focus: renderFocus, queue: renderQueue, calendar: renderCalendar, projects: renderProjects, planner: renderPlanner, report: renderReport, guide: renderGuide, users: renderUsers })[state.tab]?.();
     }
 
     /* ---------- ⚡ Focus ---------- */
@@ -4362,6 +4370,404 @@
     </div>`;
     }
 
+    /* ---------- 👥 Admin User Management Dashboard ---------- */
+    const adminUsersState = {
+      loading: false,
+      loaded: false,
+      err: "",
+      users: [],
+      q: "",
+      filter: "all" // all | pro | trial | expired | admin
+    };
+    const tsMs = v => {
+      if (!v) return 0;
+      if (typeof v === "number") return v;
+      if (typeof v?.toMillis === "function") return v.toMillis();
+      if (typeof v?.seconds === "number") return v.seconds * 1000;
+      const p = Date.parse(v);
+      return Number.isNaN(p) ? 0 : p;
+    };
+    function classifyUserRecord(u) {
+      const email = (u.email || "").toLowerCase();
+      const isAdm = !!(u.is_admin || u.plan === "lifetime_admin" || ADMIN_EMAILS.some(e => e.toLowerCase() === email));
+      const createdMs = tsMs(u.created_at) || tsMs(u.trial_start_at) || Date.now();
+      const trialStartMs = tsMs(u.trial_start_at) || createdMs;
+      const lastLoginMs = tsMs(u.last_login_at) || tsMs(u.updated_at) || createdMs;
+      const proSinceMs = tsMs(u.pro_since);
+      const proUntilMs = tsMs(u.pro_until);
+      const now = Date.now();
+
+      // Calculate months subscribed
+      let proMonths = Number(u.pro_months) || 0;
+      if (!proMonths && (u.subscription_status === "pro" || proSinceMs > 0) && !isAdm) {
+        if (proSinceMs > 0) {
+          const endRef = proUntilMs > proSinceMs ? proUntilMs : now;
+          proMonths = Math.max(1, Math.ceil((endRef - proSinceMs) / PASS_MS));
+        } else {
+          proMonths = 1;
+        }
+      }
+
+      let statusKey = "trial"; // admin | pro | trial | expired
+      let statusBadge = "";
+      let planLabel = "";
+      let detailLabel = "";
+
+      if (isAdm) {
+        statusKey = "admin";
+        statusBadge = `<span class="pill pill-emerald">👑 Admin • ${L("ฟรีตลอดชีพ", "Lifetime")}</span>`;
+        planLabel = L("สิทธิ์ Admin ตลอดชีพ", "Lifetime Admin");
+        detailLabel = L("ใช้งานได้ไม่จำกัด", "Unlimited access");
+      } else if (u.subscription_status === "pro" && (!proUntilMs || proUntilMs > now)) {
+        statusKey = "pro";
+        statusBadge = `<span class="pill pill-emerald">💎 PRO (${proMonths} ${L("เดือน", "mo")})</span>`;
+        planLabel = u.plan === "card_subscription"
+          ? L("💳 บัตรเครดิต/เดบิต (ต่ออายุอัตโนมัติ)", "💳 Card Auto-Renew")
+          : u.plan === "promptpay_30d"
+          ? L("📱 QR PromptPay (รายเดือน)", "📱 QR PromptPay")
+          : L("💎 สมาชิก PRO รายเดือน", "💎 Monthly PRO");
+        if (proUntilMs) {
+          const remDays = Math.max(0, Math.ceil((proUntilMs - now) / 864e5));
+          detailLabel = L(`ใช้ได้ถึง ${fmtDate(dkey(new Date(proUntilMs)))} (เหลือ ${remDays} วัน)`, `Until ${fmtDate(dkey(new Date(proUntilMs)))} (${remDays}d left)`);
+        } else {
+          detailLabel = L("ต่ออายุรายเดือนอัตโนมัติ (Active)", "Active monthly subscription");
+        }
+      } else {
+        const remMs = trialStartMs + TRIAL_MS - now;
+        const lapsedPro = u.subscription_status === "pro" && proUntilMs && proUntilMs <= now;
+        if (lapsedPro || u.subscription_status === "canceled" || remMs <= 0) {
+          statusKey = "expired";
+          statusBadge = `<span class="pill pill-rose">🔒 ${lapsedPro ? L("PRO หมดอายุ", "PRO Expired") : u.subscription_status === "canceled" ? L("ยกเลิก PRO", "Canceled") : L("หมดทดลองฟรี", "Trial Expired")}</span>`;
+          planLabel = lapsedPro ? L("เคยสมัคร PRO", "Past PRO Member") : L("🎁 ทดลองใช้ฟรี 7 วัน (หมดเวลา)", "🎁 7-Day Free Trial (Ended)");
+          detailLabel = proUntilMs ? L(`หมดอายุเมื่อ ${fmtDate(dkey(new Date(proUntilMs)))}`, `Expired ${fmtDate(dkey(new Date(proUntilMs)))}`) : L(`เริ่มทดลองเมื่อ ${fmtDate(dkey(new Date(trialStartMs)))}`, `Trial started ${fmtDate(dkey(new Date(trialStartMs)))}`);
+        } else {
+          statusKey = "trial";
+          const remDays = Math.max(1, Math.ceil(remMs / 864e5));
+          statusBadge = `<span class="pill pill-amber">🎁 ${L(`ทดลองฟรี (เหลือ ${remDays} วัน)`, `Free Trial (${remDays}d left)`)}</span>`;
+          planLabel = L("🎁 ทดลองใช้ฟรี 7 วัน", "🎁 7-Day Free Trial");
+          detailLabel = L(`ครบกำหนด ${fmtDate(dkey(new Date(trialStartMs + TRIAL_MS)))}`, `Ends ${fmtDate(dkey(new Date(trialStartMs + TRIAL_MS)))}`);
+        }
+      }
+
+      return {
+        ...u,
+        email,
+        isAdm,
+        statusKey,
+        statusBadge,
+        planLabel,
+        detailLabel,
+        proMonths,
+        estRevenue: proMonths * 99,
+        createdMs,
+        trialStartMs,
+        lastLoginMs,
+        proSinceMs,
+        proUntilMs,
+        loginCount: Number(u.login_count) || 1
+      };
+    }
+
+    async function loadAdminUsers(force = false) {
+      if (adminUsersState.loading) return;
+      if (!fb || !fb.getDocs || !fb.collection) {
+        // Fallback for demo/local mode: show current user
+        adminUsersState.users = state.user ? [{
+          uid: state.user.uid,
+          name: state.user.name,
+          email: state.user.email,
+          photo: state.user.photo,
+          subscription_status: state.sub?.subscription_status || "trial",
+          plan: state.sub?.plan || "",
+          is_admin: state.sub?.is_admin || false,
+          trial_start_at: state.sub?.trial_start_at || Date.now(),
+          created_at: state.sub?.trial_start_at || Date.now(),
+          last_login_at: Date.now(),
+          login_count: 1,
+          auth_provider: state.user.demo ? "demo" : "google.com"
+        }] : [];
+        adminUsersState.loaded = true;
+        if (state.tab === "users") renderUsers();
+        return;
+      }
+      adminUsersState.loading = true;
+      adminUsersState.err = "";
+      if (state.tab === "users") renderUsers();
+      try {
+        const snap = await fb.getDocs(fb.collection(fb.db, "users"));
+        const list = [];
+        snap.forEach(docSnap => {
+          list.push({ uid: docSnap.id, ...docSnap.data() });
+        });
+        // Ensure current logged-in user is in the list
+        if (state.user?.uid && !list.some(x => x.uid === state.user.uid)) {
+          list.push({
+            uid: state.user.uid,
+            name: state.user.name,
+            email: state.user.email,
+            photo: state.user.photo,
+            subscription_status: state.sub?.subscription_status || "trial",
+            plan: state.sub?.plan || "",
+            is_admin: isUserAdmin(),
+            trial_start_at: state.sub?.trial_start_at || Date.now(),
+            created_at: state.sub?.trial_start_at || Date.now(),
+            last_login_at: Date.now()
+          });
+        }
+        adminUsersState.users = list;
+        adminUsersState.loaded = true;
+        if (force) toast(L(`🔄 โหลดข้อมูลผู้ใช้ ${list.length} บัญชีเรียบร้อย`, `🔄 Loaded ${list.length} user accounts`));
+      } catch (e) {
+        console.error("loadAdminUsers error:", e);
+        adminUsersState.err = e.message || String(e);
+      } finally {
+        adminUsersState.loading = false;
+        if (state.tab === "users") renderUsers();
+      }
+    }
+
+    function openAdminUserEditDlg(uid) {
+      const raw = adminUsersState.users.find(x => x.uid === uid);
+      if (!raw) return;
+      const u = classifyUserRecord(raw);
+      const f = $("#user-edit-form");
+      if (!f) return;
+      f.dataset.uid = u.uid;
+      const untilDate = u.proUntilMs ? dkey(new Date(u.proUntilMs)) : dkey(new Date(Date.now() + 30 * 864e5));
+      f.innerHTML = `
+        <div class="dlg-head">
+          <h2 id="user-edit-dlg-title">👤 ${L("จัดการบัญชีผู้ใช้", "Manage User Account")}</h2>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="user-edit-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <div class="row" style="gap:10px;padding:10px 12px;border-radius:12px;background:var(--surface-2)">
+          <div class="avatar" style="width:44px;height:44px">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || u.email || "?").charAt(0).toUpperCase())}</div>
+          <div class="grow" style="min-width:0">
+            <b>${esc(u.name || "-")}</b>
+            <div class="muted sm" style="overflow:hidden;text-overflow:ellipsis">${esc(u.email || u.uid)}</div>
+          </div>
+          ${u.statusBadge}
+        </div>
+        <div class="form-grid">
+          <label class="field">
+            <span>🏷️ ${L("สถานะแพ็กเกจ (Account Status)", "Account Status")}</span>
+            <select class="input" name="status">
+              <option value="trial" ${u.statusKey === "trial" ? "selected" : ""}>🎁 ${L("ทดลองใช้ฟรี 7 วัน (Free Trial)", "7-Day Free Trial")}</option>
+              <option value="pro" ${u.statusKey === "pro" ? "selected" : ""}>💎 ${L("สมาชิก PRO รายเดือน (Active PRO)", "Active Monthly PRO")}</option>
+              <option value="admin" ${u.statusKey === "admin" ? "selected" : ""}>👑 ${L("Admin ฟรีตลอดชีพ (Lifetime Admin)", "Lifetime Admin")}</option>
+              <option value="canceled" ${u.statusKey === "expired" ? "selected" : ""}>🔒 ${L("หมดอายุ / ยกเลิก (Expired / Canceled)", "Expired / Canceled")}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>💳 ${L("รูปแบบการสมัคร (Plan Type)", "Plan Type")}</span>
+            <select class="input" name="plan">
+              <option value="trial" ${!u.plan || u.plan === "trial" ? "selected" : ""}>🎁 ${L("บัญชีทดลองฟรี (Free Trial)", "Free Trial")}</option>
+              <option value="card_subscription" ${u.plan === "card_subscription" ? "selected" : ""}>💳 ${L("บัตรเครดิต/เดบิต รายเดือน", "Credit/Debit Card Monthly")}</option>
+              <option value="promptpay_30d" ${u.plan === "promptpay_30d" ? "selected" : ""}>📱 ${L("QR PromptPay / โอนรายเดือน", "QR PromptPay Monthly")}</option>
+              <option value="lifetime_admin" ${u.plan === "lifetime_admin" ? "selected" : ""}>👑 ${L("ฟรีตลอดชีพ (Lifetime)", "Lifetime Access")}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>🗓️ ${L("จำนวนเดือนที่ซื้อ PRO สะสม (เดือน)", "Total PRO Months Purchased")}</span>
+            <input class="input" type="number" name="pro_months" min="0" max="1200" value="${u.proMonths}">
+          </label>
+          <label class="field">
+            <span>⏳ ${L("วันหมดอายุ PRO (เว้นว่าง = ต่ออายุอัตโนมัติ)", "PRO Valid Until (optional)")}</span>
+            <input class="input" type="date" name="pro_until" value="${u.proUntilMs ? untilDate : ""}">
+          </label>
+          <label class="field full">
+            <span>📝 ${L("บันทึกช่วยจำของ Admin (เช่น ช่องทางโอน / หมายเหตุ)", "Admin Note (optional)")}</span>
+            <input class="input" name="admin_note" value="${esc(u.admin_note || "")}" placeholder="${L("เช่น โอนผ่าน PromptPay 3 เดือน / ลูกค้า VIP", "e.g. Paid 3 months via PromptPay / VIP user")}">
+          </label>
+        </div>
+        <div class="row" style="gap:6px;flex-wrap:wrap;padding:8px 10px;border-radius:12px;background:var(--surface-2)">
+          <small class="muted" style="margin-right:4px">⚡ ${L("ปรับด่วน:", "Quick grant:")}</small>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1">＋1 ${L("เดือน PRO", "mo PRO")}</button>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="3">＋3 ${L("เดือน PRO", "mo PRO")}</button>
+          <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="12">＋12 ${L("เดือน (1 ปี)", "mo (1 yr)")}</button>
+          <button type="button" class="btn btn-sm" data-act="adminQuickTrial" data-uid="${esc(u.uid)}">↺ ${L("รีเซ็ตทดลองฟรี 7 วัน", "Reset 7d Trial")}</button>
+        </div>
+        <div class="row" style="margin-top:6px;gap:8px">
+          <button class="btn btn-amber grow" type="submit">💾 ${L("บันทึกข้อมูลผู้ใช้", "Save User")}</button>
+          <button class="btn" type="button" data-act="closeDlg" data-id="user-edit-dlg">${L("ยกเลิก", "Cancel")}</button>
+        </div>`;
+      const dlg = $("#user-edit-dlg");
+      if (dlg && !dlg.open) dlg.showModal();
+    }
+
+    function exportAdminUsersExcel() {
+      const items = adminUsersState.users.map(classifyUserRecord).sort((a, b) => b.lastLoginMs - a.lastLoginMs);
+      const rows = [
+        [
+          L("ชื่อผู้ใช้", "Name"),
+          L("อีเมล", "Email"),
+          L("สถานะบัญชี", "Status"),
+          L("ประเภทแพ็กเกจ", "Plan Type"),
+          L("จำนวนเดือนที่ซื้อ PRO (เดือน)", "PRO Months"),
+          L("ยอดชำระสะสมโดยประมาณ (฿)", "Est. Revenue (฿)"),
+          L("รายละเอียดวันหมดอายุ", "Validity Details"),
+          L("วันที่ลงทะเบียนครั้งแรก", "Registered At"),
+          L("เข้าใช้งานล่าสุด", "Last Login"),
+          L("จำนวนครั้งที่ล็อกอิน", "Login Count"),
+          L("หมายเหตุ Admin", "Admin Note"),
+          "UID"
+        ],
+        ...items.map(u => [
+          u.name || "-",
+          u.email || "-",
+          u.statusKey.toUpperCase(),
+          u.planLabel,
+          u.proMonths,
+          u.estRevenue,
+          u.detailLabel,
+          u.createdMs ? fmtDT(u.createdMs) : "-",
+          u.lastLoginMs ? fmtDT(u.lastLoginMs) : "-",
+          u.loginCount,
+          u.admin_note || "",
+          u.uid
+        ])
+      ];
+      const csv = "\ufeff" + rows.map(r => r.map(v => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+      a.download = `FlowRecover_Users_${dkey()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast(L("⬇️ ดาวน์โหลดรายงานรายชื่อผู้ใช้ (.csv เปิดใน Excel ได้) แล้ว", "⬇️ Downloaded users report (.csv)"));
+    }
+
+    function renderUsers() {
+      const el = $("#view-users");
+      if (!el) return;
+      if (!adminUsersState.loaded && !adminUsersState.loading) {
+        loadAdminUsers(false);
+      }
+      const all = adminUsersState.users.map(classifyUserRecord).sort((a, b) => b.lastLoginMs - a.lastLoginMs);
+      const q = (adminUsersState.q || "").trim().toLowerCase();
+      const flt = adminUsersState.filter || "all";
+      const filtered = all.filter(u => {
+        if (flt !== "all" && u.statusKey !== flt) return false;
+        if (q && !`${u.name || ""} ${u.email || ""} ${u.uid || ""} ${u.admin_note || ""}`.toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      const totalUsers = all.length;
+      const proUsers = all.filter(u => u.statusKey === "pro");
+      const trialUsers = all.filter(u => u.statusKey === "trial");
+      const expiredUsers = all.filter(u => u.statusKey === "expired");
+      const adminUsers = all.filter(u => u.statusKey === "admin");
+      const totalProMonths = all.reduce((s, u) => s + (u.isAdm ? 0 : u.proMonths), 0);
+      const totalRevenue = totalProMonths * 99;
+
+      const filters = [
+        ["all", `👥 ${L("ทั้งหมด", "All")} (${totalUsers})`],
+        ["pro", `💎 ${L("สมาชิก PRO", "PRO")} (${proUsers.length})`],
+        ["trial", `🎁 ${L("ทดลองฟรี", "Free Trial")} (${trialUsers.length})`],
+        ["expired", `🔒 ${L("หมดอายุ", "Expired")} (${expiredUsers.length})`],
+        ["admin", `👑 Admin (${adminUsers.length})`]
+      ];
+
+      el.innerHTML = `
+        <div class="view-head">
+          <div>
+            <h1>👥 ${L("ระบบจัดการผู้ใช้งาน (User Management)", "User & Subscription Management")}</h1>
+            <p>${L("ตรวจสอบรายชื่อผู้ใช้งานที่ล็อกอินเข้ามา ประเภทบัญชี (ทดลองฟรี / สมาชิก PRO / Admin) และจำนวนเดือนที่สมัครรายเดือน", "Monitor registered users, sign-in activity, account types (Free Trial / Monthly PRO / Admin), and total subscribed months")}</p>
+          </div>
+          <div class="row" style="gap:8px;flex-wrap:wrap">
+            <button class="btn btn-sm" data-act="refreshAdminUsers" id="btn-users-refresh">${adminUsersState.loading ? "⏳ " + L("กำลังโหลด…", "Loading…") : "🔄 " + L("รีเฟรชข้อมูล", "Refresh")}</button>
+            <button class="btn btn-sm btn-emerald" data-act="exportAdminUsers" id="btn-users-export">⬇️ ${L("ส่งออก Excel (.csv)", "Export CSV")}</button>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="kpis">
+            <div class="kpi"><b class="sky">${totalUsers}</b><span>👥 ${L("ผู้ใช้ทั้งหมดที่ลงทะเบียน", "Total Registered Users")}</span></div>
+            <div class="kpi"><b class="emerald">${proUsers.length}</b><span>💎 ${L("สมาชิก PRO ปัจจุบัน", "Active PRO Members")}</span></div>
+            <div class="kpi"><b class="amber">${trialUsers.length}</b><span>🎁 ${L("กำลังทดลองใช้ฟรี 7 วัน", "Active 7-Day Free Trial")}</span></div>
+            <div class="kpi"><b class="rose">${expiredUsers.length}</b><span>🔒 ${L("หมดอายุทดลอง / รอต่ออายุ", "Expired / Lapsed")}</span></div>
+            <div class="kpi"><b class="violet">${totalProMonths} ${L("เดือน", "mo")}</b><span>🗓️ ${L("จำนวนเดือน PRO สะสมรวม", "Total PRO Months Sold")}</span></div>
+            <div class="kpi"><b class="emerald">${money(totalRevenue)} ฿</b><span>💰 ${L("ยอดรายได้สะสม (99฿/เดือน)", "Est. Total Revenue")}</span></div>
+          </div>
+
+          ${adminUsersState.err ? `<div class="warn-box">⚠️ ${L("ไม่สามารถดึงรายชื่อทั้งหมดจากคลาวด์ได้:", "Couldn't load all users from cloud:")} ${esc(adminUsersState.err)}</div>` : ""}
+
+          <article class="card">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+              <div class="seg" role="tablist" style="flex-wrap:wrap">
+                ${filters.map(([k, label]) => `<button type="button" class="${flt === k ? "on" : ""}" data-act="userFilter" data-v="${k}">${label}</button>`).join("")}
+              </div>
+              <form class="row" data-form="userSearch" style="gap:6px;flex:1;min-width:220px;max-width:360px" autocomplete="off">
+                <input class="input grow" name="q" id="user-search-input" value="${esc(adminUsersState.q)}" placeholder="🔍 ${L("ค้นหาชื่อ, อีเมล, หรือหมายเหตุ…", "Search name, email, note…")}" style="min-height:38px">
+                ${adminUsersState.q ? `<button type="button" class="btn btn-sm" data-act="clearUserSearch">✕</button>` : `<button type="submit" class="btn btn-sm">${L("ค้นหา", "Search")}</button>`}
+              </form>
+            </div>
+
+            ${filtered.length ? `
+              <div style="overflow-x:auto">
+                <table class="tax-table" style="min-width:780px;font-size:.85rem">
+                  <thead>
+                    <tr>
+                      <th style="text-align:left;padding:10px 8px">👤 ${L("ผู้ใช้งาน (ชื่อ / อีเมล)", "User (Name / Email)")}</th>
+                      <th style="text-align:left;padding:10px 8px">🏷️ ${L("สถานะบัญชี", "Status")}</th>
+                      <th style="text-align:left;padding:10px 8px">💳 ${L("รูปแบบการลงทะเบียน / แพ็กเกจ", "Plan / Registration Type")}</th>
+                      <th style="text-align:center;padding:10px 8px">🗓️ ${L("ซื้อรายเดือนแล้ว", "PRO Months")}</th>
+                      <th style="text-align:left;padding:10px 8px">📅 ${L("สมัครเมื่อ / ล็อกอินล่าสุด", "Registered / Last Login")}</th>
+                      <th style="text-align:right;padding:10px 8px">⚙️ ${L("จัดการ", "Actions")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${filtered.map(u => `
+                      <tr>
+                        <td style="text-align:left;padding:10px 8px">
+                          <div class="row" style="gap:10px;align-items:center;flex-wrap:nowrap">
+                            <div class="avatar" style="width:38px;height:38px;flex:none;font-size:.95rem">
+                              ${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || u.email || "?").charAt(0).toUpperCase())}
+                            </div>
+                            <div style="min-width:0">
+                              <div style="font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                                <span>${esc(u.name || L("(ไม่ระบุชื่อ)", "(No name)"))}</span>
+                                ${u.uid === state.user?.uid ? `<span class="chip chip-sky" style="font-size:.66rem;padding:1px 6px">${L("คุณ", "You")}</span>` : ""}
+                              </div>
+                              <div class="muted sm" style="word-break:break-all">${esc(u.email || u.uid)}</div>
+                              ${u.admin_note ? `<div class="sm" style="color:var(--amber);margin-top:2px">📝 ${esc(u.admin_note)}</div>` : ""}
+                            </div>
+                          </div>
+                        </td>
+                        <td style="text-align:left;padding:10px 8px;vertical-align:middle">
+                          ${u.statusBadge}
+                          <div class="muted sm" style="margin-top:4px">${esc(u.detailLabel)}</div>
+                        </td>
+                        <td style="text-align:left;padding:10px 8px;vertical-align:middle">
+                          <b>${esc(u.planLabel)}</b>
+                          <div class="muted sm">🔑 ${u.auth_provider === "demo" ? L("โหมดสาธิต", "Demo") : "Google Sign-In"}</div>
+                        </td>
+                        <td style="text-align:center;padding:10px 8px;vertical-align:middle">
+                          ${u.isAdm ? `<span class="chip chip-emerald">∞ ${L("ตลอดชีพ", "Lifetime")}</span>` : u.proMonths > 0 ? `
+                            <div><b class="emerald mono" style="font-size:1.05rem">${u.proMonths} ${L("เดือน", "mo")}</b></div>
+                            <div class="muted sm">(${money(u.estRevenue)} ฿)</div>
+                          ` : `<span class="muted">0 ${L("เดือน", "mo")} (${L("ฟรี", "Free")})</span>`}
+                        </td>
+                        <td style="text-align:left;padding:10px 8px;vertical-align:middle">
+                          <div class="sm">🆕 ${L("สมัคร:", "Joined:")} <b>${u.createdMs ? fmtDT(u.createdMs) : "-"}</b></div>
+                          <div class="muted sm">🟢 ${L("ล่าสุด:", "Last seen:")} ${u.lastLoginMs ? fmtDT(u.lastLoginMs) : "-"} (${u.loginCount} ${L("ครั้ง", "logins")})</div>
+                        </td>
+                        <td style="text-align:right;padding:10px 8px;vertical-align:middle">
+                          <div class="row" style="justify-content:flex-end;gap:6px;flex-wrap:nowrap">
+                            <button type="button" class="btn btn-sm btn-emerald" data-act="adminQuickMonths" data-uid="${esc(u.uid)}" data-m="1" title="${L("เพิ่ม PRO +1 เดือนทันที", "Add +1 PRO month")}">＋1 ${L("ด.", "mo")}</button>
+                            <button type="button" class="btn btn-sm" data-act="adminEditUser" data-uid="${esc(u.uid)}">✏️ ${L("แก้ไขสิทธิ์", "Manage")}</button>
+                          </div>
+                        </td>
+                      </tr>
+                    `).join("")}
+                  </tbody>
+                </table>
+              </div>
+            ` : `<p class="empty">${adminUsersState.loading ? L("⏳ กำลังดึงข้อมูลผู้ใช้งานจากฐานข้อมูล…", "⏳ Loading users from database…") : L("ไม่พบข้อมูลผู้ใช้งานในหมวดนี้", "No users found matching your filter")}</p>`}
+          </article>
+        </div>`;
+    }
+
     /* ---------- Dialog content ---------- */
     function payOptionsHTML(ctx) {
       return `<div class="pay-opts">
@@ -4487,7 +4893,7 @@
     <div class="row"><div class="avatar" style="width:52px;height:52px;font-size:1.3rem">${u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || "?").charAt(0).toUpperCase())}</div>
       <div class="grow"><b>${esc(u.name || "")}</b><div class="muted sm">${esc(u.email || "")}</div></div></div>
     <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
-    ${s.is_admin ? `<p class="muted sm center" style="padding:8px 0">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("ต่ออายุล่วงหน้า", "Renew early") : L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/month")}</b>${payOptionsHTML("ac")}`}
+    ${s.is_admin ? `<div style="display:grid;gap:8px;padding:6px 0"><p class="muted sm center">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p><button class="btn btn-emerald" data-act="openUsersView" id="btn-account-users">👥 ${L("เปิดระบบจัดการผู้ใช้งาน (User Management)", "Open User Management Dashboard")}</button></div>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("ต่ออายุล่วงหน้า", "Renew early") : L("สมัคร PRO 99฿/เดือน", "Go PRO 99฿/month")}</b>${payOptionsHTML("ac")}`}
     <div class="row" style="justify-content:center"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button></div>
     ${simHTML("ac")}
     <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
@@ -7140,6 +7546,85 @@
         });
         rerender();
         toast(L(`📋 คัดลอกรายรับ ${prevItems.length} รายการมายังเดือนนี้แล้ว`, `📋 Copied ${prevItems.length} income entries to this month`));
+      },
+      openUsersView: () => {
+        if ($("#account-dlg")?.open) $("#account-dlg").close();
+        state.tab = "users";
+        save();
+        renderStatic();
+        renderView();
+        scrollTo({ top: 0, behavior: "smooth" });
+      },
+      refreshAdminUsers: () => loadAdminUsers(true),
+      exportAdminUsers: () => exportAdminUsersExcel(),
+      userFilter: d => {
+        adminUsersState.filter = d.v || "all";
+        renderUsers();
+      },
+      clearUserSearch: () => {
+        adminUsersState.q = "";
+        renderUsers();
+      },
+      adminEditUser: d => openAdminUserEditDlg(d.uid),
+      adminQuickMonths: async d => {
+        const uidKey = d.uid;
+        const addM = Math.max(1, Number(d.m) || 1);
+        const raw = adminUsersState.users.find(x => x.uid === uidKey);
+        if (!raw) return;
+        const u = classifyUserRecord(raw);
+        const baseMs = Math.max(Date.now(), u.proUntilMs || 0);
+        const nextUntil = new Date(baseMs + addM * PASS_MS);
+        const nextMonths = (u.proMonths || 0) + addM;
+        const nextPlan = u.plan && u.plan !== "trial" && u.plan !== "lifetime_admin" ? u.plan : "promptpay_30d";
+        const patch = {
+          subscription_status: "pro",
+          plan: nextPlan,
+          is_admin: false,
+          pro_months: nextMonths,
+          pro_until: nextUntil,
+          pro_since: raw.pro_since || new Date(),
+          last_paid_at: new Date(),
+          granted_by: state.user?.email || "admin",
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : new Date()
+        };
+        try {
+          if (fb?.setDoc && fb?.doc) {
+            await fb.setDoc(fb.doc(fb.db, "users", uidKey), patch, { merge: true });
+          }
+          Object.assign(raw, patch, { updated_at: Date.now() });
+          $("#user-edit-dlg")?.close();
+          renderUsers();
+          toast(L(`💎 เพิ่มสิทธิ์ PRO +${addM} เดือน ให้ ${u.name || u.email} เรียบร้อย (รวม ${nextMonths} เดือน)`, `💎 Granted +${addM} PRO months to ${u.name || u.email} (Total: ${nextMonths} mo)`));
+        } catch (e) {
+          console.error(e);
+          toast(L("อัปเดตสิทธิ์ไม่สำเร็จ: ", "Failed to update user: ") + (e.message || e));
+        }
+      },
+      adminQuickTrial: async d => {
+        const uidKey = d.uid;
+        const raw = adminUsersState.users.find(x => x.uid === uidKey);
+        if (!raw) return;
+        const nowDate = new Date();
+        const patch = {
+          subscription_status: "trial",
+          plan: "trial",
+          is_admin: false,
+          trial_start_at: nowDate,
+          pro_until: null,
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : nowDate
+        };
+        try {
+          if (fb?.setDoc && fb?.doc) {
+            await fb.setDoc(fb.doc(fb.db, "users", uidKey), patch, { merge: true });
+          }
+          Object.assign(raw, patch, { updated_at: Date.now() });
+          $("#user-edit-dlg")?.close();
+          renderUsers();
+          toast(L(`↺ รีเซ็ตวันทดลองใช้ฟรี 7 วันให้ ${raw.name || raw.email} แล้ว`, `↺ Reset 7-day trial for ${raw.name || raw.email}`));
+        } catch (e) {
+          console.error(e);
+          toast(L("รีเซ็ตไม่สำเร็จ: ", "Reset failed: ") + (e.message || e));
+        }
       }
     });
     Object.assign(FORMS, {
@@ -7350,6 +7835,45 @@
         finView().kind = type; rerender();
         toast(type === "inc" ? L(`➕ บันทึกรายรับ ${money(amount)} ฿ แล้ว`, `➕ Income ${money(amount)} ฿ saved`) : L(`➖ บันทึกรายจ่าย ${money(amount)} ฿ แล้ว`, `➖ Expense ${money(amount)} ฿ saved`));
         setTimeout(() => $("#txn-amount")?.focus(), 40);
+      },
+      userSearch: fd => {
+        adminUsersState.q = (fd.q || "").trim();
+        renderUsers();
+      },
+      adminSaveUser: async (fd, f) => {
+        const uidKey = f.dataset.uid;
+        const raw = adminUsersState.users.find(x => x.uid === uidKey);
+        if (!raw) return;
+        const st = fd.status || "trial";
+        const isAdm = st === "admin" || fd.plan === "lifetime_admin";
+        const subStatus = isAdm ? "pro" : (st === "pro" ? "pro" : st === "canceled" ? "canceled" : "trial");
+        const plan = isAdm ? "lifetime_admin" : (fd.plan || (subStatus === "pro" ? "promptpay_30d" : "trial"));
+        const proMonths = Math.max(0, Number(fd.pro_months) || 0);
+        const untilStr = (fd.pro_until || "").trim();
+        const proUntilDate = untilStr ? new Date(untilStr + "T23:59:59") : null;
+        const patch = {
+          subscription_status: subStatus,
+          plan,
+          is_admin: isAdm,
+          pro_months: proMonths,
+          pro_until: isAdm ? null : proUntilDate,
+          admin_note: (fd.admin_note || "").trim(),
+          granted_by: state.user?.email || "admin",
+          updated_at: fb?.serverTimestamp ? fb.serverTimestamp() : new Date()
+        };
+        if (subStatus === "pro" && !raw.pro_since) patch.pro_since = new Date();
+        try {
+          if (fb?.setDoc && fb?.doc) {
+            await fb.setDoc(fb.doc(fb.db, "users", uidKey), patch, { merge: true });
+          }
+          Object.assign(raw, patch, { updated_at: Date.now() });
+          $("#user-edit-dlg")?.close();
+          renderUsers();
+          toast(L(`💾 บันทึกข้อมูลผู้ใช้ ${raw.name || raw.email} เรียบร้อยแล้ว`, `💾 Saved user ${raw.name || raw.email}`));
+        } catch (e) {
+          console.error(e);
+          toast(L("บันทึกไม่สำเร็จ: ", "Save failed: ") + (e.message || e));
+        }
       }
     });
 
@@ -7423,7 +7947,7 @@
       const a = app.initializeApp(FIREBASE_CONFIG);
       fb = {
         auth: auth.getAuth(a), db: fs.getFirestore(a), GoogleAuthProvider: auth.GoogleAuthProvider, signInWithPopup: auth.signInWithPopup, signOut: auth.signOut, reauthenticateWithPopup: auth.reauthenticateWithPopup,
-        doc: fs.doc, getDoc: fs.getDoc, setDoc: fs.setDoc, onSnapshot: fs.onSnapshot, serverTimestamp: fs.serverTimestamp
+        doc: fs.doc, getDoc: fs.getDoc, setDoc: fs.setDoc, updateDoc: fs.updateDoc, collection: fs.collection, getDocs: fs.getDocs, onSnapshot: fs.onSnapshot, serverTimestamp: fs.serverTimestamp
       };
       let unsub = null;
       auth.onAuthStateChanged(fb.auth, async u => {
@@ -7436,9 +7960,29 @@
           const snap = await fb.getDoc(uref);
           if (!snap.exists()) {
             // First Google sign-in → start 7-day trial
-            await fb.setDoc(uref, { email: (u.email || "").toLowerCase(), name: u.displayName || "", photo: u.photoURL || "", trial_start_at: fb.serverTimestamp(), subscription_status: "trial", created_at: fb.serverTimestamp() });
+            await fb.setDoc(uref, {
+              email: (u.email || "").toLowerCase(),
+              name: u.displayName || "",
+              photo: u.photoURL || "",
+              auth_provider: "google.com",
+              trial_start_at: fb.serverTimestamp(),
+              subscription_status: "trial",
+              created_at: fb.serverTimestamp(),
+              last_login_at: fb.serverTimestamp(),
+              login_count: 1
+            });
             state.sub = { subscription_status: "trial", trial_start_at: Date.now(), pro_pending_at: state.sub.pro_pending_at, pro_until: state.sub.pro_until };
             track("CompleteRegistration"); track("StartTrial", { value: 0, currency: "THB" });
+          } else {
+            const prev = snap.data() || {};
+            fb.setDoc(uref, {
+              email: (u.email || prev.email || "").toLowerCase(),
+              name: u.displayName || prev.name || "",
+              photo: u.photoURL || prev.photo || "",
+              auth_provider: "google.com",
+              last_login_at: fb.serverTimestamp(),
+              login_count: (Number(prev.login_count) || 1) + 1
+            }, { merge: true }).catch(() => {});
           }
           if (ADMIN_EMAILS.some(e => e.toLowerCase() === (u.email || "").toLowerCase())) {
             grantAdminLifetime(false);
