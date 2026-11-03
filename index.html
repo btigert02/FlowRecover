@@ -2641,6 +2641,9 @@
   <dialog id="welcome-dlg" closedby="any" aria-labelledby="welcome-dlg-title" style="width:min(700px,95vw)">
     <div class="dlg-body" id="welcome-dlg-body"></div>
   </dialog>
+  <dialog id="stripe-cfg-dlg" closedby="any" aria-labelledby="stripe-cfg-title" style="width:min(660px,95vw)">
+    <form class="dlg-body" data-form="saveStripeLinks" id="stripe-cfg-form" autocomplete="off"></form>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -2656,12 +2659,26 @@
       appId: "1:1061606974975:web:70d3d0f7cf2411dde4f3ca",
       measurementId: "G-RZ2F9H1KQE"
     };
-    // 💳 Card subscription (auto-renews monthly)
+    // 💳 Card subscription (auto-renews monthly) — 30 days (99฿)
     const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/8x2dR9fVC8CCb1d3PS00001";
-    // 📱 PromptPay QR (one-time 99฿ = 30 days). Stripe PromptPay does not support subscriptions,
-    //    so create a second one-time Payment Link with PromptPay enabled and paste it here.
-    //    Leave empty to fall back to STRIPE_PAYMENT_LINK.
+    // 📱 PromptPay QR & Card (one-time 99฿ = 30 days)
     const STRIPE_QR_LINK = "https://buy.stripe.com/dRmaEXbFm4mm3yL72400002";
+    // 🔗 ลิงก์ชำระเงิน Stripe แยกตามแพ็กเกจ (30 วัน = 99฿, 90 วัน = 269฿, 365 วัน = 990฿)
+    //    สามารถใส่ลิงก์ที่สร้างจาก Stripe Dashboard ที่นี่ หรือกดปุ่ม "⚙️ ตั้งค่าลิงก์ Stripe" ในหน้าเว็บได้ทันที
+    const STRIPE_PACKAGE_LINKS = {
+      "30d": {
+        card: STRIPE_PAYMENT_LINK,
+        qr: STRIPE_QR_LINK
+      },
+      "90d": {
+        card: "", // ใส่ลิงก์ https://buy.stripe.com/... สำหรับราคา 269฿ (ใช้ลิงก์เดียวทั้งบัตรและ PromptPay ได้)
+        qr: ""
+      },
+      "365d": {
+        card: "", // ใส่ลิงก์ https://buy.stripe.com/... สำหรับราคา 990฿ (ใช้ลิงก์เดียวทั้งบัตรและ PromptPay ได้)
+        qr: ""
+      }
+    };
     const META_PIXEL_ID = "";            // e.g. "123456789012345" — enables ad conversion tracking
     const SHOW_OWNER_SIMULATOR = true;   // ตั้งเป็น false เมื่อเปิดให้ลูกค้าใช้งานจริง
     // 🔑 Admin & Lifetime Access
@@ -2859,6 +2876,26 @@
       const expiringSoon = rem > 0 && rem <= 3 * 864e5;
       return { pro: false, rem, trialRemDays, pct: Math.max(0, Math.min(1, rem / TRIAL_MS)), expired: rem <= 0 || s.subscription_status === "canceled", expiringSoon, trialExpiringSoon: expiringSoon };
     }
+    function getStripeLinks() {
+      let saved = {};
+      try { saved = JSON.parse(localStorage.getItem("fr.stripe_links") || "{}"); } catch {}
+      const custom = state.stripeLinks || {};
+      const pick = (pkgKey, kind) => (custom[pkgKey]?.[kind] || saved[pkgKey]?.[kind] || STRIPE_PACKAGE_LINKS[pkgKey]?.[kind] || "").trim();
+      return {
+        "30d": {
+          card: pick("30d", "card") || pick("30d", "qr") || STRIPE_PAYMENT_LINK,
+          qr: pick("30d", "qr") || pick("30d", "card") || STRIPE_QR_LINK || STRIPE_PAYMENT_LINK
+        },
+        "90d": {
+          card: pick("90d", "card") || pick("90d", "qr"),
+          qr: pick("90d", "qr") || pick("90d", "card")
+        },
+        "365d": {
+          card: pick("365d", "card") || pick("365d", "qr"),
+          qr: pick("365d", "qr") || pick("365d", "card")
+        }
+      };
+    }
     function pay(method) {
       const pkg = getSelectedPkg();
       // Auto-save any typed feedback before redirecting
@@ -2868,7 +2905,15 @@
       } else {
         saveUserFeedbackAndPkg(undefined, pkg.key, true);
       }
-      const link = method === "qr" ? (STRIPE_QR_LINK || STRIPE_PAYMENT_LINK) : STRIPE_PAYMENT_LINK;
+      const links = getStripeLinks()[pkg.key] || {};
+      const link = method === "qr" ? (links.qr || links.card) : (links.card || links.qr);
+      if (!link) {
+        renderStripeCfgDlg(pkg.key);
+        const dlg = $("#stripe-cfg-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+        toast(L(`⚙️ กรุณาใส่ลิงก์ Stripe Payment Link สำหรับแพ็กเกจ ${pkg.title} (${pkg.price}฿) ก่อนใช้งานครับ`, `⚙️ Please configure the Stripe Payment Link for ${pkg.title} (${pkg.price}฿)`));
+        return;
+      }
       const q = new URLSearchParams({ prefilled_email: state.user?.email || "", locale: LANG });
       if (state.user && !state.user.demo) q.set("client_reference_id", `${state.user.uid}__${pkg.key}`);
       track("InitiateCheckout", { value: pkg.price, currency: "THB", content_name: `${method === "qr" ? "PromptPay" : "Card"} ${pkg.days}d (${pkg.price} THB)` });
@@ -5704,24 +5749,40 @@
         L("ขอสอบถามวิธีโอนชำระ / ใบเสร็จ", "Question about payment / receipt"),
         L("อยากให้เพิ่มฟีเจอร์...", "Feature request...")
       ];
+      const sLinks = getStripeLinks();
+      const curPkgHasLink = !!(sLinks[selKey]?.qr || sLinks[selKey]?.card);
       return `
       <div style="margin:6px 0 4px">
-        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:6px">
           <b class="sm">📦 ${L("1. เลือกแพ็กเกจที่ต้องการ (30 / 90 / 365 วัน)", "1. Choose Your Package (30 / 90 / 365 Days)")}</b>
-          <span class="chip chip-amber" style="font-size:.7rem">${L("ต่ออายุสะสมวันเพิ่มได้ทันที", "Days stack automatically")}</span>
+          <div class="row" style="gap:6px;align-items:center">
+            ${(isUserAdmin() || SHOW_OWNER_SIMULATOR) ? `<button type="button" class="btn btn-sm" style="min-height:26px;padding:2px 8px;font-size:.72rem;border-color:rgba(245,158,11,.45);color:var(--amber)" data-act="openStripeCfg">⚙️ ${L("ตั้งค่าลิงก์ Stripe (99฿/269฿/990฿)", "Configure Stripe Links")}</button>` : ""}
+            <span class="chip chip-amber" style="font-size:.7rem">${L("ต่ออายุสะสมวันเพิ่มได้ทันที", "Days stack automatically")}</span>
+          </div>
         </div>
         <div class="pkg-grid" role="radiogroup" aria-label="${L("เลือกแพ็กเกจ PRO", "Select PRO package")}">
-          ${Object.entries(pkgs).map(([k, p]) => `
+          ${Object.entries(pkgs).map(([k, p]) => {
+            const hasLnk = !!(sLinks[k]?.qr || sLinks[k]?.card);
+            return `
             <div class="pkg-card ${selKey === k ? "on" : ""}" data-act="selectProPkg" data-pkg="${k}" role="radio" aria-checked="${selKey === k}" tabindex="0">
-              ${p.badge ? `<span class="pkg-badge">${p.badge}</span>` : ""}
+              ${p.badge ? `<span class="pkg-badge ${p.badgeCls || ""}">${p.badge}</span>` : ""}
               <b>${p.title}</b>
               <div class="pkg-price">${money(p.price)}฿</div>
               <div class="pkg-sub">${p.perDay}</div>
               <div class="pkg-sub" style="color:${selKey === k ? "var(--amber)" : "var(--emerald)"};font-weight:700">${p.sub}</div>
+              ${(isUserAdmin() || SHOW_OWNER_SIMULATOR) && !hasLnk ? `<span class="muted" style="font-size:.66rem;color:var(--rose)">⚙️ ${L("รอใส่ลิงก์ Stripe", "Needs Stripe link")}</span>` : ""}
             </div>
-          `).join("")}
+          `;
+          }).join("")}
         </div>
       </div>
+
+      ${!curPkgHasLink && (isUserAdmin() || SHOW_OWNER_SIMULATOR) ? `
+        <div style="padding:10px 12px;border-radius:12px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.4);font-size:.8rem;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>⚠️ ${L(`แพ็กเกจ <b>${pkg.title} (${pkg.price}฿)</b> ยังไม่ได้ใส่ลิงก์ Payment Link ของราคา ${pkg.price}฿ จาก Stripe`, `Package <b>${pkg.title} (${pkg.price}฿)</b> needs its ${pkg.price}฿ Stripe Payment Link URL`)}</span>
+          <button type="button" class="btn btn-sm btn-amber" data-act="openStripeCfg" data-pkg="${selKey}">⚙️ ${L(`ใส่ลิงก์ ${pkg.price}฿ ตอนนี้`, `Set ${pkg.price}฿ Link`)}</button>
+        </div>
+      ` : ""}
 
       <div class="fb-box">
         <form data-form="userFeedback" autocomplete="off">
@@ -6104,6 +6165,49 @@
           <button type="button" class="btn btn-amber" data-act="dismissWelcome" id="btn-welcome-start">🚀 ${L("เริ่มสำรวจแอปพร้อมข้อมูลตัวอย่างเลย!", "Start Exploring with Sample Data!")}</button>
         </div>`;
     }
+    function renderStripeCfgDlg(highlightPkg = "") {
+      const f = $("#stripe-cfg-form");
+      if (!f) return;
+      const links = getStripeLinks();
+      const originUrl = location.origin || "https://flowrecover.web.app";
+      f.innerHTML = `
+        <div class="dlg-head">
+          <h2 id="stripe-cfg-title" style="font-size:1.15rem">⚙️ ${L("ตั้งค่าลิงก์ชำระเงิน Stripe แยกตามแพ็กเกจ (99฿ / 269฿ / 990฿)", "Configure Stripe Payment Links (99฿ / 269฿ / 990฿)")}</h2>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="stripe-cfg-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <div style="display:grid;gap:12px;max-height:66dvh;overflow-y:auto;padding-right:4px;font-size:.85rem;line-height:1.55">
+          <div style="padding:12px 14px;border-radius:14px;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.3)">
+            <b style="color:var(--sky)">💡 ${L("ทำไมหน้าจ่ายเงินของ Stripe ถึงแสดงยอดตามลิงก์?", "Why does Stripe require a separate Payment Link per package price?")}</b>
+            <p class="sm" style="margin-top:4px">${L("ระบบของ Stripe ล็อกราคาไว้กับแต่ละ Payment Link (<code>https://buy.stripe.com/...</code>) เพื่อความปลอดภัย ดังนั้นหากต้องการให้หน้าจ่ายเงินแสดงยอด <b>269฿ (90 วัน)</b> และ <b>990฿ (365 วัน)</b> ให้สร้างลิงก์เพิ่มอีก 2 ลิงก์ใน Stripe Dashboard ตามขั้นตอนด้านล่าง แล้วนำมาวางในช่องได้เลยครับ:", "Stripe locks the price inside each Payment Link URL for security. Create 2 additional Payment Links in your Stripe Dashboard (for 269฿ and 990฿) and paste them below:")}</p>
+            <ol style="padding-left:18px;margin-top:6px;display:grid;gap:4px">
+              <li>${L("เข้าที่ <a href=\"https://dashboard.stripe.com/payment-links\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--amber);text-decoration:underline\">Stripe Dashboard → Payment Links</a> แล้วกด <b>+ New (สร้างใหม่)</b>", "Open <a href=\"https://dashboard.stripe.com/payment-links\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--amber);text-decoration:underline\">Stripe Dashboard → Payment Links</a> and click <b>+ New</b>.")}</li>
+              <li>${L("สร้างสินค้า <b>FlowRecover PRO (90 วัน)</b> ราคา <b>269 THB</b> (เลือกแบบ <b>One-off / ครั้งเดียว</b> เพื่อให้รองรับทั้ง PromptPay, บัตรเครดิต และ Apple Pay ในลิงก์เดียว)", "Create <b>FlowRecover PRO (90 Days)</b> at <b>269 THB</b> (choose <b>One-off</b> so PromptPay, Card & Apple Pay all work in one link).")}</li>
+              <li>${L(`ในแท็บ <b>After payment</b> ติ๊ก Redirect ไปที่: <code style="user-select:all;color:var(--emerald)">${esc(originUrl)}/?stripe_status=success&plan=qr</code>`, `Under <b>After payment</b>, redirect to: <code style="user-select:all;color:var(--emerald)">${esc(originUrl)}/?stripe_status=success&plan=qr</code>`)}</li>
+              <li>${L("ทำซ้ำอีกครั้งสำหรับ <b>FlowRecover PRO (365 วัน)</b> ราคา <b>990 THB</b> แล้วคัดลอกลิงก์ <code>https://buy.stripe.com/...</code> มาวางด้านล่าง", "Repeat for <b>FlowRecover PRO (365 Days)</b> at <b>990 THB</b>, then paste both <code>https://buy.stripe.com/...</code> links below.")}</li>
+            </ol>
+          </div>
+
+          <div style="padding:12px;border-radius:14px;background:var(--surface-2);border:1px solid ${highlightPkg === "30d" ? "var(--amber)" : "var(--border)"};display:grid;gap:8px">
+            <div class="row" style="justify-content:space-between"><b>📦 ${L("1. แพ็กเกจรายเดือน (30 วัน • 99฿)", "1. Monthly Package (30 Days • 99฿)")}</b><span class="chip chip-emerald" style="font-size:.7rem">✓ ${L("ตั้งค่าแล้ว", "Configured")}</span></div>
+            <label class="field"><span>📱💳 ${L("ลิงก์ชำระเงิน 99฿ (PromptPay + บัตรในลิงก์เดียว)", "99฿ Payment Link (PromptPay + Card)")}</span><input class="input mono sm" name="qr_30d" value="${esc(links["30d"].qr)}" placeholder="https://buy.stripe.com/..."></label>
+            <label class="field"><span>💳 ${L("ลิงก์ตัดบัตรรายเดือนอัตโนมัติ 99฿ (ถ้าต้องการแยกกับ QR)", "99฿ Recurring Card Link (optional)")}</span><input class="input mono sm" name="card_30d" value="${esc(links["30d"].card)}" placeholder="https://buy.stripe.com/..."></label>
+          </div>
+
+          <div style="padding:12px;border-radius:14px;background:var(--surface-2);border:2px solid ${highlightPkg === "90d" ? "var(--amber)" : "var(--border)"};display:grid;gap:8px">
+            <div class="row" style="justify-content:space-between"><b>🔥 ${L("2. แพ็กเกจราย 3 เดือน (90 วัน • 269฿)", "2. Quarterly Package (90 Days • 269฿)")}</b>${links["90d"].qr ? `<span class="chip chip-emerald" style="font-size:.7rem">✓ ${L("ตั้งค่าแล้ว", "Configured")}</span>` : `<span class="chip chip-amber" style="font-size:.7rem">⚠️ ${L("วางลิงก์ 269฿ ที่นี่", "Paste 269฿ link here")}</span>`}</div>
+            <label class="field"><span>🔗 ${L("ลิงก์ชำระเงิน Stripe ราคา 269฿ (ใช้ได้ทั้งปุ่มบัตรและปุ่ม QR PromptPay)", "269฿ Stripe Payment Link URL (works for both Card & QR)")}</span><input class="input mono sm" id="inp-stripe-90d" name="qr_90d" value="${esc(links["90d"].qr)}" placeholder="https://buy.stripe.com/... (${L("วางลิงก์ราคา 269 บาทที่นี่", "Paste 269 THB link here")})"></label>
+          </div>
+
+          <div style="padding:12px;border-radius:14px;background:var(--surface-2);border:2px solid ${highlightPkg === "365d" ? "var(--amber)" : "var(--border)"};display:grid;gap:8px">
+            <div class="row" style="justify-content:space-between"><b>👑 ${L("3. แพ็กเกจรายปี (365 วัน • 990฿)", "3. Yearly Package (365 Days • 990฿)")}</b>${links["365d"].qr ? `<span class="chip chip-emerald" style="font-size:.7rem">✓ ${L("ตั้งค่าแล้ว", "Configured")}</span>` : `<span class="chip chip-amber" style="font-size:.7rem">⚠️ ${L("วางลิงก์ 990฿ ที่นี่", "Paste 990฿ link here")}</span>`}</div>
+            <label class="field"><span>🔗 ${L("ลิงก์ชำระเงิน Stripe ราคา 990฿ (ใช้ได้ทั้งปุ่มบัตรและปุ่ม QR PromptPay)", "990฿ Stripe Payment Link URL (works for both Card & QR)")}</span><input class="input mono sm" id="inp-stripe-365d" name="qr_365d" value="${esc(links["365d"].qr)}" placeholder="https://buy.stripe.com/... (${L("วางลิงก์ราคา 990 บาทที่นี่", "Paste 990 THB link here")})"></label>
+          </div>
+        </div>
+        <div class="row" style="justify-content:flex-end;gap:8px;padding-top:10px;border-top:1px solid var(--border)">
+          <button type="button" class="btn" data-act="closeDlg" data-id="stripe-cfg-dlg">${L("ปิด", "Close")}</button>
+          <button type="submit" class="btn btn-emerald">💾 ${L("บันทึกลิงก์ Stripe ทั้งหมด", "Save Stripe Links")}</button>
+        </div>`;
+    }
     function renderIdeas() {
       $("#ideas-body").innerHTML = `
     <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
@@ -6151,6 +6255,11 @@
       openGPermGuide: d => { renderGPermDlg(d?.connect === "1"); const dlg = $("#gperm-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       openDemoPreview: () => { const dlg = $("#demo-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       openWelcome: () => { renderWelcomeDlg(); const dlg = $("#welcome-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      openStripeCfg: d => {
+        renderStripeCfgDlg(d?.pkg || "");
+        const dlg = $("#stripe-cfg-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      },
       dismissWelcome: () => { state.welcomeSeen = true; save(); $("#welcome-dlg")?.close(); },
       welcomeGo: d => {
         state.welcomeSeen = true;
@@ -6551,6 +6660,32 @@
         $("#demo-dlg").close(); seed(); save(); showApp(true);
         if (state.sub.is_admin) toast(L(`👑 ยินดีต้อนรับ Admin ${name}! ได้รับสิทธิ์ฟรีตลอดชีพ`, `👑 Welcome Admin ${name}! Lifetime access granted`));
         else toast(L(`👋 ยินดีต้อนรับ ${name}! โหลดข้อมูลตัวอย่างและคู่มือเริ่มต้นใช้งานแล้ว`, `👋 Welcome ${name}! Sample data & quick-start guide loaded`));
+      },
+      saveStripeLinks: fd => {
+        const clean = v => String(v || "").trim();
+        const next = {
+          "30d": {
+            qr: clean(fd.qr_30d) || STRIPE_QR_LINK,
+            card: clean(fd.card_30d) || clean(fd.qr_30d) || STRIPE_PAYMENT_LINK
+          },
+          "90d": {
+            qr: clean(fd.qr_90d),
+            card: clean(fd.qr_90d)
+          },
+          "365d": {
+            qr: clean(fd.qr_365d),
+            card: clean(fd.qr_365d)
+          }
+        };
+        state.stripeLinks = next;
+        try { localStorage.setItem("fr.stripe_links", JSON.stringify(next)); } catch {}
+        save();
+        if (fb && state.user && !state.user.demo) cloudSave();
+        $("#stripe-cfg-dlg")?.close();
+        if ($("#pay-dlg")?.open) renderPayDlg();
+        if ($("#paywall")?.open) renderPaywall();
+        if ($("#account-dlg")?.open) renderAccount();
+        toast(L("💾 บันทึกลิงก์ชำระเงิน Stripe สำหรับทั้ง 3 แพ็กเกจเรียบร้อยแล้ว!", "💾 Saved Stripe Payment Links for all 3 packages!"));
       }
     };
     function addCrud(name, fd) {
