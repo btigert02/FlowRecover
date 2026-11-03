@@ -3093,12 +3093,21 @@
         ["waves", `🌊 ${L("คลื่นทะเล", "Ocean Waves")}`],
         ["focus", `🎧 ${L("White Noise", "Focus Noise")}`]
       ];
+      const Pomo = state.focus?.pomo;
+      const cur = currentTask();
+      const isPomoTask = cur && (cur.isPomodoro || /^(🍅|⚡ Deep Work)/.test(cur.title || ""));
       return `<div class="sound-bar">
         <span class="sm" style="font-weight:700;margin-right:2px">🎵 ${L("เสียงสมาธิ:", "Focus Sound:")}</span>
         ${modes.map(([k, l]) => `<button type="button" class="sound-btn ${activeFocusSound === k ? "on" : ""}" data-act="focusSound" data-v="${k}">${l}</button>`).join("")}
-        <div class="row" style="margin-left:auto;gap:4px">
-          <button type="button" class="btn btn-sm btn-amber" data-act="startPomodoro" data-mins="25" title="${L("เริ่มบล็อกโฟกัส Pomodoro 25 นาทีทันที", "Start 25m Pomodoro block now")}">🍅 Pomodoro 25${L("น.", "m")}</button>
-          <button type="button" class="btn btn-sm" data-act="startPomodoro" data-mins="50" title="${L("เริ่มบล็อก Deep Work 50 นาทีทันที", "Start 50m Deep Work block now")}">⚡ Deep 50${L("น.", "m")}</button>
+        <div class="row" style="margin-left:auto;gap:4px;flex-wrap:wrap">
+          <button type="button" class="btn btn-sm ${Pomo && Pomo.durMins === 25 ? "btn-emerald" : "btn-amber"}" data-act="startPomodoro" data-mins="25" title="${L("เริ่มจับเวลาโฟกัส Pomodoro 25 นาที", "Start 25m Pomodoro timer")}">🍅 Pomodoro 25${L("น.", "m")}</button>
+          <button type="button" class="btn btn-sm ${Pomo && Pomo.durMins === 50 ? "btn-emerald" : ""}" data-act="startPomodoro" data-mins="50" title="${L("เริ่มจับเวลา Deep Work 50 นาที", "Start 50m Deep Work timer")}">⚡ Deep 50${L("น.", "m")}</button>
+          ${Pomo ? `
+            <button type="button" class="btn btn-sm ${Pomo.paused ? "btn-emerald" : "btn-amber"}" data-act="pausePomodoro" title="${Pomo.paused ? L("นับเวลา Pomodoro ต่อ", "Resume Pomodoro") : L("หยุดพักเวลาชั่วคราว", "Pause Pomodoro")}">${Pomo.paused ? "▶️ " + L("ทำต่อ", "Resume") : "⏸️ " + L("พักเวลา", "Pause")}</button>
+            <button type="button" class="btn btn-sm btn-rose" data-act="stopPomodoro" title="${L("หยุดและยกเลิกจับเวลา Pomodoro ทันที", "Stop & end Pomodoro timer now")}">⏹️ ${L("หยุด Pomodoro", "Stop")}</button>
+          ` : isPomoTask ? `
+            <button type="button" class="btn btn-sm btn-rose" data-act="stopPomodoro" title="${L("หยุดบล็อกโฟกัสนี้เมื่อต้องการ", "Stop this focus block now")}">⏹️ ${L("หยุดโฟกัส", "Stop")}</button>
+          ` : ""}
         </div>
       </div>`;
     }
@@ -3301,7 +3310,7 @@
 
     /* ---------- ⚡ Focus ---------- */
     function renderFocus() {
-      const I = state.focus.interrupt, Rst = state.focus.rest, Slp = state.focus.sleep, cur = currentTask(), nxt = nextTask(), today = dkey();
+      const I = state.focus.interrupt, Rst = state.focus.rest, Slp = state.focus.sleep, Pomo = state.focus.pomo, cur = currentTask(), nxt = nextTask(), today = dkey();
       lastCockpitKey = cockpitKey();
       let cockpit;
       if (I) {
@@ -3362,6 +3371,31 @@
         <button class="btn btn-sm grow" data-act="extendRest" data-v="15">＋ 15 ${L("นาที", "min")}</button>
       </div>
       <button class="btn btn-amber btn-xl" data-act="endRest" id="btn-end-rest" style="width:100%">⚡ ${L("ชาร์จพลังเต็มที่แล้ว (พร้อมลุยงานต่อ)", "Fully recharged! (Resume work)")}</button>
+    </article>`;
+      } else if (Pomo) {
+        const totalSec = Math.max(1, (Pomo.durMins || 25) * 60);
+        const remainSec = Pomo.paused ? Math.max(0, Pomo.remainSec || 0) : Math.max(0, (Pomo.targetEndMs - Date.now()) / 1000);
+        const elapsedSec = Math.max(0, totalSec - remainSec);
+        cockpit = `<article class="card cockpit" id="cockpit" style="border-color:rgba(245,158,11,.55)">
+      <div class="cockpit-top">
+        <span class="pill ${Pomo.paused ? "pill-sky" : "pill-amber pulse-dot"}">${Pomo.paused ? "⏸️ " + L("หยุดพักเวลา Pomodoro ชั่วคราว", "Pomodoro Paused") : "🍅 " + L(`กำลังจับเวลาโฟกัส (${Pomo.durMins} นาที)`, `Pomodoro Focus (${Pomo.durMins} min)`)}</span>
+        <span class="muted mono sm">${Pomo.paused ? L("พักเวลาไว้", "Paused") : L("ครบเวลา", "Until") + " " + fmtClock(Pomo.targetEndMs)}</span>
+      </div>
+      <h2 class="cockpit-title">${esc(Pomo.title || L("🍅 โฟกัส Pomodoro", "🍅 Pomodoro Focus"))}</h2>
+      <div>
+        <div class="big-timer" id="pomo-timer">${fmtDur(remainSec)}</div>
+        <p class="muted center sm" style="margin:6px 0 10px">${Pomo.paused ? L("หยุดเวลาไว้ชั่วคราว — กด “▶️ ทำต่อ” เมื่อพร้อม หรือกด “⏹️ หยุด Pomodoro” เพื่อจบการทำงาน", "Timer paused — tap Resume to continue or Stop to end") : L("สามารถกดพักเวลาชั่วคราว หรือกดหยุดเมื่อต้องการได้ทุกเมื่อ", "You can pause or stop this timer anytime")}</p>
+        <div class="bar"><i id="pomo-bar" style="width:${Math.min(100, (elapsedSec / totalSec) * 100)}%"></i></div>
+      </div>
+      <div class="row" style="gap:8px;margin-top:6px">
+        <button class="btn ${Pomo.paused ? "btn-emerald" : "btn-amber"} btn-xl grow" data-act="pausePomodoro" id="btn-pause-pomo">${Pomo.paused ? "▶️ " + L("นับเวลาต่อ (Resume)", "Resume Timer") : "⏸️ " + L("พักเวลาชั่วคราว (Pause)", "Pause Timer")}</button>
+        <button class="btn btn-rose btn-xl grow" data-act="stopPomodoro" id="btn-stop-pomo">⏹️ ${L("หยุดเมื่อต้องการ (Stop)", "Stop Timer")}</button>
+      </div>
+      <div class="row" style="gap:8px;margin-top:4px">
+        <button class="btn btn-sm grow" data-act="extendPomodoro" data-v="5">＋5 ${L("นาที", "min")}</button>
+        <button class="btn btn-sm grow" data-act="extendPomodoro" data-v="10">＋10 ${L("นาที", "min")}</button>
+        <button class="btn btn-sm btn-emerald grow" data-act="finishPomodoro">✅ ${L("ทำเสร็จแล้ว (บันทึกเวลาโฟกัส)", "Complete & Log Focus")}</button>
+      </div>
     </article>`;
       } else if (isOffDay(today)) {
         cockpit = offDayCockpit(today);
@@ -3489,6 +3523,25 @@
           Rst.alarmed = true;
           beep(); vibrate([300, 120, 300, 120, 700]);
           toast(L("🔔 ครบเวลาพักผ่อนแล้วครับ! พร้อมลุยงานต่อหรือยัง? ⚡", "🔔 Break time is up! Ready to get back in the flow? ⚡"));
+        }
+        return;
+      }
+      const Pomo = state.focus.pomo;
+      if (Pomo) {
+        const el = document.getElementById("pomo-timer");
+        const totalSec = Math.max(1, (Pomo.durMins || 25) * 60);
+        const remainSec = Pomo.paused ? Math.max(0, Pomo.remainSec || 0) : Math.max(0, (Pomo.targetEndMs - Date.now()) / 1000);
+        if (el) {
+          el.textContent = fmtDur(remainSec);
+          el.classList.toggle("warn", !Pomo.paused && remainSec < 180);
+        }
+        const bar = document.getElementById("pomo-bar");
+        const elapsedSec = Math.max(0, totalSec - remainSec);
+        if (bar) bar.style.width = Math.min(100, (elapsedSec / totalSec) * 100) + "%";
+        if (!Pomo.paused && remainSec <= 0 && !Pomo.alarmed) {
+          Pomo.alarmed = true;
+          beep(); vibrate([300, 120, 300, 120, 700]);
+          toast(L("🍅 ครบเวลาโฟกัส Pomodoro แล้วครับ! กด “✅ ทำเสร็จแล้ว” หรือ “⏹️ หยุด” ได้เลย", "🍅 Pomodoro session complete! Tap Complete or Stop."));
         }
         return;
       }
@@ -5781,6 +5834,7 @@
     function nextWorkDay(d) { let x = addDays(d, 1); for (let i = 0; i < 90 && isOffDay(x); i++) x = addDays(x, 1); return x; }
     function cockpitKey() {
       const F = state.focus; if (F.interrupt) return "int"; if (F.sleep) return "sleep"; if (F.rest) return "rest";
+      if (F.pomo) return `pomo:${F.pomo.durMins}:${F.pomo.paused ? "p" : "r"}`;
       const today = dkey(); if (isOffDay(today)) return "off:" + today;
       const c = currentTask(); return c ? c.id : "none:" + (nextTask()?.id || "");
     }
@@ -8203,29 +8257,105 @@
       },
       startPomodoro: d => {
         const mins = Math.max(5, Number(d.mins) || 25);
-        const today = dkey(), nowM = Math.floor(nowMin());
         const cur = currentTask();
-        if (cur) {
-          cur.dur = Math.max(mins, (nowM - cur.start) + mins);
-          rerender();
-          toast(L(`🍅 ตั้งเวลาโฟกัสงาน "${trunc(cur.title, 22)}" อีก ${mins} นาที!`, `🍅 Set ${mins} min focus block for "${trunc(cur.title, 22)}"!`));
-          return;
-        }
-        const title = mins === 25 ? L("🍅 โฟกัส Pomodoro (25 นาที)", "🍅 Pomodoro Focus (25 min)") : L(`⚡ Deep Work (${mins} นาที)`, `⚡ Deep Work (${mins} min)`);
-        state.tasks.push({
-          id: uid(),
+        const title = cur
+          ? `🍅 ${cur.title}`
+          : mins === 25
+          ? L("🍅 โฟกัส Pomodoro (25 นาที)", "🍅 Pomodoro Focus (25 min)")
+          : L(`⚡ Deep Work (${mins} นาที)`, `⚡ Deep Work (${mins} min)`);
+        state.focus.pomo = {
+          startedAt: Date.now(),
+          targetEndMs: Date.now() + mins * 60000,
+          durMins: mins,
+          paused: false,
+          remainSec: mins * 60,
           title,
-          date: today,
-          start: nowM,
-          dur: mins,
-          projectId: null,
-          priority: "main",
-          done: false,
-          bookmark: ""
-        });
+          taskId: cur?.id || null,
+          alarmed: false
+        };
         state.tab = "focus";
         rerender();
-        toast(L(`🚀 เริ่มบล็อกโฟกัส ${mins} นาทีทันที!`, `🚀 Started ${mins}-min focus block!`));
+        toast(L(`🚀 เริ่มจับเวลาโฟกัส ${mins} นาที! (กดพัก ⏸️ หรือหยุด ⏹️ ได้ทุกเมื่อ)`, `🚀 Started ${mins}-min timer! (Pause ⏸️ or Stop ⏹️ anytime)`));
+      },
+      pausePomodoro: () => {
+        const Pomo = state.focus?.pomo;
+        if (!Pomo) return;
+        if (Pomo.paused) {
+          Pomo.paused = false;
+          Pomo.targetEndMs = Date.now() + (Pomo.remainSec || 60) * 1000;
+          rerender();
+          toast(L("▶️ นับเวลาโฟกัส Pomodoro ต่อแล้ว", "▶️ Resumed Pomodoro timer"));
+        } else {
+          Pomo.remainSec = Math.max(0, Math.round((Pomo.targetEndMs - Date.now()) / 1000));
+          Pomo.paused = true;
+          rerender();
+          toast(L("⏸️ หยุดพักเวลา Pomodoro ชั่วคราวแล้ว", "⏸️ Pomodoro timer paused"));
+        }
+      },
+      extendPomodoro: d => {
+        const Pomo = state.focus?.pomo;
+        if (!Pomo) return;
+        const addM = Math.max(1, Number(d.v) || 5);
+        Pomo.durMins = (Pomo.durMins || 25) + addM;
+        if (Pomo.paused) {
+          Pomo.remainSec = (Pomo.remainSec || 0) + addM * 60;
+        } else {
+          Pomo.targetEndMs = Math.max(Date.now(), Pomo.targetEndMs) + addM * 60000;
+        }
+        Pomo.alarmed = false;
+        rerender();
+        toast(L(`⏰ เพิ่มเวลาโฟกัสอีก +${addM} นาทีแล้ว`, `⏰ Extended focus by +${addM} min`));
+      },
+      finishPomodoro: () => {
+        const Pomo = state.focus?.pomo;
+        if (!Pomo) return;
+        const totalSec = (Pomo.durMins || 25) * 60;
+        const remSec = Pomo.paused ? (Pomo.remainSec || 0) : Math.max(0, (Pomo.targetEndMs - Date.now()) / 1000);
+        const spentMins = Math.max(1, Math.round((totalSec - remSec) / 60));
+        if (Pomo.taskId) {
+          const t = state.tasks.find(x => x.id === Pomo.taskId);
+          if (t) t.done = true;
+        } else {
+          const today = dkey(), endMin = Math.floor(nowMin());
+          state.tasks.push({
+            id: uid(),
+            title: Pomo.title || L("🍅 โฟกัส Pomodoro", "🍅 Pomodoro Focus"),
+            date: today,
+            start: Math.max(0, endMin - spentMins),
+            dur: spentMins,
+            projectId: null,
+            priority: "main",
+            done: true,
+            bookmark: "",
+            isPomodoro: true
+          });
+        }
+        state.focus.pomo = null;
+        if (activeFocusSound !== "off") stopAmbientSound();
+        rerender();
+        toast(L(`✅ บันทึกเวลาโฟกัส ${spentMins} นาทีเรียบร้อยแล้ว!`, `✅ Completed & logged ${spentMins} min of focus!`));
+      },
+      stopPomodoro: () => {
+        if (state.focus?.pomo) {
+          state.focus.pomo = null;
+          if (activeFocusSound !== "off") stopAmbientSound();
+          rerender();
+          toast(L("⏹️ หยุดจับเวลา Pomodoro เรียบร้อยแล้ว", "⏹️ Stopped Pomodoro timer"));
+          return;
+        }
+        const cur = currentTask();
+        if (cur && (cur.isPomodoro || /^(🍅|⚡ Deep Work)/.test(cur.title || ""))) {
+          const elapsed = Math.max(0, Math.floor(nowMin()) - cur.start);
+          if (elapsed <= 1) {
+            state.tasks = state.tasks.filter(x => x.id !== cur.id);
+          } else {
+            cur.dur = elapsed;
+            cur.done = true;
+          }
+          if (activeFocusSound !== "off") stopAmbientSound();
+          rerender();
+          toast(L("⏹️ หยุดบล็อกโฟกัสเรียบร้อยแล้ว", "⏹️ Stopped focus block"));
+        }
       },
       voiceInput: (d, el) => {
         startVoiceInput(d.target, el);
