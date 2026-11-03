@@ -118,11 +118,23 @@
         <p class="muted">การใช้และส่งต่อข้อมูลที่ได้รับจาก Google APIs ของ FlowRecover เป็นไปตาม <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener" style="color:var(--sky)">Google API Services User Data Policy</a> รวมถึงข้อกำหนด Limited Use อย่างเคร่งครัด เราไม่นำข้อมูลของคุณไปขาย โฆษณา หรือเปิดเผยแก่บุคคลที่สาม</p>
       </div>
 
-      <h3>1.3 การจัดเก็บ รักษาความปลอดภัย และสิทธิของเจ้าของข้อมูล</h3>
+      <h3>1.3 การจัดเก็บ รักษาความปลอดภัย และสิทธิของเจ้าของข้อมูล (Data Storage, Security & User Rights)</h3>
       <ul>
-        <li>ข้อมูลของคุณถูกจัดเก็บในหน่วยความจำของเบราว์เซอร์ (<code>localStorage</code>) และซิงโครไนซ์ผ่านฐานข้อมูลคลาวด์ <b>Google Firebase / Cloud Firestore</b> ที่เข้ารหัสการรับส่งข้อมูลผ่าน HTTPS/TLS และจำกัดสิทธิ์การเข้าถึงเฉพาะเจ้าของบัญชี</li>
-        <li><b>สิทธิของคุณ:</b> คุณสามารถเข้าถึง แก้ไข ส่งออกข้อมูลทั้งหมดเป็นไฟล์ Excel/CSV หรือลบรายการข้อมูลของคุณในแอปได้ตลอดเวลา รวมถึงสามารถยกเลิกการเชื่อมต่อสิทธิ์ Google ได้ที่หน้าการตั้งค่าความปลอดภัยของบัญชี Google ของคุณ</li>
+        <li>ข้อมูลของคุณถูกจัดเก็บในหน่วยความจำของเบราว์เซอร์ (<code>localStorage</code> / <code>chrome.storage.local</code>) และซิงโครไนซ์ผ่านฐานข้อมูลคลาวด์ <b>Google Firebase / Cloud Firestore</b> ที่เข้ารหัสการรับส่งข้อมูลผ่าน HTTPS/TLS และจำกัดสิทธิ์การเข้าถึงเฉพาะเจ้าของบัญชี</li>
+        <li><b>สิทธิของคุณ (Your Rights):</b> คุณสามารถเข้าถึง แก้ไข ส่งออกข้อมูลทั้งหมดเป็นไฟล์ Excel/CSV/JSON หรือลบรายการข้อมูลของคุณในแอปได้ตลอดเวลา รวมถึงสามารถยกเลิกการเชื่อมต่อสิทธิ์ Google ได้ที่หน้าการตั้งค่าความปลอดภัยของบัญชี Google ของคุณ</li>
       </ul>
+
+      <h3>1.4 Chrome Extension Privacy Policy & Permissions Disclosure (English — For Chrome Web Store Review)</h3>
+      <div class="box">
+        <p><b>FlowRecover Chrome Extension (Manifest V3)</b> respects your privacy and operates on a strict local-first, minimal-permission model:</p>
+        <ul>
+          <li><b><code>storage</code>:</b> Used solely to store your quick task queue, context bookmarks, quick ideas, active Pomodoro timer state, and language preference locally on your device via <code>chrome.storage.local</code>.</li>
+          <li><b><code>alarms</code> & <code>notifications</code>:</b> Used solely to run background Pomodoro countdown timers and display a desktop notification when your focus session completes or when selected text is added to your queue.</li>
+          <li><b><code>contextMenus</code>:</b> Used solely to let you highlight text on a webpage and explicitly right-click to add it to your FlowRecover task queue or idea inbox.</li>
+          <li><b><code>sidePanel</code>:</b> Used solely to display the FlowRecover Focus Cockpit and task queue inside Chrome's Side Panel when opened by the user.</li>
+          <li><b>No Tracking or Third-Party Data Selling:</b> The Chrome Extension does <b>not</b> collect browsing history, does <b>not</b> use remote code, and does <b>not</b> sell, rent, or transfer user data to any third parties or advertising networks.</li>
+        </ul>
+      </div>
     </section>
 
     <section class="card sec-block" id="sec-terms">

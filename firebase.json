@@ -3,7 +3,7 @@
     {
       "site": "flowrecover",
       "public": ".",
-      "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "CHROMEWEBSTORE.md", "chrome-extension/**", "*.zip", "functions/**", "**/.*", "**/node_modules/**"],
+      "ignore": ["firebase.json", "firestore.rules", "SETUP.md", "CHROMEWEBSTORE.md", "GLOBAL_MARKETING_PLAYBOOK.md", "chrome-extension/**", "store-assets/**", "*.zip", "functions/**", "**/.*", "**/node_modules/**"],
       "headers": [
         {
           "source": "/index.html",

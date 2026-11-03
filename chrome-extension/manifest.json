@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "FlowRecover: Focus Timer, Context Bookmark & Task Planner",
-  "version": "1.0.0",
-  "description": "Pause deep work without losing context. Save instant context bookmarks, run Pomodoro focus timers, and capture tasks from any tab.",
+  "name": "FlowRecover: Adaptive Time Blocking, Pomodoro & Life Planner",
+  "version": "1.1.0",
+  "description": "The time-blocking planner built for people who get interrupted. Save 1-click context bookmarks, run Pomodoro timers & auto-reflow tasks.",
   "permissions": [
     "storage",
     "alarms",
@@ -12,7 +12,7 @@
   ],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "FlowRecover — Focus & Context Recovery",
+    "default_title": "FlowRecover — Adaptive Time Blocking & Pomodoro",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",
@@ -31,4 +31,3 @@
     "128": "icons/icon128.png"
   }
 }
-

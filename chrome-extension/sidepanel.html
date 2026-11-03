@@ -22,26 +22,28 @@
 
   <section class="card">
     <div class="card-title">
-      <span id="lbl-timer-title">⏱️ Deep Focus Timer</span>
+      <span id="lbl-timer-title">🎯 Focus Cockpit & Pomodoro</span>
       <span class="badge" id="lbl-timer-status">READY</span>
     </div>
     <div class="timer-box">
       <div class="timer-digits" id="timer-digits">25:00</div>
       <div class="timer-task" id="timer-task">Select or type a task to start focusing</div>
       <div class="timer-controls">
-        <button class="btn pri" id="btn-start-25">▶ 25m Pomodoro</button>
-        <button class="btn" id="btn-start-50">⚡ 50m Deep</button>
-        <button class="btn danger" id="btn-stop-timer" style="display:none">⏹ Stop</button>
+        <button class="btn pri" id="btn-start-25">▶ 25m</button>
+        <button class="btn" id="btn-start-50">⚡ 50m</button>
+        <button class="btn warn" id="btn-interrupt">⏸️ Interrupted!</button>
+        <button class="btn ok" id="btn-resume" style="display:none">▶️ Resume</button>
+        <button class="btn danger" id="btn-stop-timer" style="display:none">⏹</button>
       </div>
     </div>
   </section>
 
-  <section class="card">
+  <section class="card" id="bm-card">
     <div class="card-title">
       <span id="lbl-bm-title">🔖 Context Bookmark (Interrupted?)</span>
     </div>
     <div class="inp-row">
-      <input type="text" class="inp" id="inp-bookmark" placeholder="Where were you? What's next step?">
+      <input type="text" class="inp" id="inp-bookmark" placeholder="Where were you? What's the next step?">
       <button class="btn ok" id="btn-save-bm">Save</button>
     </div>
     <div class="list" id="bm-list"></div>
@@ -49,21 +51,32 @@
 
   <section class="card">
     <div class="card-title">
-      <span id="lbl-task-title">📋 Quick Task Queue</span>
+      <span id="lbl-task-title">📅 Today's Task Queue</span>
       <span class="badge" id="task-count">0</span>
     </div>
     <div class="inp-row">
-      <input type="text" class="inp" id="inp-task" placeholder="Add a quick task...">
+      <input type="text" class="inp" id="inp-task" placeholder="Add a task to today's queue...">
       <button class="btn pri" id="btn-add-task">+ Add</button>
     </div>
     <div class="list" id="task-list"></div>
   </section>
 
+  <section class="card">
+    <div class="card-title">
+      <span id="lbl-idea-title">💡 Quick Idea Inbox</span>
+      <span class="badge" id="idea-count">0</span>
+    </div>
+    <div class="inp-row">
+      <input type="text" class="inp" id="inp-idea" placeholder="Capture a random idea without losing focus...">
+      <button class="btn" id="btn-add-idea">💡 Save</button>
+    </div>
+    <div class="list" id="idea-list"></div>
+  </section>
+
   <div class="footer-bar">
-    <button class="btn pri" id="btn-open-webapp">🚀 Open Full FlowRecover App (Web)</button>
+    <button class="btn pri" id="btn-open-webapp">↗ Open Full Planner (Web App)</button>
   </div>
 
   <script src="ext.js"></script>
 </body>
 </html>
-

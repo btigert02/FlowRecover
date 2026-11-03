@@ -2897,12 +2897,12 @@
         months: 1,
         price: 99,
         usd: "$2.99",
-        priceDisplay: L("99฿", "99฿ (~$2.99 USD)"),
+        priceDisplay: L("99฿", "$2.99 (99฿)"),
         badge: L("เริ่มต้น", "Starter"),
         badgeCls: "",
         title: L("รายเดือน (30 วัน)", "Monthly (30 Days)"),
-        sub: L("เฉลี่ย 3.3 ฿/วัน • ยืดหยุ่น", "~$2.99 USD • Flexible"),
-        perDay: L("เฉลี่ย 3.30 ฿/วัน", "3.30 ฿/day (~$0.10/d)")
+        sub: L("เฉลี่ย 3.3 ฿/วัน • ยืดหยุ่น", "$2.99 USD • Flexible monthly"),
+        perDay: L("เฉลี่ย 3.30 ฿/วัน", "$0.10/day (3.30฿)")
       },
       "90d": {
         key: "90d",
@@ -2910,12 +2910,12 @@
         months: 3,
         price: 269,
         usd: "$7.99",
-        priceDisplay: L("269฿", "269฿ (~$7.99 USD)"),
-        badge: L("🔥 ยอดนิยม (ประหยัด 28฿)", "🔥 Popular (Save 28฿)"),
+        priceDisplay: L("269฿", "$7.99 (269฿)"),
+        badge: L("🔥 ยอดนิยม (ประหยัด 28฿)", "🔥 Most Popular (Save 10%)"),
         badgeCls: "",
         title: L("ราย 3 เดือน (90 วัน)", "Quarterly (90 Days)"),
-        sub: L("เฉลี่ย 89 ฿/เดือน • คุ้มค่าระยะกลาง", "~89 ฿/mo (~$2.66/mo) • Great value"),
-        perDay: L("เฉลี่ย 2.99 ฿/วัน", "2.99 ฿/day (~$0.09/d)")
+        sub: L("เฉลี่ย 89 ฿/เดือน • คุ้มค่าระยะกลาง", "$2.66/mo • Great mid-term value"),
+        perDay: L("เฉลี่ย 2.99 ฿/วัน", "$0.09/day (2.99฿)")
       },
       "365d": {
         key: "365d",
@@ -2923,12 +2923,12 @@
         months: 12,
         price: 990,
         usd: "$29.00",
-        priceDisplay: L("990฿", "990฿ (~$29 USD)"),
+        priceDisplay: L("990฿", "$29.00 (990฿)"),
         badge: L("👑 คุ้มที่สุด (ฟรี 2 เดือน)", "👑 Best Value (2 Mo Free)"),
         badgeCls: "emerald",
         title: L("รายปี (365 วัน)", "Yearly (365 Days)"),
-        sub: L("เฉลี่ย 82.5 ฿/เดือน • ประหยัด 198฿", "~82.5 ฿/mo (~$2.42/mo) • Save 198฿"),
-        perDay: L("เฉลี่ย 2.71 ฿/วัน", "2.71 ฿/day (~$0.08/d)")
+        sub: L("เฉลี่ย 82.5 ฿/เดือน • ประหยัด 198฿", "$2.42/mo • Save 20% annually"),
+        perDay: L("เฉลี่ย 2.71 ฿/วัน", "$0.08/day (2.71฿)")
       }
     });
     function getSelectedPkg() {
@@ -3052,6 +3052,52 @@
         history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
       }
     }
+    const GLOBAL_PROMO_CODES = {
+      "PRODUCTHUNT30": { days: 30, label: "Product Hunt 30-Day Free Pass" },
+      "REDDIT30": { days: 30, label: "Reddit Community 30-Day Free Pass" },
+      "CHROME30": { days: 30, label: "Chrome Web Store 30-Day Free Pass" },
+      "LAUNCH30": { days: 30, label: "Global Launch 30-Day Free Pass" }
+    };
+    async function redeemPromoCode(rawCode) {
+      const clean = String(rawCode || "").trim().toUpperCase();
+      const promo = GLOBAL_PROMO_CODES[clean];
+      if (!promo) return false;
+      if (state.sub?.redeemed_promo === clean) {
+        toast(L(`🎁 คุณใช้โค้ด ${clean} ไปเรียบร้อยแล้วครับ`, `🎁 You have already redeemed code ${clean}`));
+        return true;
+      }
+      const untilMs = Math.max(Date.now(), state.sub?.pro_until || 0) + promo.days * 864e5;
+      state.sub = {
+        ...state.sub,
+        subscription_status: "pro",
+        plan: "free_grant",
+        pro_months: 0,
+        pro_until: untilMs,
+        redeemed_promo: clean,
+        simulated: false
+      };
+      save(); renderStatic(); renderBanner(); checkPaywall();
+      if ($("#account-dlg")?.open) renderAccount();
+      if (fb?.setDoc && fb?.doc && state.user?.uid && !state.user.demo) {
+        try {
+          await fb.setDoc(fb.doc(fb.db, "users", state.user.uid), {
+            subscription_status: "pro",
+            plan: "free_grant",
+            pro_months: 0,
+            pro_until: new Date(untilMs),
+            admin_note: `🎁 Promo: ${clean} (${promo.days}d free)`,
+            updated_at: fb.serverTimestamp()
+          }, { merge: true });
+        } catch (e) { console.warn("promo save err:", e); }
+      }
+      notifyAdminEvent(
+        `🎁 FlowRecover: ลูกค้าใช้โค้ดโปรโมชัน ${clean}`,
+        `${state.user?.name || "User"} (${state.user?.email || "Guest"}) รับสิทธิ์ทดลองใช้ฟรี ${promo.days} วัน (${promo.label})`,
+        ["gift", "sparkles"]
+      );
+      toast(L(`🎁 ปลดล็อกสิทธิ์ PRO ฟรี ${promo.days} วัน (${clean}) เรียบร้อยแล้ว!`, `🎁 Unlocked ${promo.days}-Day Free PRO Pass (${clean})!`));
+      return true;
+    }
     function grantAdminLifetime(notify = true) {
       state.sub = { ...state.sub, subscription_status: "pro", plan: "lifetime_admin", is_admin: true, pro_until: null, simulated: false };
       save(); renderStatic(); renderBanner(); checkPaywall(); if ($("#account-dlg").open) renderAccount();
@@ -3059,10 +3105,15 @@
     }
     function checkAdminUrl() {
       const q = new URLSearchParams(location.search);
-      const key = q.get("admin_key") || q.get("admin_code") || q.get("code");
-      if (key && key.trim().toUpperCase() === ADMIN_SECRET_KEY.toUpperCase()) {
-        grantAdminLifetime(true);
-        ["admin_key", "admin_code", "code"].forEach(k => q.delete(k));
+      const key = q.get("admin_key") || q.get("admin_code") || q.get("code") || q.get("promo");
+      if (key) {
+        const clean = key.trim().toUpperCase();
+        if (clean === ADMIN_SECRET_KEY.toUpperCase()) {
+          grantAdminLifetime(true);
+        } else if (GLOBAL_PROMO_CODES[clean]) {
+          setTimeout(() => redeemPromoCode(clean), 500);
+        }
+        ["admin_key", "admin_code", "code", "promo"].forEach(k => q.delete(k));
         history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "") + location.hash);
       }
     }
@@ -7140,11 +7191,13 @@
       addStep: (fd, f) => { const p = proj(f.dataset.pid); const title = fd.title.trim(); if (!p || !title) return; p.steps.push({ id: uid(), title, status: "todo" }); rerender(); document.getElementById(`fsi-${p.id}`)?.focus(); },
       addLink: (fd, f) => { const p = proj(f.dataset.pid); const url = fd.url.trim(); if (!p || !/^https?:\/\//i.test(url)) { toast(L("ลิงก์ต้องขึ้นต้นด้วย https://", "Link must start with https://")); return; } p.links.push({ id: uid(), label: fd.label.trim(), url }); rerender(); },
       addHabit: fd => { const name = fd.name.trim(); if (!name) return; P().habits.push({ id: uid(), name }); rerender(); },
-      adminUnlock: fd => {
+      adminUnlock: async fd => {
         const code = (fd.code || "").trim();
         if (code.toUpperCase() === ADMIN_SECRET_KEY.toUpperCase()) {
           $("#admin-dlg")?.close();
           grantAdminLifetime(true);
+        } else if (await redeemPromoCode(code)) {
+          $("#admin-dlg")?.close();
         } else {
           toast(L("❌ รหัสไม่ถูกต้อง", "❌ Invalid code"));
         }
@@ -10730,6 +10783,15 @@
         ["ext_task", "ext_dur", "ext_url"].forEach(k => qBoot.delete(k));
         history.replaceState(null, "", location.pathname + (qBoot.toString() ? "?" + qBoot : "") + location.hash);
         setTimeout(() => toast(L(`📅 เพิ่มงานจาก Chrome Extension เข้าคิววันนี้แล้ว!`, `📅 Added task from Chrome Extension to today's queue!`)), 600);
+      }
+      const extIdea = qBoot.get("ext_idea");
+      if (extIdea && extIdea.trim()) {
+        state.ideas ||= [];
+        state.ideas.unshift({ id: uid(), text: extIdea.trim(), at: Date.now() });
+        save();
+        qBoot.delete("ext_idea");
+        history.replaceState(null, "", location.pathname + (qBoot.toString() ? "?" + qBoot : "") + location.hash);
+        setTimeout(() => toast(L(`💡 บันทึกไอเดียจาก Chrome Extension ลงกล่องไอเดียด่วนแล้ว!`, `💡 Saved idea from Chrome Extension to Quick Idea Inbox!`)), 600);
       }
       const legalParam = qBoot.get("legal");
       if (legalParam && ["privacy", "terms", "disclaimer"].includes(legalParam)) {
