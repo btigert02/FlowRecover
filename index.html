@@ -7441,7 +7441,19 @@
         <div class="seg" role="tablist">${ranges.map(([k, l]) => `<button class="${V.range === k ? "on" : ""}" data-act="finRange" data-v="${k}" id="fr-${k}">${l}</button>`).join("")}</div>
         <div class="row" style="gap:6px;align-items:center;justify-content:center;margin:10px 0"><button class="icon-btn" data-act="finNav" data-v="-1" id="fin-prev" aria-label="${L("ก่อนหน้า", "Previous")}">‹</button><b style="min-width:150px;text-align:center">${finTitle()}</b><button class="icon-btn" data-act="finNav" data-v="1" id="fin-next" aria-label="${L("ถัดไป", "Next")}">›</button><button class="btn btn-sm" data-act="finNow" id="fin-now">${L("ปัจจุบัน", "Now")}</button></div>
         <div class="kpis">${kpiBox(money(D.inc), L("รายรับ (฿)", "Income (฿)"), "emerald")}${kpiBox(money(D.exp), L("รายจ่าย (฿)", "Expenses (฿)"), "rose")}${kpiBox(money(D.net), L("คงเหลือสุทธิ (฿)", "Net (฿)"), D.net >= 0 ? "amber" : "rose")}${kpiBox(D.rate == null ? "–" : D.rate + "%", L("อัตราการออม", "Savings rate"), "sky")}</div>
-        <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-emerald grow" data-act="finExport" id="btn-fin-xlsx">⬇️ ${L("ดาวน์โหลด Excel (.xlsx)", "Download Excel (.xlsx)")}</button><button class="btn grow" data-act="finCopy" id="btn-fin-copy">📋 ${L("คัดลอกสรุป", "Copy summary")}</button></div></article>
+        <div class="row" style="gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn btn-emerald grow" data-act="finExport" id="btn-fin-xlsx">⬇️ ${L("ดาวน์โหลด Excel (.xlsx)", "Download Excel (.xlsx)")}</button><button class="btn ${V.showText ? "btn-amber" : ""} grow" data-act="finPullText" id="btn-fin-pull">📄 ${V.showText ? L("ซ่อนข้อความสรุป", "Hide summary text") : L("ดึงข้อความสรุปมาแสดง", "Show summary text")}</button><button class="btn grow" data-act="finCopy" id="btn-fin-copy">📋 ${L("คัดลอกสรุป", "Copy summary")}</button></div>
+        ${V.showText ? `<div id="fin-summary-box" style="margin-top:12px;padding:12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+          <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <b class="sm">📄 ${L("ข้อความสรุปรายรับ-รายจ่าย", "Summary Text")} • ${finTitle()}</b>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <button type="button" class="btn btn-sm ${V.textDetail !== false ? "btn-amber" : ""}" data-act="finTextMode" id="btn-fin-text-mode">${V.textDetail !== false ? L("📑 แสดงพร้อมรายการย่อย", "📑 Detailed with items") : L("📋 เฉพาะยอดสรุป", "📋 Summary only")}</button>
+              <button type="button" class="btn btn-sm btn-emerald" data-act="finCopyBox" id="btn-fin-copy-box">📋 ${L("คัดลอกข้อความนี้", "Copy text")}</button>
+              <button type="button" class="icon-btn" data-act="finHideText" title="${L("ซ่อน", "Hide")}" aria-label="${L("ซ่อน", "Hide")}">✕</button>
+            </div>
+          </div>
+          <textarea class="input mono" id="fin-summary-text" rows="9" style="width:100%;font-size:.82rem;line-height:1.55;white-space:pre;resize:vertical">${esc(finText())}</textarea>
+          <p class="muted sm" style="margin-top:6px">${L("💡 สามารถแก้ไขข้อความในกล่องนี้ก่อนกด “📋 คัดลอกข้อความนี้” หรือเปลี่ยนช่วงเวลาด้านบนเพื่อดึงข้อมูลใหม่โดยอัตโนมัติ", "💡 You can edit the text above before copying, or change the period above to auto-refresh")}</p>
+        </div>` : ""}</article>
     </div>
     <article class="card"><h3>📈 ${V.range === "year" ? L("รายรับ-รายจ่ายรายเดือน", "Income vs expenses per month") : L("รายรับ-รายจ่ายรายวัน", "Income vs expenses per day")} • ${finTitle()}</h3><div class="chart-wrap" style="margin-top:8px">${finChart(D.bk)}</div></article>
     <div class="grid grid-2">
@@ -7454,8 +7466,30 @@
   </div>`;
     }
     function finText() {
-      const D = finData(), lines = [`💸 FlowRecover — ${L("สรุปรายรับ-รายจ่าย", "Income & expenses")} ${finTitle()}`, `➕ ${L("รายรับ", "Income")}: ${money(D.inc)} ฿`, `➖ ${L("รายจ่าย", "Expenses")}: ${money(D.exp)} ฿`, `= ${L("คงเหลือ", "Net")}: ${money(D.net)} ฿${D.rate == null ? "" : ` (${L("ออมได้", "saved")} ${D.rate}%)`}`];
-      if (D.byExp.length) { lines.push("", L("ใช้จ่ายไปกับ:", "Spent on:")); D.byExp.forEach(g => lines.push(`${g.l}: ${money(g.v)} ฿ (${Math.round(g.v / D.exp * 100)}%)`)); }
+      const D = finData(), V = finView(), XC = XCAT(), IC = ICAT();
+      const lines = [
+        `📊 FlowRecover — ${L("สรุปรายรับ-รายจ่าย", "Income & expenses")} (${finTitle()})`,
+        `📅 ${L("ช่วงเวลา", "Period")}: ${fmtDate(D.a)} – ${fmtDate(D.b)}`,
+        `➕ ${L("รายรับรวม", "Total income")}: ${money(D.inc)} ฿`,
+        `➖ ${L("รายจ่ายรวม", "Total expenses")}: ${money(D.exp)} ฿`,
+        `= ${L("คงเหลือสุทธิ", "Net balance")}: ${D.net >= 0 ? "+" : "−"}${money(Math.abs(D.net))} ฿${D.rate == null ? "" : ` (${L("ออมได้", "saved")} ${D.rate}%)`}`
+      ];
+      if (D.byInc.length) {
+        lines.push("", `💵 ${L("รายรับมาจาก:", "Income by category:")}`);
+        D.byInc.forEach(g => lines.push(`• ${g.l}: ${money(g.v)} ฿ (${D.inc ? Math.round(g.v / D.inc * 100) : 0}%)`));
+      }
+      if (D.byExp.length) {
+        lines.push("", `🧾 ${L("ใช้จ่ายไปกับ:", "Spent on:")}`);
+        D.byExp.forEach(g => lines.push(`• ${g.l}: ${money(g.v)} ฿ (${D.exp ? Math.round(g.v / D.exp * 100) : 0}%)`));
+      }
+      if (V.textDetail !== false && D.rows.length) {
+        lines.push("", `📒 ${L("รายการในช่วงนี้", "Entries")} (${D.rows.length} ${L("รายการ", "items")}):`);
+        D.rows.slice(0, 25).forEach(x => {
+          const C = (x.type === "inc" ? IC : XC)[x.cat] || (x.type === "inc" ? IC.other : XC.other);
+          lines.push(`• ${fmtDate(x.date)} | ${x.type === "inc" ? "+" : "−"}${money(x.amount)} ฿ | ${C[0]} ${x.note || C[1]}`);
+        });
+        if (D.rows.length > 25) lines.push(`… ${L(`และอีก ${D.rows.length - 25} รายการ`, `and ${D.rows.length - 25} more items`)}`);
+      }
       return lines.join("\n");
     }
     async function finExport() {
@@ -8077,7 +8111,43 @@
       finNav: d => { const V = finView(), n = Number(d.v); V.date = V.range === "week" ? addDays(V.date, 7 * n) : addMonths(V.date, V.range === "month" ? n : 12 * n); rerender(); },
       finNow: () => { finView().date = dkey(); rerender(); },
       finExport: () => finExport(),
-      finCopy: async () => { const txt = finText(); try { await navigator.clipboard.writeText(txt); toast(L("📋 คัดลอกสรุปแล้ว", "📋 Summary copied")); } catch { prompt(L("คัดลอกข้อความนี้", "Copy this text"), txt); } },
+      finPullText: () => {
+        const V = finView();
+        V.showText = !V.showText;
+        rerender();
+        if (V.showText) toast(L("📄 ดึงข้อความสรุปมาแสดงในหน้านี้แล้ว", "📄 Summary text loaded on page"));
+      },
+      finTextMode: () => {
+        const V = finView();
+        V.textDetail = V.textDetail === false ? true : false;
+        rerender();
+      },
+      finHideText: () => { finView().showText = false; rerender(); },
+      finCopyBox: async () => {
+        const box = document.getElementById("fin-summary-text");
+        const txt = box ? box.value : finText();
+        try {
+          await navigator.clipboard.writeText(txt);
+          if (box) { box.focus(); box.select(); }
+          toast(L("📋 คัดลอกข้อความสรุปแล้ว", "📋 Summary text copied"));
+        } catch {
+          if (box) { box.focus(); box.select(); document.execCommand?.("copy"); toast(L("📋 เลือกข้อความในกล่องแล้ว กดคัดลอกได้เลย", "📋 Text selected in box")); }
+          else prompt(L("คัดลอกข้อความนี้", "Copy this text"), txt);
+        }
+      },
+      finCopy: async () => {
+        finView().showText = true;
+        rerender();
+        const box = document.getElementById("fin-summary-text");
+        const txt = box ? box.value : finText();
+        try {
+          await navigator.clipboard.writeText(txt);
+          toast(L("📋 ดึงข้อความมาแสดงผลและคัดลอกสรุปแล้ว", "📋 Summary displayed & copied"));
+        } catch {
+          if (box) { box.focus(); box.select(); }
+          toast(L("📄 ดึงข้อความสรุปมาแสดงด้านล่างแล้ว", "📄 Summary displayed below"));
+        }
+      },
       delTxn: d => {
         if (!confirm(L("ลบรายการนี้?", "Delete this entry?"))) return;
         if (d.id.includes("~")) { const [rid, f] = d.id.split("~"), r = P().expenses.find(x => x.id === rid); if (r) { r[f] = 0; if (!expSum(r)) P().expenses = P().expenses.filter(x => x !== r); } }
