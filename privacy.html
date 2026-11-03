@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>นโยบายความเป็นส่วนตัว เงื่อนไขการใช้งาน และข้อจำกัดความรับผิดชอบ — FlowRecover x Life Planner</title>
+  <link rel="icon" type="image/png" href="/icon-192.png?v=2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1120;
+      --surface: #131c31;
+      --surface-2: #1c2842;
+      --border: rgba(148, 163, 184, .18);
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --amber: #f59e0b;
+      --emerald: #10b981;
+      --sky: #38bdf8;
+      --violet: #a78bfa;
+      --rose: #fb7185;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0 }
+    body {
+      font-family: 'IBM Plex Sans Thai', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(900px 450px at 10% -10%, rgba(56, 189, 248, .12), transparent 65%),
+                  radial-gradient(800px 400px at 90% 10%, rgba(245, 158, 11, .1), transparent 65%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100dvh;
+      padding: 28px 16px 64px;
+    }
+    .wrap { max-width: 880px; margin: 0 auto; display: grid; gap: 18px }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+      padding: 14px 18px; border-radius: 18px; background: var(--surface); border: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); font-weight: 800; font-size: 1.15rem }
+    .brand img { width: 36px; height: 36px; border-radius: 10px }
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 12px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
+      font-family: inherit; font-weight: 600; font-size: .88rem; text-decoration: none; cursor: pointer;
+    }
+    .btn:hover { border-color: var(--amber) }
+    .btn-amber { background: linear-gradient(135deg, #f59e0b, #ea580c); color: #160f02; border: none; font-weight: 700 }
+    .card {
+      padding: 24px; border-radius: 22px; background: var(--surface); border: 1px solid var(--border);
+      display: grid; gap: 16px;
+    }
+    h1 { font-size: clamp(1.4rem, 4vw, 1.9rem); line-height: 1.3 }
+    h2 { font-size: 1.2rem; color: var(--amber); display: flex; align-items: center; gap: 8px; margin-top: 6px }
+    h3 { font-size: 1rem; color: var(--sky); margin-top: 6px }
+    p, li { font-size: .94rem; color: var(--text) }
+    ul { padding-left: 20px; display: grid; gap: 6px }
+    .muted { color: var(--muted); font-size: .86rem }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap }
+    .tab-btn {
+      flex: 1; min-width: 180px; padding: 11px 14px; border-radius: 14px;
+      background: var(--surface-2); border: 1.5px solid var(--border); color: var(--muted);
+      font-family: inherit; font-weight: 700; font-size: .9rem; cursor: pointer; text-align: center;
+    }
+    .tab-btn.on { border-color: var(--amber); color: var(--text); background: rgba(245, 158, 11, .14) }
+    .box {
+      padding: 14px 16px; border-radius: 14px; background: var(--surface-2);
+      border-left: 4px solid var(--emerald); display: grid; gap: 6px;
+    }
+    .box.warn { border-left-color: var(--amber) }
+    .box.rose { border-left-color: var(--rose) }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a href="/" class="brand">
+        <img src="/icon-192.png?v=2" alt="FlowRecover">
+        <span>FlowRecover x Life Planner</span>
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/" class="btn btn-amber">← กลับสู่แอป FlowRecover</a>
+      </div>
+    </header>
+
+    <div class="card">
+      <div>
+        <h1>🛡️ นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน • ขอบเขตความรับผิดชอบ</h1>
+        <p class="muted">Privacy Policy, Terms of Service & Disclaimer — อัปเดตล่าสุด: พฤศจิกายน 2026 (Last Updated: November 2026)</p>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab-btn on" onclick="showSec('all')" id="t-all">📑 ดูทั้งหมด (All)</button>
+        <button class="tab-btn" onclick="showSec('privacy')" id="t-privacy">🔒 นโยบายความเป็นส่วนตัว</button>
+        <button class="tab-btn" onclick="showSec('terms')" id="t-terms">📜 เงื่อนไขการใช้งาน</button>
+        <button class="tab-btn" onclick="showSec('disclaimer')" id="t-disclaimer">⚖️ ขอบเขตความรับผิดชอบ</button>
+      </div>
+    </div>
+
+    <section class="card sec-block" id="sec-privacy">
+      <h2>🔒 1. นโยบายความเป็นส่วนตัว (Privacy Policy & PDPA)</h2>
+      <p><b>FlowRecover x Life Planner</b> ให้ความสำคัญสูงสุดกับความเป็นส่วนตัวและความปลอดภัยของข้อมูลส่วนบุคคลของผู้ใช้งานทุกท่านตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล (PDPA) และมาตรฐานสากล</p>
+
+      <h3>1.1 ข้อมูลที่เราเก็บรวบรวม (Information We Collect)</h3>
+      <ul>
+        <li><b>ข้อมูลบัญชีผู้ใช้ (Account Information):</b> เมื่อคุณเข้าสู่ระบบผ่าน Google Sign-In ระบบจะจัดเก็บ ชื่อที่แสดง (Display Name), อีเมล (Email Address), รูปโปรไฟล์ และรหัสอ้างอิงผู้ใช้ (UID) เพื่อใช้ยืนยันตัวตนและซิงค์ข้อมูลข้ามอุปกรณ์</li>
+        <li><b>ข้อมูลการใช้งานที่คุณบันทึกเอง (User-Generated Content):</b> ตารางคิวงานรายวัน, กิจวัตรทำซ้ำ, ข้อมูลโปรเจค, สมุดวางแผนชีวิต (Life Planner), บันทึกรายรับ-รายจ่าย, ข้อมูลการคำนวณภาษี และข้อความความคิดเห็นที่คุณกรอกในระบบ</li>
+        <li><b>ข้อมูลสถานะสมาชิกและการชำระเงิน (Subscription & Billing Metadata):</b> สถานะแพ็กเกจ (ทดลองใช้ฟรี / สมาชิก PRO), ประเภทแพ็กเกจ (30 / 90 / 365 วัน) และวันหมดอายุ <b>ทั้งนี้ ระบบไม่เก็บรวบรวมหรือบันทึกหมายเลขบัตรเครดิต รหัส CVV หรือข้อมูลบัญชีธนาคารของคุณ</b> โดยธุรกรรมการชำระเงินทั้งหมดดำเนินการผ่านระบบของ <b>Stripe</b> ที่ได้รับมาตรฐานความปลอดภัยระดับสากล (PCI-DSS Level 1)</li>
+      </ul>
+
+      <h3>1.2 การเชื่อมต่อกับบริการ Google APIs (Google Calendar & Google Drive Disclosure)</h3>
+      <div class="box">
+        <p>เมื่อผู้ใช้เลือกเชื่อมต่อ <b>Google Calendar</b> หรือ <b>Google Drive</b> ด้วยตนเอง ระบบจะขอสิทธิ์เฉพาะเท่าที่จำเป็นต่อการทำงานตามคำสั่งของผู้ใช้เท่านั้น ได้แก่:</p>
+        <ul>
+          <li><code>calendar.events</code>: เพื่อแสดงนัดหมาย ดึงนัดหมายเข้าคิวงาน และอัปเดตสถานะบล็อกงานที่คุณสร้างจากแอปไปยังปฏิทินของคุณ</li>
+          <li><code>drive.file</code> / <code>drive.readonly</code>: เพื่อแนบลิงก์เอกสารหรืออัปโหลดไฟล์ประกอบโปรเจคตามที่คุณเลือกเท่านั้น</li>
+        </ul>
+        <p class="muted">การใช้และส่งต่อข้อมูลที่ได้รับจาก Google APIs ของ FlowRecover เป็นไปตาม <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener" style="color:var(--sky)">Google API Services User Data Policy</a> รวมถึงข้อกำหนด Limited Use อย่างเคร่งครัด เราไม่นำข้อมูลของคุณไปขาย โฆษณา หรือเปิดเผยแก่บุคคลที่สาม</p>
+      </div>
+
+      <h3>1.3 การจัดเก็บ รักษาความปลอดภัย และสิทธิของเจ้าของข้อมูล</h3>
+      <ul>
+        <li>ข้อมูลของคุณถูกจัดเก็บในหน่วยความจำของเบราว์เซอร์ (<code>localStorage</code>) และซิงโครไนซ์ผ่านฐานข้อมูลคลาวด์ <b>Google Firebase / Cloud Firestore</b> ที่เข้ารหัสการรับส่งข้อมูลผ่าน HTTPS/TLS และจำกัดสิทธิ์การเข้าถึงเฉพาะเจ้าของบัญชี</li>
+        <li><b>สิทธิของคุณ:</b> คุณสามารถเข้าถึง แก้ไข ส่งออกข้อมูลทั้งหมดเป็นไฟล์ Excel/CSV หรือลบรายการข้อมูลของคุณในแอปได้ตลอดเวลา รวมถึงสามารถยกเลิกการเชื่อมต่อสิทธิ์ Google ได้ที่หน้าการตั้งค่าความปลอดภัยของบัญชี Google ของคุณ</li>
+      </ul>
+    </section>
+
+    <section class="card sec-block" id="sec-terms">
+      <h2>📜 2. เงื่อนไขการใช้งาน (Terms of Service)</h2>
+      <p>การเข้าใช้งานเว็บไซต์และแอปพลิเคชัน <b>FlowRecover x Life Planner</b> ถือว่าคุณได้อ่าน เข้าใจ และตกลงยอมรับเงื่อนไขการใช้งานดังต่อไปนี้</p>
+
+      <h3>2.1 ขอบเขตการให้บริการและบัญชีผู้ใช้งาน</h3>
+      <ul>
+        <li>FlowRecover x Life Planner เป็นระบบจัดการตารางงานยืดหยุ่น บริหารโปรเจค และสมุดวางแผนชีวิตส่วนบุคคล ผู้ใช้งานมีหน้าที่ดูแลรักษาความปลอดภัยของบัญชี Google ของตนเอง</li>
+        <li>ผู้ใช้งานตกลงจะไม่นำระบบไปใช้ในทางที่ผิดกฎหมาย ไม่พยายามเจาะระบบ คัดลอกซอร์สโค้ดเพื่อการค้าโดยไม่ได้รับอนุญาต หรือกระทำการใดๆ ที่รบกวนเสถียรภาพของเซิร์ฟเวอร์</li>
+      </ul>
+
+      <h3>2.2 การทดลองใช้งานฟรี แพ็กเกจสมาชิก PRO และการต่ออายุ</h3>
+      <ul>
+        <li><b>สิทธิ์ทดลองใช้ฟรี (7-Day Free Trial):</b> ผู้ใช้งานใหม่ได้รับสิทธิ์ทดลองใช้งานครบทุกฟีเจอร์ฟรีเป็นเวลา 7 วัน (168 ชั่วโมง) โดยไม่จำเป็นต้องผูกบัตรเครดิตล่วงหน้า</li>
+        <li><b>แพ็กเกจสมาชิก PRO:</b> มีให้เลือกแบบรายเดือน (30 วัน), รายสามเดือน (90 วัน) และรายปี (365 วัน) โดยสามารถชำระผ่านบัตรเครดิต/เดบิต หรือสแกนจ่ายด้วย QR PromptPay ผ่านระบบ Stripe</li>
+        <li><b>การต่ออายุสะสมวัน:</b> หากผู้ใช้งานชำระต่ออายุแพ็กเกจล่วงหน้าก่อนวันหมดอายุเดิม ระบบจะนำจำนวนวันของแพ็กเกจใหม่ไปบวกสะสมต่อท้ายวันหมดอายุเดิมให้อัตโนมัติโดยไม่เสียสิทธิ์วันที่เหลือ</li>
+      </ul>
+
+      <h3>2.3 การยกเลิกสมาชิกและนโยบายการคืนเงิน (Cancellation & Data Retention)</h3>
+      <div class="box warn">
+        <ul>
+          <li>สำหรับการสมัครแบบตัดบัตรรายเดือนอัตโนมัติ ผู้ใช้สามารถกดยกเลิกการต่ออายุรอบถัดไปได้ด้วยตนเองตลอดเวลาผ่านลิงก์จัดการสมาชิกในอีเมลใบเสร็จของ Stripe</li>
+          <li>เมื่อแพ็กเกจหมดอายุและยังไม่ได้ต่ออายุ ระบบจะจำกัดการแก้ไขชั่วคราว แต่ <b>ข้อมูลตารางงาน โปรเจค และสมุดวางแผนชีวิตทั้งหมดจะยังคงถูกเก็บรักษาไว้อย่างปลอดภัย</b> เมื่อต่ออายุแล้วสามารถใช้งานต่อได้ทันที</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="card sec-block" id="sec-disclaimer">
+      <h2>⚖️ 3. ข้อจำกัดความรับผิดชอบ (Disclaimer & Limitation of Liability)</h2>
+      <p>เพื่อให้ผู้ใช้งานเข้าใจขอบเขตการทำงานของเครื่องมืออย่างชัดเจน โปรดศึกษารายละเอียดความรับผิดชอบดังต่อไปนี้</p>
+
+      <h3>3.1 ข้อจำกัดความรับผิดชอบด้านการเงินและภาษีอากร (Financial & Tax Disclaimer)</h3>
+      <div class="box rose">
+        <p>ฟีเจอร์บันทึกรายรับ-รายจ่าย การวางแผนเงินออม และ <b>โปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา/นิติบุคคล (หมวด F และ TX)</b> จัดทำขึ้นเพื่อเป็น <b>เครื่องมือช่วยประมาณการและวางแผนเบื้องต้นเท่านั้น</b> ไม่ถือเป็นคำแนะนำทางการเงิน การลงทุน การบัญชี หรือคำปรึกษาทางภาษีอากรอย่างเป็นทางการ ผู้ใช้งานควรตรวจสอบความถูกต้องกับหลักเกณฑ์และกฎหมายล่าสุดของกรมสรรพากร หรือปรึกษาผู้เชี่ยวชาญก่อนการยื่นแบบแสดงรายการภาษีจริง</p>
+      </div>
+
+      <h3>3.2 ข้อจำกัดความรับผิดชอบด้านสุขภาพและการนอนหลับ (Health & Wellness Disclaimer)</h3>
+      <ul>
+        <li>ฟีเจอร์โหมดพักผ่อน (Rest & Recharge), โหมดการนอนหลับ (Sleep & Recovery), บันทึกการออกกำลังกาย และแคลอรีอาหาร ออกแบบมาเพื่อช่วยจัดสมดุลเวลาและสร้างวินัยในการดูแลตนเองเท่านั้น <b>ไม่ใช่เครื่องมือทางการแพทย์ และไม่สามารถใช้แทนคำแนะนำ การวินิจฉัย หรือการรักษาของแพทย์ได้</b></li>
+      </ul>
+
+      <h3>3.3 ความพร้อมใช้งานของระบบ การแจ้งเตือน และลิงก์แชร์ข้อมูล</h3>
+      <ul>
+        <li><b>การแจ้งเตือน (Notifications & Smartwatch Alerts):</b> การส่งเสียงเตือน การสั่นเตือนผ่านเบราว์เซอร์ หรือการแจ้งเตือนผ่านบริการภายนอก (เช่น ntfy.sh) ขึ้นอยู่กับการอนุญาตสิทธิ์ของเบราว์เซอร์ โหมดประหยัดพลังงานของอุปกรณ์ และการเชื่อมต่ออินเทอร์เน็ต ผู้พัฒนาไม่สามารถรับประกันการแจ้งเตือนได้ 100% ในทุกสภาพแวดล้อม และไม่รับผิดชอบต่อความเสียหายทางอ้อมจากการพลาดนัดหมาย</li>
+        <li><b>ลิงก์แชร์ความคืบหน้าโปรเจค (Public Share Links):</b> เมื่อคุณกดสร้างลิงก์แชร์ความคืบหน้าโปรเจค ข้อมูลสถานะของโปรเจคนั้นจะถูกเข้ารหัสอยู่ในลิงก์เพื่อให้ผู้รับเปิดดูได้โดยไม่ต้องล็อกอิน คุณจึงควรส่งลิงก์ดังกล่าวให้เฉพาะบุคคลที่คุณอนุญาตให้เข้าถึงข้อมูลเท่านั้น</li>
+      </ul>
+
+      <p class="muted" style="margin-top:8px">หากมีข้อสงสัยเกี่ยวกับนโยบายความเป็นส่วนตัว เงื่อนไขการใช้งาน หรือต้องการติดต่อผู้พัฒนา สามารถส่งข้อความผ่านกล่องแสดงความคิดเห็นภายในแอป หรือติดต่อที่อีเมลผู้ดูแลระบบได้ตลอดเวลา</p>
+    </section>
+  </div>
+
+  <script>
+    function showSec(k) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('on'));
+      const btn = document.getElementById('t-' + k);
+      if (btn) btn.classList.add('on');
+      const map = { privacy: 'sec-privacy', terms: 'sec-terms', disclaimer: 'sec-disclaimer' };
+      document.querySelectorAll('.sec-block').forEach(el => {
+        el.style.display = (k === 'all' || el.id === map[k]) ? 'grid' : 'none';
+      });
+    }
+    const q = new URLSearchParams(location.search).get('tab');
+    if (q && ['privacy', 'terms', 'disclaimer'].includes(q)) showSec(q);
+  </script>
+</body>
+</html>
+

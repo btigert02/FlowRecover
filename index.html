@@ -2572,6 +2572,9 @@
   <dialog id="search-dlg" closedby="any" aria-labelledby="search-dlg-title" style="width:min(640px,95vw)">
     <div class="dlg-body" id="search-dlg-body"></div>
   </dialog>
+  <dialog id="legal-dlg" closedby="any" aria-labelledby="legal-dlg-title" style="width:min(760px,95vw)">
+    <div class="dlg-body" id="legal-dlg-body"></div>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -3042,6 +3045,13 @@
     <button class="gbtn" data-act="login" id="btn-google-login">${GOOGLE_SVG}${L("เข้าสู่ระบบด้วย Google", "Continue with Google")}</button>
     <p class="muted sm">${L("🎁 ทดลองใช้ฟรี 7 วันเต็ม ไม่ต้องใส่บัตร • หลังจากนั้น 99฿/เดือน", "🎁 Free for 7 days, no card required • then 99฿/month")}</p>
     <div class="pay-badges"><span class="chip">💳 ${L("บัตรเครดิต/เดบิต", "Credit/Debit card")}</span><span class="chip">📱 QR PromptPay</span><span class="chip">🔒 Stripe</span></div>
+    <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap;padding-top:4px;border-top:1px solid var(--border)">
+      <button type="button" class="link sm muted" data-act="openLegal" data-tab="privacy">🔒 ${L("นโยบายความเป็นส่วนตัว", "Privacy Policy")}</button>
+      <span class="muted sm">•</span>
+      <button type="button" class="link sm muted" data-act="openLegal" data-tab="terms">📜 ${L("เงื่อนไขการใช้งาน", "Terms of Service")}</button>
+      <span class="muted sm">•</span>
+      <button type="button" class="link sm muted" data-act="openLegal" data-tab="disclaimer">⚖️ ${L("ขอบเขตความรับผิดชอบ", "Disclaimer")}</button>
+    </div>
     ${FIREBASE_READY ? "" : `<p class="muted sm">${L("⚙️ โหมดสาธิต: ยังไม่ได้ตั้งค่า Firebase (ดู SETUP.md)", "⚙️ Demo mode: Firebase not configured (see SETUP.md)")}</p>`}
   </div>`;
       const tabs = [["focus", "⚡", L("โฟกัส/แทรก", "Focus")], ["queue", "📅", L("คิวงาน", "Queue")], ["calendar", "📆", L("ปฏิทิน", "Calendar")], ["projects", "🗂️", L("โปรเจค", "Projects")], ["planner", "📔", "Planner"], ["report", "📊", L("สรุปผล", "Report")], ["guide", "📖", L("วิธีใช้", "Guide")]];
@@ -4884,7 +4894,34 @@
       <article class="card" id="guide-detail"><h2 style="font-size:1.25rem;margin-bottom:16px">${g.i} ${esc(g.t)}</h2>
         <ol class="gsteps">${g.s.map(([b, p]) => `<li><div><b>${esc(b)}</b><p>${esc(p)}</p></div></li>`).join("")}</ol>
         <button class="btn btn-amber btn-xl" style="margin-top:20px" data-act="guideGo" data-v="${i}" id="btn-guide-go">${i === 7 ? `📋 ${L("คัดลอกลิงก์ https://flowrecover.web.app", "Copy link https://flowrecover.web.app")}` : `🚀 ${L("กดไปหน้าฟังก์ชันนี้ทันที", "Take me there")}`}</button></article>
-    </div>`;
+    </div>
+
+    <article class="card" id="legal-guide-card" style="margin-top:16px;border:1px solid var(--border)">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div>
+          <h3>🛡️ ${L("นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน • ขอบเขตความรับผิดชอบ", "Privacy Policy • Terms of Service • Disclaimer")}</h3>
+          <p class="muted sm">${L("มาตรฐานการคุ้มครองข้อมูลส่วนบุคคล (PDPA), ข้อกำหนดการใช้บริการ และขอบเขตความรับผิดชอบของระบบ FlowRecover x Life Planner", "PDPA data protection standards, subscription terms, and scope of liability for FlowRecover x Life Planner")}</p>
+        </div>
+        <a href="/privacy.html" target="_blank" rel="noopener" class="btn btn-sm">↗ ${L("เปิดหน้าเอกสารฉบับเต็ม", "Open Full Legal Page")}</a>
+      </div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:10px">
+        <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--emerald);display:flex;flex-direction:column;gap:6px">
+          <b>🔒 ${L("นโยบายความเป็นส่วนตัว (Privacy Policy)", "Privacy Policy & PDPA")}</b>
+          <p class="muted sm" style="flex:1">${L("ข้อมูลของคุณถูกเข้ารหัสและผูกกับบัญชี Google ของคุณเท่านั้น ระบบไม่เก็บเลขบัตรเครดิต และใช้สิทธิ์ Google Calendar / Drive เฉพาะเมื่อคุณกดสั่งงาน", "Your data is encrypted and tied strictly to your Google account. No credit card numbers are stored on our servers.")}</p>
+          <button type="button" class="btn btn-sm" data-act="openLegal" data-tab="privacy">📖 ${L("อ่านนโยบายความเป็นส่วนตัว", "Read Privacy Policy")}</button>
+        </div>
+        <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--amber);display:flex;flex-direction:column;gap:6px">
+          <b>📜 ${L("เงื่อนไขการใช้งาน (Terms of Service)", "Terms of Service")}</b>
+          <p class="muted sm" style="flex:1">${L("สิทธิ์ทดลองใช้ฟรี 7 วัน แพ็กเกจ PRO (30 / 90 / 365 วัน) การต่ออายุสะสมวันอัตโนมัติ และการเก็บรักษาข้อมูลเมื่อหมดอายุ", "7-day free trial, 30/90/365-day PRO plans, cumulative early renewal, and safe data retention.")}</p>
+          <button type="button" class="btn btn-sm" data-act="openLegal" data-tab="terms">📖 ${L("อ่านเงื่อนไขการใช้งาน", "Read Terms of Service")}</button>
+        </div>
+        <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--sky);display:flex;flex-direction:column;gap:6px">
+          <b>⚖️ ${L("ขอบเขตความรับผิดชอบ (Disclaimer)", "Disclaimer & Liability")}</b>
+          <p class="muted sm" style="flex:1">${L("ข้อมูลการเงิน/การคำนวณภาษีเป็นเครื่องมือประมาณการเบื้องต้น และโหมดสุขภาพ/การนอนหลับมีไว้เพื่อจัดสมดุลชีวิต ไม่ใช่คำแนะนำทางการแพทย์หรือกฎหมาย", "Finance/tax tools are for estimation only, and sleep/wellness trackers are not medical advice.")}</p>
+          <button type="button" class="btn btn-sm" data-act="openLegal" data-tab="disclaimer">📖 ${L("อ่านขอบเขตความรับผิดชอบ", "Read Disclaimer")}</button>
+        </div>
+      </div>
+    </article>`;
     }
 
     /* ---------- 👥 Admin User Management Dashboard ---------- */
@@ -5375,7 +5412,14 @@
         <button class="pay-opt" data-act="pay" data-m="card" data-pkg="${selKey}" id="${ctx}-pay-card"><span class="pay-ico">💳</span><span><b>${L("บัตรเครดิต / เดบิต", "Credit / debit card")} (${pkg.title})</b><small>${L(`Visa • Mastercard • JCB — ชำระแพ็กเกจ ${pkg.days} วัน (${money(pkg.price)}฿)`, `Visa • Mastercard • JCB — ${pkg.days} days access (${money(pkg.price)}฿)`)}</small></span><em>${money(pkg.price)}฿</em></button>
         <button class="pay-opt" data-act="pay" data-m="qr" data-pkg="${selKey}" id="${ctx}-pay-qr"><span class="pay-ico">📱</span><span><b>QR PromptPay (${pkg.title})</b><small>${L(`สแกนจ่ายผ่านแอปธนาคารไทย — ใช้งานได้เต็ม ${pkg.days} วัน (${money(pkg.price)}฿)`, `Scan with any Thai banking app — ${pkg.days} days of PRO access (${money(pkg.price)}฿)`)}</small></span><em>${money(pkg.price)}฿</em></button>
       </div>
-      <p class="muted sm center">🔒 ${L("ชำระผ่าน Stripe อย่างปลอดภัย • อีเมลและแพ็กเกจของคุณถูกบันทึกให้อัตโนมัติ", "Secure checkout by Stripe • your email & selected package are saved automatically")}</p>`;
+      <p class="muted sm center">🔒 ${L("ชำระผ่าน Stripe อย่างปลอดภัย • อีเมลและแพ็กเกจของคุณถูกบันทึกให้อัตโนมัติ", "Secure checkout by Stripe • your email & selected package are saved automatically")}</p>
+      <div class="row" style="justify-content:center;gap:8px;flex-wrap:wrap">
+        <button type="button" class="link sm muted" data-act="openLegal" data-tab="privacy">🔒 ${L("นโยบายความเป็นส่วนตัว", "Privacy Policy")}</button>
+        <span class="muted sm">•</span>
+        <button type="button" class="link sm muted" data-act="openLegal" data-tab="terms">📜 ${L("เงื่อนไขการใช้งาน", "Terms of Service")}</button>
+        <span class="muted sm">•</span>
+        <button type="button" class="link sm muted" data-act="openLegal" data-tab="disclaimer">⚖️ ${L("ขอบเขตความรับผิดชอบ", "Disclaimer")}</button>
+      </div>`;
     }
     function simHTML(ctx) {
       if (!SHOW_OWNER_SIMULATOR) return "";
@@ -5496,9 +5540,118 @@
       <div class="grow"><b>${esc(u.name || "")}</b><div class="muted sm">${esc(u.email || "")}</div></div></div>
     <div class="row" style="justify-content:space-between">${status}<span class="chip ${fb ? "chip-emerald" : "chip-sky"}">${fb ? L("☁️ ซิงค์ Firebase", "☁️ Firebase sync") : L("💾 โหมดสาธิต (Local)", "💾 Demo mode (local)")}</span></div>
     ${s.is_admin ? `<div style="display:grid;gap:8px;padding:6px 0"><p class="muted sm center">👑 ${L("คุณได้รับสิทธิ์ใช้งานฟรีตลอดชีพ (Lifetime Admin)", "You have Lifetime Admin access.")}</p><button class="btn btn-emerald" data-act="openUsersView" id="btn-account-users">👥 ${L("เปิดระบบจัดการผู้ใช้งาน (User Management)", "Open User Management Dashboard")}</button></div>` : s.pro && !s.until ? `<p class="muted sm">${L("จัดการ/ยกเลิกการสมัครได้จากอีเมลใบเสร็จของ Stripe", "Manage or cancel from your Stripe receipt email")}</p>` : `<b>${s.pro ? L("⏰ ต่ออายุล่วงหน้า / เปลี่ยนแพ็กเกจ (30 / 90 / 365 วัน)", "⏰ Renew early / Choose package (30 / 90 / 365 days)") : L("👑 เลือกแพ็กเกจ FlowRecover PRO (30 / 90 / 365 วัน)", "👑 Choose FlowRecover PRO Package (30 / 90 / 365 days)")}</b>${payOptionsHTML("ac")}`}
-    <div class="row" style="justify-content:center"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button></div>
+    <div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><button class="link sm muted" data-act="openAdminDlg" id="btn-account-admin">🔑 ${s.is_admin ? L("สิทธิ์ Admin เปิดใช้งานอยู่", "Admin status active") : L("ใส่รหัส Admin / Promo Code", "Enter Admin / Promo Code")}</button><span class="muted sm">•</span><button class="link sm muted" data-act="openLegal" data-tab="privacy">🛡️ ${L("นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน & ความรับผิดชอบ", "Privacy Policy • Terms & Disclaimer")}</button></div>
     ${simHTML("ac")}
     <div class="row"><button class="btn grow" data-act="lang" id="btn-account-lang">🌐 ${L("English", "ภาษาไทย")}</button><button class="btn grow" data-act="theme" id="btn-account-theme">${state.theme === "light" ? L("🌙 โหมดมืด", "🌙 Dark") : L("☀️ โหมดสว่าง", "☀️ Light")}</button><button class="btn grow" data-act="logout" id="btn-logout">${L("ออกจากระบบ", "Sign out")}</button></div>`;
+    }
+    function renderLegalDlg(defaultTab) {
+      const b = $("#legal-dlg-body"); if (!b) return;
+      if (defaultTab) state.legalTab = defaultTab;
+      const t = state.legalTab || "privacy";
+      const tabs = [
+        ["privacy", `🔒 ${L("นโยบายความเป็นส่วนตัว", "Privacy Policy")}`],
+        ["terms", `📜 ${L("เงื่อนไขการใช้งาน", "Terms of Service")}`],
+        ["disclaimer", `⚖️ ${L("ขอบเขตความรับผิดชอบ", "Disclaimer & Liability")}`]
+      ];
+      let content = "";
+      if (t === "privacy") {
+        content = `
+          <div style="display:grid;gap:12px;font-size:.9rem;line-height:1.65">
+            <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--emerald)">
+              <b>🔒 ${L("1. นโยบายความเป็นส่วนตัวและการคุ้มครองข้อมูลส่วนบุคคล (PDPA)", "1. Privacy Policy & Personal Data Protection (PDPA)")}</b>
+              <p class="muted sm" style="margin-top:4px">${L("FlowRecover x Life Planner ให้ความสำคัญสูงสุดกับความเป็นส่วนตัวและความปลอดภัยของข้อมูลของผู้ใช้งานทุกท่าน โดยจัดเก็บและประมวลผลข้อมูลเท่าที่จำเป็นต่อการให้บริการเท่านั้น", "FlowRecover x Life Planner prioritizes your privacy and data security, collecting and processing only what is strictly necessary to provide our service.")}</p>
+            </div>
+            <div>
+              <b>📌 ${L("1.1 ข้อมูลที่เราเก็บรวบรวม (Data We Collect)", "1.1 Information We Collect")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li><b>${L("ข้อมูลบัญชีผู้ใช้ (Account Info):", "Account Information:")}</b> ${L("เมื่อเข้าสู่ระบบด้วย Google Sign-In ระบบจะเก็บชื่อที่แสดง, อีเมล, รูปโปรไฟล์ และรหัสประจำตัวผู้ใช้ (UID) เพื่อยืนยันตัวตนและซิงค์ข้อมูลข้ามอุปกรณ์", "When signing in via Google, we store your display name, email, profile photo URL, and user UID to authenticate and sync your workspace across devices.")}</li>
+                <li><b>${L("ข้อมูลตารางงานและสมุดวางแผนชีวิต (User Content):", "User-Generated Content:")}</b> ${L("คิวงานรายวัน, กิจวัตรทำซ้ำ, โปรเจค, เป้าหมายชีวิต, บันทึกรายรับ-รายจ่าย, ข้อมูลการคำนวณภาษี และความคิดเห็นที่คุณบันทึกไว้ในแอป", "Tasks, recurring routines, projects, Life Planner entries, income/expense logs, tax calculations, and optional feedback you submit.")}</li>
+                <li><b>${L("ข้อมูลสถานะสมาชิกและการชำระเงิน (Billing Metadata):", "Subscription & Billing Metadata:")}</b> ${L("สถานะแพ็กเกจ (ทดลองใช้ฟรี / PRO) และวันหมดอายุ ทั้งนี้ ระบบไม่เก็บหมายเลขบัตรเครดิต รหัส CVV หรือข้อมูลบัญชีธนาคารของคุณ โดยธุรกรรมทั้งหมดดำเนินการผ่าน Stripe (มาตรฐาน PCI-DSS Level 1)", "Subscription status and expiry dates. We NEVER store credit card numbers, CVV codes, or bank credentials — all payments are processed securely by Stripe (PCI-DSS Level 1).")}</li>
+              </ul>
+            </div>
+            <div>
+              <b>🔗 ${L("1.2 การเชื่อมต่อกับ Google Calendar และ Google Drive", "1.2 Google Calendar & Google Drive API Disclosure")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li>${L("เมื่อคุณกดเชื่อมต่อ Google Calendar หรือ Google Drive ด้วยตนเอง ระบบจะขอสิทธิ์เฉพาะเท่าที่จำเป็น (calendar.events, drive.file, drive.readonly) เพื่อดึง/ซิงก์ตารางงาน หรือแนบลิงก์เอกสารโปรเจคตามคำสั่งของคุณเท่านั้น", "When you explicitly connect Google Calendar or Google Drive, we request only necessary scopes (calendar.events, drive.file, drive.readonly) to sync tasks or attach project files at your command.")}</li>
+                <li>${L("การใช้และส่งต่อข้อมูลจาก Google APIs เป็นไปตาม Google API Services User Data Policy (รวมถึงข้อกำหนด Limited Use) อย่างเคร่งครัด เราไม่นำข้อมูลของคุณไปขาย โฆษณา หรือเปิดเผยแก่บุคคลที่สาม", "Our use and transfer of information received from Google APIs strictly adhere to the Google API Services User Data Policy, including the Limited Use requirements. We never sell or use your data for advertising.")}</li>
+              </ul>
+            </div>
+            <div>
+              <b>🛡️ ${L("1.3 การจัดเก็บ ความปลอดภัย และสิทธิของเจ้าของข้อมูล", "1.3 Data Storage, Security & Your Rights")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li>${L("ข้อมูลถูกจัดเก็บในเบราว์เซอร์ (localStorage) และซิงโครไนซ์บนคลาวด์ Google Firebase / Cloud Firestore ที่เข้ารหัสผ่าน HTTPS/TLS และจำกัดสิทธิ์ให้เข้าถึงได้เฉพาะบัญชีของคุณ", "Data is stored locally in your browser and synced via Google Firebase / Cloud Firestore over encrypted HTTPS/TLS connections with strict per-user access rules.")}</li>
+                <li>${L("คุณมีสิทธิ์เข้าถึง แก้ไข ส่งออกข้อมูลเป็นไฟล์ Excel/CSV หรือลบรายการข้อมูลในบัญชีของคุณได้ตลอดเวลา", "You have full rights to access, edit, export (Excel/CSV), or delete your data at any time.")}</li>
+              </ul>
+            </div>
+          </div>`;
+      } else if (t === "terms") {
+        content = `
+          <div style="display:grid;gap:12px;font-size:.9rem;line-height:1.65">
+            <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--amber)">
+              <b>📜 ${L("2. เงื่อนไขการใช้งาน (Terms of Service)", "2. Terms of Service")}</b>
+              <p class="muted sm" style="margin-top:4px">${L("การเข้าใช้งาน FlowRecover x Life Planner ถือว่าคุณรับทราบและตกลงตามข้อกำหนดการให้บริการดังต่อไปนี้", "By accessing and using FlowRecover x Life Planner, you agree to the following terms and conditions.")}</p>
+            </div>
+            <div>
+              <b>🎁 ${L("2.1 สิทธิ์ทดลองใช้ฟรีและแพ็กเกจสมาชิก PRO", "2.1 Free Trial & PRO Subscription Packages")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li><b>${L("ทดลองใช้ฟรี 7 วัน (Free Trial):", "7-Day Free Trial:")}</b> ${L("ผู้ใช้ใหม่ได้รับสิทธิ์ทดลองใช้งานครบทุกฟังก์ชันฟรี 7 วัน (168 ชั่วโมง) โดยไม่ต้องผูกบัตรเครดิตล่วงหน้า", "New users receive a 7-day (168-hour) full-featured free trial with no credit card required upfront.")}</li>
+                <li><b>${L("แพ็กเกจสมาชิก PRO:", "PRO Packages:")}</b> ${L("มีให้เลือกแบบรายเดือน (30 วัน • 99฿), รายสามเดือน (90 วัน • 269฿) และรายปี (365 วัน • 990฿) ชำระผ่านบัตรเครดิต/เดบิต หรือสแกน QR PromptPay ผ่านระบบ Stripe", "Available in 30-day (99฿), 90-day (269฿), and 365-day (990฿) passes via Credit/Debit Card or QR PromptPay through Stripe.")}</li>
+                <li><b>${L("การต่ออายุสะสมวันอัตโนมัติ:", "Cumulative Early Renewal:")}</b> ${L("หากต่ออายุก่อนวันหมดอายุเดิม ระบบจะนำจำนวนวันของแพ็กเกจใหม่ไปบวกสะสมต่อท้ายวันหมดอายุเดิมให้อัตโนมัติ ไม่เสียสิทธิ์วันที่เหลือ", "If you renew early before your current pass expires, the new days are stacked directly onto your existing expiration date.")}</li>
+              </ul>
+            </div>
+            <div>
+              <b>🔄 ${L("2.2 การยกเลิกสมาชิกและการเก็บรักษาข้อมูล", "2.2 Cancellation & Data Retention")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li>${L("กรณีสมัครแบบตัดบัตรรายเดือนอัตโนมัติ ผู้ใช้สามารถกดยกเลิกการต่ออายุรอบถัดไปได้ตลอดเวลาจากลิงก์ในอีเมลใบเสร็จของ Stripe", "For recurring card subscriptions, you may cancel auto-renewal anytime via the management link in your Stripe receipt email.")}</li>
+                <li>${L("เมื่อหมดอายุสมาชิกและยังไม่ได้ต่ออายุ ข้อมูลทั้งหมดในบัญชีของคุณจะยังคงถูกเก็บรักษาไว้อย่างปลอดภัย ไม่ถูกลบ และสามารถกลับมาใช้งานต่อได้ทันทีเมื่อต่ออายุ", "If your trial or PRO pass expires, all your schedule, project, and Life Planner data remains safely preserved in your account.")}</li>
+              </ul>
+            </div>
+            <div>
+              <b>⚖️ ${L("2.3 การใช้งานที่เหมาะสมและทรัพย์สินทางปัญญา", "2.3 Acceptable Use & Intellectual Property")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li>${L("ผู้ใช้งานตกลงไม่นำระบบไปใช้ในทางที่ผิดกฎหมาย ไม่พยายามเจาะระบบ รบกวนเซิร์ฟเวอร์ หรือคัดลอกซอร์สโค้ดและส่วนติดต่อผู้ใช้เพื่อการค้าโดยไม่ได้รับอนุญาต", "Users agree not to misuse the service for unlawful purposes, disrupt servers, or copy the application's source code and design for unauthorized commercial redistribution.")}</li>
+              </ul>
+            </div>
+          </div>`;
+      } else {
+        content = `
+          <div style="display:grid;gap:12px;font-size:.9rem;line-height:1.65">
+            <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border-left:4px solid var(--sky)">
+              <b>⚖️ ${L("3. ข้อจำกัดความรับผิดชอบ (Disclaimer & Limitation of Liability)", "3. Disclaimer & Limitation of Liability")}</b>
+              <p class="muted sm" style="margin-top:4px">${L("โปรดศึกษารายละเอียดขอบเขตการทำงานและความรับผิดชอบของเครื่องมือต่างๆ ในระบบ", "Please review the scope and limitations of liability regarding the planning, financial, and wellness tools in this application.")}</p>
+            </div>
+            <div style="padding:12px 14px;border-radius:12px;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3)">
+              <b>💰 ${L("3.1 ข้อมูลการเงินและการคำนวณภาษี (Financial & Tax Disclaimer)", "3.1 Financial & Tax Calculation Disclaimer")}</b>
+              <p class="sm" style="margin-top:4px">${L("ฟีเจอร์บันทึกรายรับ-รายจ่าย การวางแผนงบประมาณ และโปรแกรมคำนวณภาษีเงินได้บุคคลธรรมดา/นิติบุคคล (หมวด F และ TX) จัดทำขึ้นเพื่อเป็นเครื่องมือช่วยประมาณการและวางแผนเบื้องต้นเท่านั้น ไม่ถือเป็นคำแนะนำทางการเงิน การลงทุน การบัญชี หรือคำปรึกษาทางภาษีอากรอย่างเป็นทางการ ผู้ใช้งานควรตรวจสอบความถูกต้องกับหลักเกณฑ์ล่าสุดของกรมสรรพากร หรือปรึกษาผู้เชี่ยวชาญก่อนยื่นแบบแสดงรายการภาษีจริง", "The income/expense tracker, savings planner, and personal/corporate tax calculators (Sections F & TX) are provided strictly as estimation and personal planning aids. They do not constitute official financial, accounting, legal, or certified tax advice. Always verify calculations against current Revenue Department regulations before filing.")}</p>
+            </div>
+            <div>
+              <b>🌿 ${L("3.2 ข้อมูลด้านสุขภาพ การพักผ่อน และการนอนหลับ (Health & Wellness Disclaimer)", "3.2 Health, Sleep & Wellness Disclaimer")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li>${L("โหมดพักผ่อน (Rest & Recharge), โหมดการนอนหลับ (Sleep & Recovery), บันทึกการออกกำลังกาย และแคลอรีอาหาร ออกแบบมาเพื่อช่วยจัดสมดุลชีวิตและสร้างวินัยส่วนบุคคลเท่านั้น ไม่ใช่เครื่องมือทางการแพทย์ และไม่สามารถใช้แทนคำแนะนำ การวินิจฉัย หรือการรักษาของแพทย์ได้", "Rest mode, Sleep & Recovery timers, workout logs, and calorie trackers are lifestyle productivity aids only and do not constitute medical advice, diagnosis, or treatment.")}</li>
+              </ul>
+            </div>
+            <div>
+              <b>🔔 ${L("3.3 ความพร้อมใช้งานของระบบ การแจ้งเตือน และลิงก์แชร์ข้อมูล", "3.3 System Availability, Alerts & Shared Links")}</b>
+              <ul style="padding-left:18px;margin-top:4px;display:grid;gap:4px">
+                <li><b>${L("การแจ้งเตือน (Notifications):", "Notifications & Alarms:")}</b> ${L("การส่งเสียงเตือน การสั่น หรือการแจ้งเตือนผ่านสมาร์ทวอทช์ (ntfy) ขึ้นอยู่กับการอนุญาตสิทธิ์ของเบราว์เซอร์ โหมดประหยัดพลังงานของอุปกรณ์ และสัญญาณอินเทอร์เน็ต ผู้พัฒนาไม่รับผิดชอบต่อความเสียหายทางอ้อมจากการพลาดนัดหมาย", "Browser audio/vibration alarms and smartwatch alerts (via ntfy) depend on device permissions, battery-saving settings, and network connectivity. The developer is not liable for missed appointments or indirect damages.")}</li>
+                <li><b>${L("ลิงก์แชร์ความคืบหน้าโปรเจค:", "Public Project Share Links:")}</b> ${L("เมื่อคุณกดสร้างลิงก์แชร์ความคืบหน้าโปรเจค ข้อมูลของโปรเจคนั้นจะถูกเข้ารหัสอยู่ใน URL เพื่อให้ผู้รับเปิดดูได้โดยไม่ต้องล็อกอิน คุณจึงควรส่งลิงก์ให้เฉพาะผู้ที่ต้องการเปิดเผยข้อมูลเท่านั้น", "When you generate a project progress share link, a snapshot of that project is encoded in the URL for sign-in-free viewing. Share such links only with intended recipients.")}</li>
+              </ul>
+            </div>
+          </div>`;
+      }
+      b.innerHTML = `
+        <div class="dlg-head">
+          <h2 id="legal-dlg-title">🛡️ ${L("นโยบายความเป็นส่วนตัว • เงื่อนไขการใช้งาน • ความรับผิดชอบ", "Privacy Policy • Terms • Disclaimer")}</h2>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="legal-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <div class="seg" role="tablist" style="margin-bottom:8px">
+          ${tabs.map(([k, l]) => `<button type="button" class="${t === k ? "on" : ""}" data-act="legalTab" data-tab="${k}">${l}</button>`).join("")}
+        </div>
+        <div style="max-height:62dvh;overflow-y:auto;padding-right:4px">${content}</div>
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border)">
+          <a href="/privacy.html?tab=${esc(t)}" target="_blank" rel="noopener" class="btn btn-sm">↗ ${L("เปิดหน้าเต็มในแท็บใหม่ (/privacy.html)", "Open Full Page (/privacy.html)")}</a>
+          <button type="button" class="btn btn-amber" data-act="closeDlg" data-id="legal-dlg">✓ ${L("รับทราบและปิดหน้าต่าง", "Got it, Close")}</button>
+        </div>`;
     }
     function renderIdeas() {
       $("#ideas-body").innerHTML = `
@@ -5534,11 +5687,14 @@
         if ($("#paywall").open) renderPaywall();
         if ($("#pay-dlg").open) renderPayDlg();
         if ($("#ideas-dlg").open) renderIdeas();
+        if ($("#legal-dlg")?.open) renderLegalDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
       account: () => { renderAccount(); $("#account-dlg").showModal(); },
       openAdminDlg: () => { renderAdminDlg(); $("#admin-dlg").showModal(); },
+      openLegal: d => { renderLegalDlg(d?.tab || "privacy"); const dlg = $("#legal-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      legalTab: d => { renderLegalDlg(d?.tab || "privacy"); },
       payChoose: () => { if ($("#paywall").open) return; renderPayDlg(); $("#pay-dlg").showModal(); },
       ideas: () => { renderIdeas(); $("#ideas-dlg").showModal(); },
       closeDlg: d => $("#" + d.id).close(),
@@ -9092,6 +9248,10 @@
       renderStatic();
       handleStripeReturn();
       checkAdminUrl();
+      const legalParam = new URLSearchParams(location.search).get("legal");
+      if (legalParam && ["privacy", "terms", "disclaimer"].includes(legalParam)) {
+        setTimeout(() => A.openLegal({ tab: legalParam }), 80);
+      }
       if (FIREBASE_READY) {
         try { await initFirebase(); }
         catch (e) { console.error(e); fb = null; toast(L("เชื่อมต่อ Firebase ไม่สำเร็จ — ใช้โหมดสาธิต", "Firebase connection failed — using demo mode")); state.user ? showApp() : showAuth(); }
