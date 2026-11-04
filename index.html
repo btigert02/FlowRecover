@@ -6783,7 +6783,13 @@
             </div>
             <h2 id="welcome-dlg-title" style="font-size:1.22rem">👋 ${L(`ยินดีต้อนรับคุณ ${esc(uName)} สู่ FlowRecover x Life Planner`, `Welcome ${esc(uName)} to FlowRecover x Life Planner`)}</h2>
           </div>
-          <button type="button" class="icon-btn" data-act="dismissWelcome" aria-label="${L("ปิด", "Close")}">✕</button>
+          <div class="row" style="gap:6px;align-items:center;flex:none">
+            <div class="seg" role="group" aria-label="Language" style="padding:2px">
+              <button type="button" class="${LANG === "th" ? "on" : ""}" data-act="setLang" data-v="th" style="padding:4px 8px;font-size:.74rem">🇹🇭 ไทย</button>
+              <button type="button" class="${LANG === "en" ? "on" : ""}" data-act="setLang" data-v="en" style="padding:4px 8px;font-size:.74rem">🇬🇧 EN</button>
+            </div>
+            <button type="button" class="icon-btn" data-act="dismissWelcome" aria-label="${L("ปิด", "Close")}">✕</button>
+          </div>
         </div>
         <div style="display:grid;gap:10px;max-height:64dvh;overflow-y:auto;padding-right:4px">
           <div style="padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(16,185,129,.14));border:1.5px solid rgba(245,158,11,.5);font-size:.86rem;line-height:1.55;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
@@ -7207,7 +7213,11 @@
             <h2 id="workshop-dlg-title" style="font-size:1.18rem">${L("Workshop จำลองการใช้งาน & พากำหนดค่าฟังก์ชันหลัก", "Interactive Simulation & Guided Setup Workshop")}</h2>
             <p class="muted sm" style="margin-top:2px">${L("ทดลองจำลองการทำงานจริงและตั้งค่าเริ่มต้นตามทีละขั้นตอน หรือกด “ข้ามไปก่อน” แล้วกลับมาตั้งค่าใหม่เมื่อไหร่ก็ได้จากปุ่ม 🎓 ด้านบนของเว็บไซต์", "Try hands-on simulations and configure each core feature step by step — or skip and return anytime via the 🎓 button in the top bar.")}</p>
           </div>
-          <div class="row" style="gap:6px;align-items:center;flex:none">
+          <div class="row" style="gap:6px;align-items:center;flex:none;flex-wrap:wrap;justify-content:flex-end">
+            <div class="seg" role="group" aria-label="Language" style="padding:2px">
+              <button type="button" class="${LANG === "th" ? "on" : ""}" data-act="setLang" data-v="th" style="padding:4px 8px;font-size:.74rem">🇹🇭 ไทย</button>
+              <button type="button" class="${LANG === "en" ? "on" : ""}" data-act="setLang" data-v="en" style="padding:4px 8px;font-size:.74rem">🇬🇧 EN</button>
+            </div>
             <button type="button" class="btn btn-sm" data-act="skipWorkshop" title="${L("ข้ามไปก่อน แล้วค่อยกลับมาเรียนรู้/ตั้งค่าใหม่จากปุ่ม 🎓 ด้านบน", "Skip for now and return anytime via the top bar 🎓 button")}">⏭️ ${L("ข้ามไปก่อน", "Skip for now")}</button>
             <button type="button" class="icon-btn" data-act="skipWorkshop" aria-label="${L("ปิด", "Close")}">✕</button>
           </div>
@@ -7401,6 +7411,22 @@
       tab: d => { state.tab = d.tab; save(); renderView(); scrollTo({ top: 0, behavior: "smooth" }); },
       lang: () => {
         LANG = state.lang = LANG === "th" ? "en" : "th"; save();
+        renderStatic(); applyTheme();
+        if (state.user && !$("#app").hidden) renderAll();
+        if ($("#account-dlg").open) renderAccount();
+        if ($("#paywall").open) renderPaywall();
+        if ($("#pay-dlg").open) renderPayDlg();
+        if ($("#ideas-dlg").open) renderIdeas();
+        if ($("#legal-dlg")?.open) renderLegalDlg();
+        if ($("#gperm-dlg")?.open) renderGPermDlg();
+        if ($("#welcome-dlg")?.open) renderWelcomeDlg();
+        if ($("#workshop-dlg")?.open) renderWorkshopDlg();
+        toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
+      },
+      setLang: d => {
+        const target = d?.v === "en" ? "en" : "th";
+        if (LANG === target && state.lang === target) return;
+        LANG = state.lang = target; save();
         renderStatic(); applyTheme();
         if (state.user && !$("#app").hidden) renderAll();
         if ($("#account-dlg").open) renderAccount();
