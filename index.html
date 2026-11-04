@@ -5267,6 +5267,7 @@
             if (legacy) changed = true;
           }
         }
+        if (syncDaily24hWithQueue(date)) changed = true;
       }
 
       // 4. Dream Board
@@ -5281,6 +5282,140 @@
       });
 
       if (changed) save();
+    }
+
+    function cleanPlanTitle(s) {
+      return String(s || "").replace(/^🎯\s*/, "").trim();
+    }
+
+    function syncDaily24hWithQueue(date) {
+      if (!date || !state?.tasks) return false;
+      P().daily[date] ||= {};
+      const D = P().daily[date];
+      D.planItems ||= {};
+      let mutated = false;
+
+      // 1. Rescue any items accidentally saved under invalid hour keys (e.g. "hNaN")
+      Object.keys(D.planItems).forEach(k => {
+        if (!/^h([01]\d|2[0-3])$/.test(k)) {
+          const stray = Array.isArray(D.planItems[k]) ? D.planItems[k] : [];
+          stray.forEach(it => {
+            if (!it || !it.text) return;
+            const sp = calcHourSpan(it.startTime, it.endTime, 9);
+            const hk = `h${pad(sp.startH)}`;
+            D.planItems[hk] ||= [];
+            if (!D.planItems[hk].some(x => x.id === it.id || cleanPlanTitle(x.text) === cleanPlanTitle(it.text))) {
+              it.startTime = sp.startTime;
+              it.endTime = sp.endTime;
+              it.spanHours = sp.spanHours;
+              it.isSpanBlock = sp.spanHours > 1 || !!it.isSpanBlock;
+              D.planItems[hk].push(it);
+            }
+          });
+          delete D.planItems[k];
+          mutated = true;
+        }
+      });
+
+      // 2. Sync tasks from Daily Queue (state.tasks) into Daily 24h Plan (D.planItems)
+      const dayTasks = state.tasks.filter(t => t && t.date === date && !t.isBreak);
+      dayTasks.forEach(t => {
+        const cleanT = cleanPlanTitle(t.title);
+        if (!cleanT) return;
+        const stH = Math.max(0, Math.min(23, Math.floor((Number(t.start) || 0) / 60)));
+        const startTime = fmt(Number(t.start) || 0);
+        const endTime = fmt(((Number(t.start) || 0) + (Number(t.dur) || 60)) % (24 * 60));
+        const sp = calcHourSpan(startTime, endTime, stH);
+        const targetHk = `h${pad(sp.startH)}`;
+        D.planItems[targetHk] ||= [];
+
+        let foundHk = null;
+        let foundIdx = -1;
+        let foundItem = null;
+        for (let h = 0; h < 24; h++) {
+          const hk = `h${pad(h)}`;
+          const arr = D.planItems[hk] || [];
+          const idx = arr.findIndex(it => it.taskId === t.id || cleanPlanTitle(it.text) === cleanT);
+          if (idx >= 0) {
+            foundHk = hk;
+            foundIdx = idx;
+            foundItem = arr[idx];
+            break;
+          }
+        }
+
+        const desiredColor = t.isSleep ? "violet" : t.priority === "secondary" ? "sky" : "amber";
+        if (foundItem) {
+          if (foundItem.taskId !== t.id) { foundItem.taskId = t.id; mutated = true; }
+          if (foundItem.text !== cleanT) { foundItem.text = cleanT; mutated = true; }
+          if (Boolean(foundItem.done) !== Boolean(t.done)) { foundItem.done = !!t.done; mutated = true; }
+          if (foundItem.startTime !== sp.startTime || foundItem.endTime !== sp.endTime || foundItem.spanHours !== sp.spanHours) {
+            foundItem.startTime = sp.startTime;
+            foundItem.endTime = sp.endTime;
+            foundItem.spanHours = sp.spanHours;
+            foundItem.isSpanBlock = sp.spanHours > 1 || !!foundItem.isSpanBlock;
+            mutated = true;
+          }
+          if (!foundItem.color) { foundItem.color = desiredColor; mutated = true; }
+          if (foundHk !== targetHk) {
+            D.planItems[foundHk].splice(foundIdx, 1);
+            D.planItems[targetHk].push(foundItem);
+            mutated = true;
+          }
+        } else {
+          D.planItems[targetHk].push({
+            id: uid(),
+            taskId: t.id,
+            text: cleanT,
+            done: !!t.done,
+            startTime: sp.startTime,
+            endTime: sp.endTime,
+            spanHours: sp.spanHours,
+            color: desiredColor,
+            isSpanBlock: true
+          });
+          mutated = true;
+        }
+      });
+
+      // 3. Clean up stale linked items (deleted/moved to another date) & sync unlinked items into state.tasks
+      for (let h = 0; h < 24; h++) {
+        const hk = `h${pad(h)}`;
+        const arr = D.planItems[hk] || [];
+        for (let i = arr.length - 1; i >= 0; i--) {
+          const it = arr[i];
+          const cleanT = cleanPlanTitle(it?.text);
+          if (!cleanT) continue;
+          if (it.taskId) {
+            const linkedTask = state.tasks.find(t => t.id === it.taskId);
+            if (!linkedTask || linkedTask.date !== date) {
+              arr.splice(i, 1);
+              mutated = true;
+            }
+            continue;
+          }
+          const info = hourItemSpanInfo(it, h);
+          let qt = state.tasks.find(t => t.date === date && cleanPlanTitle(t.title) === cleanT);
+          if (!qt) {
+            qt = {
+              id: uid(),
+              title: `🎯 ${cleanT}`,
+              date,
+              start: toMin(info.startTime),
+              dur: info.durMin,
+              projectId: null,
+              priority: "main",
+              done: !!it.done,
+              bookmark: ""
+            };
+            state.tasks.push(qt);
+          }
+          it.taskId = qt.id;
+          mutated = true;
+        }
+      }
+
+      return mutated;
     }
 
     function getCgList(sec, key, sub = "") {
@@ -5325,21 +5460,38 @@
       return "";
     }
 
-    function calcHourSpan(startTime, endTime) {
-      if (!startTime || !endTime) return 1;
-      const [sh, sm] = String(startTime).split(":").map(Number);
-      const [eh, em] = String(endTime).split(":").map(Number);
-      if (isNaN(sh) || isNaN(eh)) return 1;
-      let sMin = sh * 60 + (sm || 0);
-      let eMin = eh * 60 + (em || 0);
+    function calcHourSpan(startTime, endTime, fallbackH = 9) {
+      const fbH = Math.max(0, Math.min(23, Number(fallbackH) || 0));
+      let [sh, sm] = String(startTime || `${pad(fbH)}:00`).split(":").map(Number);
+      if (isNaN(sh)) { sh = fbH; sm = 0; }
+      sm = isNaN(sm) ? 0 : sm;
+      let [eh, em] = String(endTime || `${pad((sh + 1) % 24)}:00`).split(":").map(Number);
+      if (isNaN(eh)) { eh = (sh + 1) % 24; em = 0; }
+      em = isNaN(em) ? 0 : em;
+      const sMin = sh * 60 + sm;
+      let eMin = eh * 60 + em;
       if (eMin <= sMin) eMin += 24 * 60;
-      return Math.max(1, Math.min(16, Math.ceil((eMin - sMin) / 60)));
+      const durMin = Math.max(15, eMin - sMin);
+      const spanHours = Math.max(1, Math.min(16, Math.ceil(durMin / 60)));
+      const normStart = `${pad(sh % 24)}:${pad(sm)}`;
+      const normEnd = `${pad(eh % 24)}:${pad(em)}`;
+      return {
+        startH: sh % 24,
+        startTime: normStart,
+        endTime: normEnd,
+        spanHours,
+        durMin,
+        diffMin: durMin,
+        valueOf() { return spanHours; },
+        toString() { return String(spanHours); }
+      };
     }
 
     function hourItemSpanInfo(it, hNum) {
       const defStart = `${pad(hNum)}:00`;
       const startTime = it?.startTime || defStart;
-      const spanHours = Math.max(1, Number(it?.spanHours) || (it?.endTime ? calcHourSpan(startTime, it.endTime) : 1));
+      const spObj = calcHourSpan(startTime, it?.endTime, hNum);
+      const spanHours = Math.max(1, Number(it?.spanHours) || spObj.spanHours || 1);
       const defEndHour = (hNum + spanHours) % 24;
       const endTime = it?.endTime || `${pad(defEndHour)}:00`;
       const color = it?.color || (spanHours > 1 ? "amber" : "");
@@ -5348,7 +5500,7 @@
       let diffMin = (eh * 60 + (em || 0)) - (sh * 60 + (sm || 0));
       if (diffMin <= 0) diffMin += 24 * 60;
       const durTxt = diffMin % 60 === 0 ? `${diffMin / 60} ${L("ชม.", "h")}` : minLabel(diffMin);
-      return { startTime, endTime, spanHours, color, durTxt, diffMin };
+      return { startTime, endTime, spanHours, color, durTxt, diffMin, durMin: diffMin };
     }
 
     function cgItemRow(sec, key, sub, it, timeStr = "", darkBg = false) {
@@ -5411,6 +5563,7 @@
             const spanH = primarySpan.info.spanHours;
             const coveredCount = Math.max(1, Math.min(spanH, hoursArr.length - i));
             const coveredHours = hoursArr.slice(i, i + coveredCount);
+            const railHours = Array.from({ length: spanH }, (_, idx) => (h + idx) % 24);
             const allCoveredItems = [];
             coveredHours.forEach(ch => {
               const ck = `h${pad(ch)}`, ctStr = `${pad(ch)}:00`;
@@ -5420,12 +5573,12 @@
             });
             const pInfo = primarySpan.info;
             const col = pInfo.color || "amber";
-            const minH = Math.max(116, coveredCount * 54);
+            const minH = Math.max(116, Math.min(spanH, 6) * 48);
             html += `<div class="hour-span-frame" data-color="${esc(col)}" style="min-height:${minH}px">
               <div class="hour-span-rail" title="${L(`กรอบเวลาครอบคลุม ${pInfo.startTime} – ${pInfo.endTime} น.`, `Spans ${pInfo.startTime} – ${pInfo.endTime}`)}">
-                ${coveredHours.map((ch, idx) => `
+                ${railHours.map((ch, idx) => `
                   <span class="rail-pill">${pad(ch)}:00</span>
-                  ${idx < coveredHours.length - 1 ? `<div class="rail-line"></div>` : ""}
+                  ${idx < railHours.length - 1 ? `<div class="rail-line"></div>` : ""}
                 `).join("")}
                 <div class="rail-line"></div>
                 <span class="rail-pill rail-pill-end" style="border-color:var(--amber);color:var(--amber)">🏁 ${esc(pInfo.endTime)}</span>
@@ -5434,7 +5587,7 @@
                 <div class="hour-span-head">
                   <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
                     <span class="hour-range-badge">⏰ ${esc(pInfo.startTime)} – ${esc(pInfo.endTime)} ${L("น.", "")} • ${L(`ครอบคลุม ${pInfo.durTxt}`, `${pInfo.durTxt} Block`)}</span>
-                    <span class="muted sm">(${coveredHours.map(ch => `${pad(ch)}:00`).join(" ➔ ")})</span>
+                    <span class="muted sm">(${railHours.map(ch => `${pad(ch)}:00`).join(" ➔ ")})</span>
                   </div>
                   <button type="button" class="btn btn-sm" style="min-height:26px;padding:2px 8px;font-size:.74rem" data-act="openHourBlockEdit" data-sec="hour" data-key="${date}" data-sub="${k}" data-id="${esc(primarySpan.it.id)}">⏰ ${L("ปรับช่วงเวลา", "Edit Time Span")}</button>
                 </div>
@@ -11291,6 +11444,14 @@
         const it = list.find(x => x.id === d.id);
         if (!it) return;
         it.done = !it.done;
+        if (d.sec === "hour") {
+          const cleanT = cleanPlanTitle(it.text);
+          const qt = state.tasks.find(t => (it.taskId && t.id === it.taskId) || (t.date === d.key && cleanPlanTitle(t.title) === cleanT));
+          if (qt) {
+            qt.done = it.done;
+            if (qt.done && !qt.actualMin) qt.actualMin = qt.dur || 30;
+          }
+        }
         rerender();
         if (it.done) toast(L("✅ ทำสำเร็จแล้ว!", "✅ Completed!"));
       },
@@ -11299,8 +11460,21 @@
         const idx = list.findIndex(x => x.id === d.id);
         if (idx >= 0) {
           const [removedItem] = list.splice(idx, 1);
+          let removedTask = null;
+          if (d.sec === "hour" && removedItem) {
+            const cleanT = cleanPlanTitle(removedItem.text);
+            const tIdx = state.tasks.findIndex(t => (removedItem.taskId && t.id === removedItem.taskId) || (t.date === d.key && cleanPlanTitle(t.title) === cleanT));
+            if (tIdx >= 0) {
+              [removedTask] = state.tasks.splice(tIdx, 1);
+            }
+          }
           rerender();
-          if (removedItem) toast(L("🗑️ ลบรายการแล้ว", "🗑️ Item deleted"), () => { list.splice(idx, 0, removedItem); });
+          if (removedItem) {
+            toast(L("🗑️ ลบรายการแล้ว", "🗑️ Item deleted"), () => {
+              list.splice(idx, 0, removedItem);
+              if (removedTask) state.tasks.push(removedTask);
+            });
+          }
         }
       },
       mfGroupDel: d => {
@@ -11408,8 +11582,31 @@
       },
       delTask: d => {
         const t = state.tasks.find(x => x.id === d.id); if (!t) return;
-        state.tasks = state.tasks.filter(x => x.id !== d.id); rerender();
-        toast(L(`🗑️ ลบงาน "${trunc(t.title, 20)}" แล้ว`, `🗑️ Deleted "${trunc(t.title, 20)}"`), () => { state.tasks.push(t); });
+        state.tasks = state.tasks.filter(x => x.id !== d.id);
+        let removedPlanEntries = [];
+        const planItems = P().daily?.[t.date]?.planItems;
+        if (planItems) {
+          const cleanT = cleanPlanTitle(t.title);
+          Object.keys(planItems).forEach(hk => {
+            const arr = planItems[hk];
+            if (!Array.isArray(arr)) return;
+            for (let i = arr.length - 1; i >= 0; i--) {
+              if (arr[i].taskId === t.id || cleanPlanTitle(arr[i].text) === cleanT) {
+                removedPlanEntries.push({ hk, item: arr[i] });
+                arr.splice(i, 1);
+              }
+            }
+          });
+        }
+        rerender();
+        toast(L(`🗑️ ลบงาน "${trunc(t.title, 20)}" แล้ว`, `🗑️ Deleted "${trunc(t.title, 20)}"`), () => {
+          state.tasks.push(t);
+          if (planItems && removedPlanEntries.length) {
+            removedPlanEntries.forEach(({ hk, item }) => {
+              (planItems[hk] ||= []).push(item);
+            });
+          }
+        });
         if (t.gcalId) gSyncChanges(true).then(n => { if (n) toast(L("🗑️ ลบออกจาก Google Calendar แล้ว", "🗑️ Removed from Google Calendar")); })
           .catch(e => { if (e?.message !== "demo") toast(L("⏳ จะลบใน Google Calendar ให้อัตโนมัติเมื่อเชื่อมต่อครั้งถัดไป", "⏳ It will be removed from Google Calendar next time you connect")); });
       },
@@ -13034,9 +13231,11 @@
     Object.assign(FORMS, {
       cgHourAdd: (fd, f) => {
         const text = (fd.text || "").trim();
-        const date = f.dataset.key || state.plannerDate || dkey();
-        const sub = f.dataset.sub || "h09";
-        const baseH = Number(String(sub).replace(/\D/g, "")) || 9;
+        const date = f.dataset.date || f.dataset.key || state.plannerDate || dkey();
+        const baseH = f.dataset.hour !== undefined && f.dataset.hour !== ""
+          ? Number(f.dataset.hour)
+          : (Number(String(f.dataset.sub || "h09").replace(/\D/g, "")) || 9);
+        const sub = `h${pad(baseH)}`;
         // Check if user typed an inline time range like "09:00-12:00 งาน..." or "งาน... 13:00-16:00"
         const rangeMatch = text.match(/(\d{1,2}:\d{2})\s*[-–—~ถึงto]+\s*(\d{1,2}:\d{2})/i);
         let cleanText = text;
@@ -13050,10 +13249,59 @@
           cleanText = text.replace(rangeMatch[0], "").replace(/^[\s•\-:]+|[\s•\-:]+$/g, "").trim() || text;
         }
         f.reset();
-        openHourBlockDlg({ date, sub, text: cleanText, startTime: st, endTime: en });
+        if (cleanText) {
+          ensureCgItems(date, date.slice(0, 7));
+          const sp = calcHourSpan(st, en, baseH);
+          const targetSub = `h${pad(sp.startH)}`;
+          const list = getCgList("hour", date, targetSub);
+          let qt = state.tasks.find(k => k.date === date && cleanPlanTitle(k.title) === cleanPlanTitle(cleanText) && !k.done);
+          if (!qt) {
+            qt = {
+              id: uid(),
+              title: cleanText.startsWith("🎯") ? cleanText : `🎯 ${cleanText}`,
+              date,
+              start: toMin(sp.startTime),
+              dur: sp.durMin,
+              projectId: null,
+              priority: "main",
+              done: false,
+              bookmark: ""
+            };
+            state.tasks.push(qt);
+          } else {
+            qt.start = toMin(sp.startTime);
+            qt.dur = sp.durMin;
+          }
+          let newItem = list.find(x => x.taskId === qt.id || cleanPlanTitle(x.text) === cleanPlanTitle(cleanText));
+          if (!newItem) {
+            newItem = {
+              id: uid(),
+              taskId: qt.id,
+              text: cleanPlanTitle(cleanText),
+              done: false,
+              startTime: sp.startTime,
+              endTime: sp.endTime,
+              spanHours: sp.spanHours,
+              color: "amber",
+              isSpanBlock: true
+            };
+            list.push(newItem);
+          } else {
+            newItem.taskId = qt.id;
+            newItem.startTime = sp.startTime;
+            newItem.endTime = sp.endTime;
+            newItem.spanHours = sp.spanHours;
+            newItem.isSpanBlock = true;
+          }
+          rerender();
+          openHourBlockDlg({ date, sub: targetSub, id: newItem.id });
+        } else {
+          openHourBlockDlg({ date, sub, text: "", startTime: st, endTime: en });
+        }
       },
       saveHourBlock: (fd, f) => {
-        const text = (fd.text || "").trim();
+        const rawText = (fd.text || "").trim();
+        const text = cleanPlanTitle(rawText);
         if (!text) return;
         const date = f.dataset.date || state.plannerDate || dkey();
         const origSub = f.dataset.origSub || "h09";
@@ -13063,37 +13311,66 @@
         const targetSub = `h${pad(sp.startH)}`;
         const color = fd.color || "amber";
         ensureCgItems(date, date.slice(0, 7));
+        let itemRef = null;
         if (editId) {
-          const oldList = getCgList("hour", date, origSub);
-          const idx = oldList.findIndex(x => x.id === editId);
+          let oldList = getCgList("hour", date, origSub);
+          let idx = oldList.findIndex(x => x.id === editId);
+          if (idx < 0) {
+            for (let h = 0; h < 24; h++) {
+              const hk = `h${pad(h)}`;
+              const arr = getCgList("hour", date, hk);
+              const found = arr.findIndex(x => x.id === editId);
+              if (found >= 0) {
+                oldList = arr;
+                idx = found;
+                break;
+              }
+            }
+          }
           const existing = idx >= 0 ? oldList[idx] : null;
           if (existing) {
+            const prevClean = cleanPlanTitle(existing.text);
             existing.text = text;
             existing.startTime = sp.startTime;
             existing.endTime = sp.endTime;
             existing.spanHours = sp.spanHours;
             existing.color = color;
             existing.isSpanBlock = true;
-            if (origSub !== targetSub) {
+            if (oldList !== getCgList("hour", date, targetSub)) {
               oldList.splice(idx, 1);
               getCgList("hour", date, targetSub).push(existing);
             }
+            itemRef = existing;
+            let qt = state.tasks.find(k => (existing.taskId && k.id === existing.taskId) || (k.date === date && cleanPlanTitle(k.title) === prevClean));
+            if (qt) {
+              qt.title = `🎯 ${text}`;
+              qt.date = date;
+              qt.start = toMin(sp.startTime);
+              qt.dur = sp.durMin;
+              existing.taskId = qt.id;
+            } else {
+              qt = {
+                id: uid(),
+                title: `🎯 ${text}`,
+                date,
+                start: toMin(sp.startTime),
+                dur: sp.durMin,
+                projectId: null,
+                priority: "main",
+                done: !!existing.done,
+                bookmark: ""
+              };
+              state.tasks.push(qt);
+              existing.taskId = qt.id;
+            }
           }
-        } else {
-          const list = getCgList("hour", date, targetSub);
-          list.push({
-            id: uid(),
-            text,
-            done: false,
-            startTime: sp.startTime,
-            endTime: sp.endTime,
-            spanHours: sp.spanHours,
-            color,
-            isSpanBlock: true
-          });
-          if (fd.alsoQueue) {
-            if (!state.tasks.some(k => k.date === date && (k.title === text || k.title === `🎯 ${text}`) && !k.done)) {
-              state.tasks.push({
+        }
+        if (!itemRef) {
+          let qt = null;
+          if (fd.alsoQueue !== undefined ? fd.alsoQueue : true) {
+            qt = state.tasks.find(k => k.date === date && cleanPlanTitle(k.title) === text && !k.done);
+            if (!qt) {
+              qt = {
                 id: uid(),
                 title: `🎯 ${text}`,
                 date,
@@ -13103,16 +13380,43 @@
                 priority: "main",
                 done: false,
                 bookmark: ""
-              });
+              };
+              state.tasks.push(qt);
+            } else {
+              qt.start = toMin(sp.startTime);
+              qt.dur = sp.durMin;
             }
+          }
+          const list = getCgList("hour", date, targetSub);
+          let existingInTarget = list.find(x => (qt && x.taskId === qt.id) || cleanPlanTitle(x.text) === text);
+          if (existingInTarget) {
+            existingInTarget.taskId = qt?.id || existingInTarget.taskId;
+            existingInTarget.text = text;
+            existingInTarget.startTime = sp.startTime;
+            existingInTarget.endTime = sp.endTime;
+            existingInTarget.spanHours = sp.spanHours;
+            existingInTarget.color = color;
+            existingInTarget.isSpanBlock = true;
+          } else {
+            list.push({
+              id: uid(),
+              taskId: qt?.id || null,
+              text,
+              done: false,
+              startTime: sp.startTime,
+              endTime: sp.endTime,
+              spanHours: sp.spanHours,
+              color,
+              isSpanBlock: true
+            });
           }
         }
         $("#hour-block-dlg")?.close();
         rerender();
         toast(
           sp.spanHours > 1
-            ? L(`⏰ บันทึกกรอบเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น. • ครอบคลุม ${sp.spanHours} ชม.) เรียบร้อยแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} • ${sp.spanHours}h span)!`)
-            : L(`⏰ บันทึกช่วงเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น.) เรียบร้อยแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime})!`)
+            ? L(`⏰ บันทึกกรอบเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น. • ครอบคลุม ${sp.spanHours} ชม.) และซิงค์กับคิวงานแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} • ${sp.spanHours}h span) & synced with Queue!`)
+            : L(`⏰ บันทึกช่วงเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น.) และซิงค์กับคิวงานแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime}) & synced with Queue!`)
         );
       },
       addProjTxn: (fd, f) => {
