@@ -2732,6 +2732,172 @@
       .ws-stepper { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px }
       .ws-step-tab { font-size: .64rem; padding: 6px 3px }
     }
+
+    /* ---------- 📆 Daily 24h Multi-Hour Spanning Frames & Queue Upgrades ---------- */
+    .hour-span-frame {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr);
+      gap: 10px;
+      padding: 12px;
+      margin: 6px 0;
+      border-radius: 16px;
+      border: 2px solid rgba(245, 158, 11, .55);
+      background: linear-gradient(135deg, rgba(245, 158, 11, .14), rgba(16, 185, 129, .06));
+      box-shadow: 0 10px 26px -16px rgba(245, 158, 11, .55);
+      position: relative;
+      transition: transform .15s, box-shadow .15s
+    }
+    .hour-span-frame[data-color="emerald"] {
+      border-color: rgba(16, 185, 129, .6);
+      background: linear-gradient(135deg, rgba(16, 185, 129, .15), rgba(56, 189, 248, .06));
+      box-shadow: 0 10px 26px -16px rgba(16, 185, 129, .55)
+    }
+    .hour-span-frame[data-color="sky"] {
+      border-color: rgba(56, 189, 248, .6);
+      background: linear-gradient(135deg, rgba(56, 189, 248, .15), rgba(99, 102, 241, .06));
+      box-shadow: 0 10px 26px -16px rgba(56, 189, 248, .55)
+    }
+    .hour-span-frame[data-color="violet"] {
+      border-color: rgba(167, 139, 250, .6);
+      background: linear-gradient(135deg, rgba(167, 139, 250, .16), rgba(244, 114, 182, .06));
+      box-shadow: 0 10px 26px -16px rgba(167, 139, 250, .55)
+    }
+    .hour-span-frame[data-color="rose"] {
+      border-color: rgba(251, 113, 133, .6);
+      background: linear-gradient(135deg, rgba(251, 113, 133, .15), rgba(245, 158, 11, .06));
+      box-shadow: 0 10px 26px -16px rgba(251, 113, 133, .55)
+    }
+    .hour-span-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 4px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, .45);
+      border: 1px solid rgba(255, 255, 255, .1);
+      position: relative;
+      gap: 4px
+    }
+    html[data-theme="light"] .hour-span-rail {
+      background: rgba(255, 255, 255, .75);
+      border-color: rgba(15, 23, 42, .12)
+    }
+    .hour-span-rail .rail-pill {
+      font-family: 'Inter', monospace;
+      font-size: .72rem;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      z-index: 1
+    }
+    .hour-span-rail .rail- pill-end {
+      opacity: .85
+    }
+    .hour-span-rail .rail-line {
+      width: 2px;
+      flex: 1;
+      min-height: 10px;
+      background: repeating-linear-gradient(to bottom, var(--amber) 0, var(--amber) 4px, transparent 4px, transparent 8px);
+      opacity: .75
+    }
+    .hour-span-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      justify-content: space-between
+    }
+    .hour-span-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed rgba(255, 255, 255, .14)
+    }
+    html[data-theme="light"] .hour-span-head {
+      border-bottom-color: rgba(15, 23, 42, .14)
+    }
+    .hour-range-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-family: 'Inter', sans-serif;
+      font-size: .76rem;
+      font-weight: 800;
+      background: rgba(245, 158, 11, .22);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, .45);
+      white-space: nowrap
+    }
+    .hour-span-frame[data-color="emerald"] .hour-range-badge {
+      background: rgba(16, 185, 129, .22);
+      color: var(--emerald);
+      border-color: rgba(16, 185, 129, .45)
+    }
+    .hour-span-frame[data-color="sky"] .hour-range-badge {
+      background: rgba(56, 189, 248, .22);
+      color: var(--sky);
+      border-color: rgba(56, 189, 248, .45)
+    }
+    .hour-span-frame[data-color="violet"] .hour-range-badge {
+      background: rgba(167, 139, 250, .22);
+      color: var(--violet);
+      border-color: rgba(167, 139, 250, .45)
+    }
+    .hour-span-frame[data-color="rose"] .hour-range-badge {
+      background: rgba(251, 113, 133, .22);
+      color: var(--rose);
+      border-color: rgba(251, 113, 133, .45)
+    }
+    .workload-card {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+    .q-sec-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      border-left: 3px solid var(--amber);
+      font-size: .82rem;
+      font-weight: 700;
+      margin: 10px 0 6px
+    }
+    .eisenhower-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 10px
+    }
+    .eisenhower-box {
+      padding: 12px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px
+    }
+    @media (max-width: 720px) {
+      .eisenhower-grid { grid-template-columns: 1fr }
+      .hour-span-frame { grid-template-columns: 56px minmax(0, 1fr); padding: 10px }
+    }
   </style>
 </head>
 
@@ -2837,6 +3003,9 @@
   </dialog>
   <dialog id="proj-wizard-dlg" closedby="any" aria-labelledby="proj-wizard-dlg-title" style="width:min(740px,95vw)">
     <div class="dlg-body" id="proj-wizard-dlg-body"></div>
+  </dialog>
+  <dialog id="hour-block-dlg" closedby="any" aria-labelledby="hour-block-dlg-title" style="width:min(580px,95vw)">
+    <form class="dlg-body" data-form="saveHourBlock" id="hour-block-form" autocomplete="off"></form>
   </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
@@ -3523,10 +3692,10 @@
       if (!D.planItems || !Object.values(D.planItems).some(arr => arr?.length) || force) {
         D.rate = 4;
         D.planItems = D.planItems || {};
-        D.planItems.h07 = [{ id: uid(), text: L("ออกกำลังกายเบาๆ + ทานมื้อเช้าเติมพลัง (ตัวอย่าง)", "Morning stretch + healthy breakfast (Sample)"), done: true }];
-        D.planItems.h09 = [{ id: uid(), text: L("Deep Work: ลุยงานสำคัญอันดับ 1 ของวันนี้ (ตัวอย่าง)", "Deep Work: #1 priority task of the day (Sample)"), done: false }];
-        D.planItems.h14 = [{ id: uid(), text: L("ประชุมอัปเดตงานกับทีม / ตอบแชทลูกค้า (ตัวอย่าง)", "Team sync / reply to client messages (Sample)"), done: false }];
-        D.planItems.h21 = [{ id: uid(), text: L("อ่านหนังสือ 15 หน้า & เตรียมเข้านอน (ตัวอย่าง)", "Read 15 pages & wind down for sleep (Sample)"), done: false }];
+        D.planItems.h07 = [{ id: uid(), text: L("ออกกำลังกายเบาๆ + ทานมื้อเช้าเติมพลัง (ตัวอย่าง)", "Morning stretch + healthy breakfast (Sample)"), done: true, startTime: "07:00", endTime: "08:00", spanHours: 1, color: "emerald" }];
+        D.planItems.h09 = [{ id: uid(), text: L("Deep Work: ลุยงานสำคัญอันดับ 1 ของวันนี้ (ตัวอย่าง)", "Deep Work: #1 priority task of the day (Sample)"), done: false, startTime: "09:00", endTime: "12:00", spanHours: 3, color: "amber", isSpanBlock: true }];
+        D.planItems.h14 = [{ id: uid(), text: L("ประชุมอัปเดตงานกับทีม & เคลียร์งานลูกค้า (ตัวอย่าง)", "Team sync & client deliverables (Sample)"), done: false, startTime: "14:00", endTime: "16:00", spanHours: 2, color: "sky", isSpanBlock: true }];
+        D.planItems.h21 = [{ id: uid(), text: L("อ่านหนังสือ 15 หน้า & เตรียมเข้านอน (ตัวอย่าง)", "Read 15 pages & wind down for sleep (Sample)"), done: false, startTime: "21:00", endTime: "22:00", spanHours: 1, color: "violet" }];
       }
 
       // 4. Dream Board
@@ -3712,7 +3881,21 @@
     const tasksOn = date => state.tasks.filter(t => t.date === date).sort((a, b) => a.start - b.start);
     function currentTask() { const n = nowMin(); return tasksOn(dkey()).find(t => !t.done && t.start <= n && n < t.start + t.dur) || null; }
     function nextTask() { const n = nowMin(); return tasksOn(dkey()).find(t => !t.done && t.start > n) || null; }
-    const prog = p => p.steps?.length ? Math.round(p.steps.filter(s => s.status === "done").length / p.steps.length * 100) : (Number(p.manual) || 0);
+    const prog = p => {
+      if (!p?.steps?.length) return Number(p?.manual) || 0;
+      const totalWeight = p.steps.reduce((sum, s) => {
+        const acts = s.activities || [];
+        if (s.status === "done") return sum + 1;
+        if (acts.length > 0) {
+          const actRatio = acts.filter(a => a.done).length / acts.length;
+          return sum + Math.max(actRatio * 0.9, s.status === "doing" ? 0.25 : s.status === "waiting" ? 0.2 : 0);
+        }
+        if (s.status === "doing") return sum + 0.35;
+        if (s.status === "waiting") return sum + 0.25;
+        return sum;
+      }, 0);
+      return Math.min(100, Math.round((totalWeight / p.steps.length) * 100));
+    };
     const STEP = { todo: ["Todo", "var(--muted)"], doing: ["Doing", "var(--amber)"], waiting: ["Waiting", "var(--sky)"], done: ["Done", "var(--emerald)"] };
     const STEP_ORDER = ["todo", "doing", "waiting", "done"];
     function freqLabel(rOrFreq) {
@@ -4236,7 +4419,9 @@
     }
     function morningEveningCard(today) {
       const h = new Date().getHours();
-      const isEvening = h >= 17 || h < 4;
+      const autoEvening = h >= 17 || h < 4;
+      const mode = state.ritualTab || (autoEvening ? "evening" : "morning");
+      const isEvening = mode === "evening";
       const all = tasksOn(today), done = all.filter(t => t.done).length, rem = all.length - done;
       const dueR = state.routines.filter(r => isDue(r, today)), doneR = dueR.filter(r => r.log?.[today]).length;
       const mk = today.slice(0, 7);
@@ -4245,30 +4430,57 @@
       const allMf = [...(mf.focusGroups || []).flatMap(g => g.items || []), ...(mf.focusItems || [])];
       const openMf = allMf.filter(x => !x.done);
       const D = (P().daily[today] ||= {});
+      const mits = all.filter(t => !t.isSleep && !t.isBreak && t.priority !== "secondary").slice(0, 3);
       return `<article class="card" style="padding:14px 16px;border:1px solid ${isEvening ? "rgba(167,139,250,.35)" : "rgba(56,189,248,.35)"};background:radial-gradient(500px 200px at 100% 0,${isEvening ? "rgba(167,139,250,.14)" : "rgba(56,189,248,.12)"},transparent 70%),var(--surface)">
         <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
-          <div>
-            <span class="pill ${isEvening ? "pill-violet" : "pill-sky"}" style="font-size:.75rem">${isEvening ? "🌇 " + L("สรุปปิดจบวัน (Evening Wrap-up)", "Evening Wrap-up") : "🌅 " + L("สรุปแผนเช้านี้ (Morning Briefing)", "Morning Briefing")}</span>
-            <h3 style="margin:6px 0 2px">${isEvening ? L("ทบทวนวันนี้ & เตรียมพร้อมวันพรุ่งนี้", "Review today & prepare for tomorrow") : L("ภาพรวมสิ่งที่ต้องโฟกัสวันนี้", "Your daily focus overview")}</h3>
+          <div class="seg" style="padding:2px">
+            <button type="button" class="${!isEvening ? "on" : ""}" data-act="ritualMode" data-v="morning" style="padding:4px 10px;font-size:.76rem">🌅 ${L("เริ่มต้นวัน (Morning Kickoff)", "Morning Kickoff")}</button>
+            <button type="button" class="${isEvening ? "on" : ""}" data-act="ritualMode" data-v="evening" style="padding:4px 10px;font-size:.76rem">🌇 ${L("สรุปปิดจบวัน (Evening Shutdown)", "Evening Shutdown")}</button>
           </div>
           <div class="row" style="gap:6px;align-items:center">
-            <span class="muted sm">${L("ให้คะแนนวันนี้:", "Rate today:")}</span>
+            <span class="muted sm">${L("คะแนนวันนี้:", "Rate today:")}</span>
             ${stars(`planner.daily.${today}.rate`, D.rate, "Rate today")}
           </div>
         </div>
-        <div class="chips" style="margin:10px 0 8px">
+        <h3 style="margin:8px 0 4px">${isEvening ? L("🌙 ทบทวนผลงานวันนี้ • เคลียร์งานค้าง & เตรียมเข้านอน", "🌙 Review today's wins • clear open loops & prepare for rest") : L("☀️ โฟกัส 3 งานสำคัญที่สุดของวันนี้ (Top 3 MITs)", "☀️ Your Top 3 Most Important Tasks (MITs) Today")}</h3>
+        <div class="chips" style="margin:6px 0 8px">
           <span class="chip ${done === all.length && all.length ? "chip-emerald" : "chip-amber"}">📅 ${L("คิวงานวันนี้", "Today's queue")}: <b>${done}/${all.length}</b></span>
           <span class="chip chip-emerald">🔁 ${L("กิจวัตรวันนี้", "Routines")}: <b>${doneR}/${dueR.length}</b></span>
           <span class="chip chip-violet">🎯 Monthly Focus ${L("คงเหลือ", "open")}: <b>${openMf.length}</b></span>
         </div>
-        ${openMf.length ? `<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:.82rem">
-          <b class="amber">🎯 ${L("โฟกัสเดือนนี้:", "Monthly Focus:")}</b>
-          ${openMf.slice(0, 3).map(it => `<span class="chip" style="gap:4px">${esc(trunc(it.text, 26))} <button type="button" class="link sm" style="font-size:.72rem;color:var(--emerald)" data-act="quickQueueText" data-title="${esc(it.text)}" title="${L("ดึงเข้าคิวงานวันนี้ทันที", "Add to today's queue")}">＋${L("เข้าคิว", "Queue")}</button></span>`).join("")}
-        </div>` : ""}
-        ${isEvening && rem > 0 ? `<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn btn-sm btn-emerald grow" data-act="moveAllRemainingTomorrow">📦 ${L(`ปิดจบวัน: ย้ายงานที่เหลือ ${rem} งานไปพรุ่งนี้`, `Wrap up: Move ${rem} remaining task(s) to tomorrow`)}</button>
-          <button type="button" class="btn btn-sm btn-indigo" data-act="openRestDlg" data-tab="sleep">🌙 ${L("โหมดเข้านอน", "Sleep Mode")}</button>
-        </div>` : ""}
+        ${!isEvening ? `
+          ${mits.length ? `<div style="display:grid;gap:5px;margin:8px 0;padding:8px 10px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+            <div class="sm" style="font-weight:700;color:var(--amber)">⭐ ${L("3 งานหลักที่ต้องทำให้สำเร็จวันนี้ (Top 3 Main Tasks):", "Top 3 Main Tasks for Today:")}</div>
+            ${mits.map((t, idx) => `<div class="row" style="justify-content:space-between;align-items:center;gap:6px;font-size:.84rem">
+              <div class="row" style="gap:6px;align-items:center;min-width:0;flex:1">
+                <button type="button" class="check ${t.done ? "done" : ""}" data-act="toggleTask" data-id="${t.id}" style="width:20px;height:20px;font-size:.72rem">${t.done ? "✓" : idx + 1}</button>
+                <span style="${t.done ? "text-decoration:line-through;opacity:.6" : "font-weight:600"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
+              </div>
+              <span class="mono muted sm" style="flex:none">${fmt(t.start)} (${minLabel(t.dur)})</span>
+            </div>`).join("")}
+          </div>` : `<p class="muted sm" style="margin:6px 0">💡 ${L("ยังไม่มีงานหลักในคิววันนี้ — ดึงจาก Monthly Focus ด้านล่าง หรือเพิ่มในหน้าคิวงานได้เลย", "No main tasks queued yet — pull from Monthly Focus below or add in Queue")}</p>`}
+          ${openMf.length ? `<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:.82rem">
+            <b class="amber">🎯 ${L("ดึงจาก Monthly Focus เข้าคิววันนี้:", "Quick-queue from Monthly Focus:")}</b>
+            ${openMf.slice(0, 3).map(it => `<span class="chip" style="gap:4px">${esc(trunc(it.text, 26))} <button type="button" class="link sm" style="font-size:.72rem;color:var(--emerald)" data-act="quickQueueText" data-title="${esc(it.text)}" title="${L("ดึงเข้าคิวงานวันนี้ทันที", "Add to today's queue")}">＋${L("เข้าคิว", "Queue")}</button></span>`).join("")}
+          </div>` : ""}
+        ` : `
+          <div style="display:grid;gap:8px;margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap">
+              <span class="sm" style="font-weight:700">😊 ${L("เช็กอินอารมณ์วันนี้:", "Today's Mood Check-in:")}</span>
+              <div class="row" style="gap:4px;flex-wrap:wrap">
+                ${MOODS.map(([e, th, en]) => `<button type="button" class="btn btn-sm ${P().mood?.[today] === e ? "btn-amber" : ""}" style="min-height:28px;padding:2px 8px;font-size:.78rem" data-act="mood" data-v="${e}" title="${L(th, en)}">${e} ${L(th, en)}</button>`).join("")}
+              </div>
+            </div>
+            <label class="field">
+              <span>🏆 ${L("บันทึกสั้นๆ ก่อนจบวัน (สิ่งที่ภูมิใจวันนี้ / เรื่องที่ขอบคุณ):", "Daily Win / Gratitude Note:")}</span>
+              <input class="input" data-bind="planner.daily.${today}.winNote" value="${esc(D.winNote || "")}" placeholder="${L("เช่น วันนี้เคลียร์งานสำคัญเสร็จ 2 ชิ้น ได้ออกกำลังกาย 20 นาที…", "e.g. Finished 2 major tasks and exercised for 20 min…")}" style="min-height:36px;font-size:.85rem">
+            </label>
+          </div>
+          <div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+            ${rem > 0 ? `<button type="button" class="btn btn-sm btn-emerald grow" data-act="moveAllRemainingTomorrow">📦 ${L(`ปิดจบวัน: ย้ายงานที่เหลือ ${rem} งานไปวันถัดไป`, `Wrap up: Move ${rem} remaining task(s) to next day`)}</button>` : `<span class="chip chip-emerald">🎉 ${L("เคลียร์คิวงานวันนี้ครบ 100% แล้ว!", "100% of today's tasks completed!")}</span>`}
+            <button type="button" class="btn btn-sm btn-indigo" data-act="openRestDlg" data-tab="sleep">🌙 ${L("เปิดโหมดเข้านอน", "Start Sleep Mode")}</button>
+          </div>
+        `}
       </article>`;
     }
 
@@ -4537,14 +4749,15 @@
       const over = !t.done && t.start + t.dur > DAY_END;
       const isSleep = t.isSleep || /นอน|sleep|bedtime|เข้านอน/i.test(t.title);
       const isRest = !isSleep && (t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title));
+      const actMin = Number(t.actualMin) || 0;
       return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}" data-sort-id="${t.id}">
     <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
     <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
-    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span> ${!t.done ? `<span style="display:inline-flex;gap:3px;margin-left:4px"><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
+    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span>${t.done && actMin ? ` <span class="chip ${actMin <= t.dur ? "chip-emerald" : "chip-amber"}" style="font-size:.68rem;padding:1px 6px">⏱️ ${L(`ใช้จริง ${minLabel(actMin)}`, `Actual ${minLabel(actMin)}`)}</span>` : ""} ${!t.done ? `<span style="display:inline-flex;gap:3px;margin-left:4px"><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
       <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
       <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
-    <div class="task-actions"><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="edt-${t.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
+    <div class="task-actions">${!t.done && !isSleep && !isRest ? `<button class="icon-btn" data-act="startTaskPomo" data-id="${t.id}" title="${L("เริ่มโฟกัส Pomodoro งานนี้ทันที", "Start Pomodoro for this task")}" aria-label="Start Pomodoro">🍅</button>` : ""}<button class="icon-btn" data-act="editTask" data-id="${t.id}" id="edt-${t.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
   </li>`;
     }
     function routineRow(r) {
@@ -4558,10 +4771,63 @@
       const today = dkey(), date = state.queueDate || today, list = tasksOn(date);
       const projOpts = `<option value="">📌 ${L("งานทั่วไป", "General task")}</option>` + state.projects.map(p => `<option value="${p.id}">🗂️ ${esc(p.title)}</option>`).join("");
       const secLeft = list.filter(t => !t.done && t.priority === "secondary");
-      const totalMin = list.filter(t => !t.done).reduce((a, t) => a + t.dur, 0);
+      const totalMin = list.filter(t => !t.done && !t.isSleep).reduce((a, t) => a + t.dur, 0);
+      const workTasks = list.filter(t => !t.isSleep && !t.isBreak);
+      const plannedWorkMin = workTasks.reduce((a, t) => a + (t.dur || 0), 0);
+      const doneWorkMin = workTasks.filter(t => t.done).reduce((a, t) => a + (Number(t.actualMin) || t.dur || 0), 0);
+      const capMaxMin = 480; // 8 hours optimal daily capacity
+      const capPct = Math.min(100, Math.round((plannedWorkMin / capMaxMin) * 100));
+      const isOverloaded = plannedWorkMin > capMaxMin;
+      const qMode = state.queueViewMode || "time"; // "time" | "matrix" | "flat"
       const dueR = state.routines.filter(r => isDue(r, today));
+
+      const morningList = list.filter(t => t.start >= 300 && t.start < 720);
+      const afternoonList = list.filter(t => t.start >= 720 && t.start < 1020);
+      const eveningList = list.filter(t => t.start >= 1020 || t.start < 300);
+
+      const q1 = list.filter(t => !t.isSleep && !t.isBreak && t.priority !== "secondary" && !t.projectId);
+      const q2 = list.filter(t => !t.isSleep && !t.isBreak && !!t.projectId);
+      const q3 = list.filter(t => !t.isSleep && !t.isBreak && t.priority === "secondary" && !t.projectId);
+      const q4 = list.filter(t => t.isSleep || t.isBreak);
+
+      let queueBodyHtml = "";
+      if (!list.length) {
+        queueBodyHtml = `<p class="empty">${L("ยังไม่มีงานในวันนี้", "No tasks for this day yet")}</p>`;
+      } else if (qMode === "matrix") {
+        const qBox = (title, sub, col, arr) => `<div class="eisenhower-box" style="border-top:4px solid ${col}">
+          <div class="row" style="justify-content:space-between;align-items:center">
+            <b>${title}</b>
+            <span class="chip" style="font-size:.7rem;padding:1px 7px">${arr.filter(x => x.done).length}/${arr.length}</span>
+          </div>
+          <div class="muted sm" style="margin-top:-4px">${sub}</div>
+          ${arr.length ? `<ul class="tasks" data-sort="queue:${date}">${arr.map(taskRow).join("")}</ul>` : `<p class="muted sm center" style="padding:14px 4px">${L("ไม่มีรายการในช่องนี้", "Empty quadrant")}</p>`}
+        </div>`;
+        queueBodyHtml = `<div class="eisenhower-grid">
+          ${qBox(L("🔥 Q1: สำคัญ & ด่วนวันนี้", "🔥 Q1: Urgent & Important"), L("งานหลักที่ต้องทำให้เสร็จวันนี้ (Do First)", "Core daily priorities — Do First"), "var(--amber)", q1)}
+          ${qBox(L("🗂️ Q2: สำคัญ & งานโปรเจคระยะยาว", "🗂️ Q2: Project & Strategic Work"), L("งานที่ผูกกับโปรเจคและเป้าหมายใหญ่ (Schedule & Deep Work)", "Project milestones & deep work"), "var(--violet)", q2)}
+          ${qBox(L("⚡ Q3: งานรอง / งานแทรกทั่วไป", "⚡ Q3: Secondary / Quick Tasks"), L("ทำเมื่อว่าง หรือย้ายไปวันถัดไปได้เมื่อคิวล้น", "Movable secondary tasks"), "var(--sky)", q3)}
+          ${qBox(L("🌿 Q4: พักผ่อน • ชาร์จพลัง • เวลานอน", "🌿 Q4: Rest, Recharge & Sleep"), L("บล็อกเวลาพักเบรกและเวลานอนหลับเพื่อฟื้นฟูสมอง", "Breaks & sleep blocks"), "var(--emerald)", q4)}
+        </div>`;
+      } else if (qMode === "time") {
+        const secBlock = (ico, lbl, sub, col, arr) => arr.length ? `
+          <div class="q-sec-banner" style="border-left-color:${col}">
+            <span>${ico} ${lbl} <small class="muted" style="font-weight:500">(${sub})</small></span>
+            <span class="chip" style="font-size:.7rem;padding:1px 7px">${arr.filter(x => x.done).length}/${arr.length} • ${minLabel(arr.reduce((s, x) => s + x.dur, 0))}</span>
+          </div>
+          <ul class="tasks" data-sort="queue:${date}">${arr.map(taskRow).join("")}</ul>
+        ` : "";
+        queueBodyHtml = `
+          <p class="sort-hint">↕️ ${L("แบ่งตามช่วงเวลาเช้า • บ่าย • เย็น-ค่ำ (ใช้นิ้วลากที่ ⠿ เพื่อจัดลำดับคิวได้ทันที)", "Grouped by Morning • Afternoon • Evening (Drag ⠿ to reorder anytime)")}</p>
+          ${secBlock("🌅", L("ช่วงเช้า (Morning)", "Morning"), "05:00 – 11:59", "var(--sky)", morningList)}
+          ${secBlock("☀️", L("ช่วงบ่าย (Afternoon)", "Afternoon"), "12:00 – 16:59", "var(--amber)", afternoonList)}
+          ${secBlock("🌙", L("ช่วงเย็น–ค่ำ & พักผ่อน (Evening / Night)", "Evening & Night"), "17:00 – 04:59", "var(--violet)", eveningList)}
+        `;
+      } else {
+        queueBodyHtml = `<p class="sort-hint">↕️ ${L("ใช้นิ้วลากที่ ⠿ เพื่อจัดคิวก่อน-หลัง (เวลาจะจัดให้อัตโนมัติ)", "Drag ⠿ to reorder (times re-slot automatically)")}</p><ul class="tasks" data-sort="queue:${date}">${list.map(taskRow).join("")}</ul>`;
+      }
+
       $("#view-queue").innerHTML = `
-    <div class="view-head"><div><h1>📅 ${L("คิวงานยืดหยุ่น", "Flexible Queue")}</h1><p>${L("วางบล็อกเวลา • ถูกแทรกแล้วระบบเลื่อนให้เอง", "Plan time blocks • the schedule reflows itself after interruptions")}</p></div></div>
+    <div class="view-head"><div><h1>📅 ${L("คิวงานยืดหยุ่น", "Flexible Queue")}</h1><p>${L("วางบล็อกเวลา • แบ่งช่วงเช้า/บ่าย/เย็น • เมทริกซ์ 4 ช่อง • ถูกแทรกแล้วระบบเลื่อนให้เอง", "Plan time blocks • Morning/Afternoon/Evening • Eisenhower Matrix • Auto-Reflow")}</p></div></div>
     ${overdueBannerHTML()}
     <div class="grid grid-2">
       <div class="grid">
@@ -4603,8 +4869,35 @@
             </div>
             <button class="btn btn-amber full" type="submit" id="btn-add-task">＋ ${L("เพิ่มเข้าคิว", "Add to queue")}</button>
           </form></article>
-        <article class="card"><div class="card-head"><h3>🗓️ ${fmtDate(date)}</h3><span class="chip">${L(`${list.length} งาน • เหลือ ${Math.floor(totalMin / 60)} ชม. ${totalMin % 60} น.`, `${list.length} tasks • ${Math.floor(totalMin / 60)}h ${totalMin % 60}m left`)}</span></div>
-          ${list.length ? `<p class="sort-hint">↕️ ${L("ใช้นิ้วลากที่ ⠿ เพื่อจัดคิวก่อน-หลัง (เวลาจะจัดให้อัตโนมัติ)", "Drag ⠿ to reorder (times re-slot automatically)")}</p><ul class="tasks" data-sort="queue:${date}">${list.map(taskRow).join("")}</ul>` : `<p class="empty">${L("ยังไม่มีงานในวันนี้", "No tasks for this day yet")}</p>`}
+        <article class="card">
+          <div class="card-head" style="flex-wrap:wrap;gap:8px">
+            <h3>🗓️ ${fmtDate(date)}</h3>
+            <div class="row" style="gap:6px;flex-wrap:wrap;align-items:center">
+              <div class="seg" style="padding:2px">
+                <button type="button" class="${qMode === "time" ? "on" : ""}" data-act="queueViewMode" data-v="time" style="padding:4px 8px;font-size:.74rem">🌅 ${L("แยกช่วงเวลา", "By Time")}</button>
+                <button type="button" class="${qMode === "matrix" ? "on" : ""}" data-act="queueViewMode" data-v="matrix" style="padding:4px 8px;font-size:.74rem">📐 ${L("เมทริกซ์ 4 ช่อง", "4-Quadrant")}</button>
+                <button type="button" class="${qMode === "flat" ? "on" : ""}" data-act="queueViewMode" data-v="flat" style="padding:4px 8px;font-size:.74rem">📋 ${L("เรียงรวม", "All")}</button>
+              </div>
+              <span class="chip">${L(`${list.length} งาน • เหลือ ${Math.floor(totalMin / 60)} ชม. ${totalMin % 60} น.`, `${list.length} tasks • ${Math.floor(totalMin / 60)}h ${totalMin % 60}m left`)}</span>
+            </div>
+          </div>
+
+          <div class="workload-card">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <div class="sm">
+                <b>📊 ${L("หลอดภาระงานรายวัน (Daily Capacity Meter):", "Daily Workload & Capacity:")}</b>
+                <span class="muted"> ${L(`วางแผนงาน ${minLabel(plannedWorkMin)} / แนะนำ 8 ชม.`, `Planned ${minLabel(plannedWorkMin)} / 8h optimal`)}</span>
+              </div>
+              <div class="row" style="gap:6px;align-items:center">
+                ${doneWorkMin > 0 ? `<span class="chip chip-emerald" style="font-size:.7rem;padding:1px 7px">✅ ${L(`ทำสำเร็จแล้ว ${minLabel(doneWorkMin)}`, `Done ${minLabel(doneWorkMin)}`)}</span>` : ""}
+                <span class="chip ${isOverloaded ? "chip-rose" : capPct >= 75 ? "chip-amber" : "chip-emerald"}" style="font-size:.72rem;padding:1px 8px">${capPct}% ${isOverloaded ? L("⚠️ คิวงานแน่นเกิน 8 ชม.", "⚠️ Over 8h capacity") : L("สมดุลดี", "Balanced")}</span>
+              </div>
+            </div>
+            <div class="bar" style="height:9px"><i style="width:${capPct}%;background:${isOverloaded ? "linear-gradient(90deg,var(--amber),var(--rose))" : "linear-gradient(90deg,var(--emerald),var(--sky))"}"></i></div>
+            ${isOverloaded && secLeft.length ? `<div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="rose sm">💡 ${L(`วันนี้ตารางงานเกิน 8 ชม. แนะนำย้ายงานรอง ${secLeft.length} งานไปวันถัดไปเพื่อลดความล้า`, `Over 8h scheduled today — consider moving ${secLeft.length} secondary task(s) to next day`)}</span><button type="button" class="btn btn-sm btn-emerald" data-act="moveSecondary" data-date="${date}">📦 ${L("ย้ายงานรองทันที", "Defer Secondary")}</button></div>` : ""}
+          </div>
+
+          ${queueBodyHtml}
           ${secLeft.length ? `<button class="btn" style="width:100%;margin-top:12px" data-act="moveSecondary" data-date="${date}" id="btn-q-move-secondary">📦 ${L(`ย้ายงานรอง ${secLeft.length} งานไปวันถัดไป`, `Move ${secLeft.length} secondary tasks to the next day`)}</button>` : ""}
         </article>
       </div>
@@ -4675,13 +4968,19 @@
       const tasks = state.tasks.filter(t => t.projectId === p.id).sort((a, b) => (a.date + fmt(a.start)).localeCompare(b.date + fmt(b.start)));
       const range = projRange(p);
       const durOpts = [15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("");
+      const pTxns = (P().txns || []).filter(tx => tx.projectId === p.id);
+      const pInc = pTxns.filter(tx => tx.type === "inc").reduce((s, tx) => s + (Number(tx.amount) || 0), 0);
+      const pExp = pTxns.filter(tx => tx.type === "exp").reduce((s, tx) => s + (Number(tx.amount) || 0), 0);
+      const pNet = pInc - pExp;
+      const totalActs = p.steps.reduce((s, st) => s + (st.activities?.length || 0), 0);
+      const doneActs = p.steps.reduce((s, st) => s + (st.activities?.filter(a => a.done).length || 0), 0);
       return `<article class="card proj" data-sort-id="${p.id}">
     <div class="proj-top"><span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
     <button class="proj-head" data-act="openProject" data-id="${p.id}" id="ph-${p.id}" aria-expanded="${open}">
       <div class="ring" style="--p:${pct}"><span>${pct}%</span></div>
       <div class="grow" style="min-width:0"><b style="display:block">${esc(p.title)}</b>
         <span class="muted sm">🎯 ${esc(p.monthlyGoal || L("ยังไม่ระบุเป้าหมาย", "No goal set"))}</span>
-        <div class="chips" style="margin-top:6px"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span>${range ? `<span class="chip chip-violet">📆 ${fmtShort(range[0])} → ${fmtShort(range[1])}</span>` : ""}</div></div>
+        <div class="chips" style="margin-top:6px"><span class="chip">Todo ${cnt("todo")}</span><span class="chip chip-amber">Doing ${cnt("doing")}</span><span class="chip chip-sky">Waiting ${cnt("waiting")}</span><span class="chip chip-emerald">Done ${cnt("done")}</span>${totalActs ? `<span class="chip chip-emerald">🔹 ${doneActs}/${totalActs}</span>` : ""}${pTxns.length ? `<span class="chip ${pNet >= 0 ? "chip-emerald" : "chip-rose"}">💰 ${pNet >= 0 ? "+" : "−"}${money(Math.abs(pNet))} ฿</span>` : ""}${range ? `<span class="chip chip-violet">📆 ${fmtShort(range[0])} → ${fmtShort(range[1])}</span>` : ""}</div></div>
       <span class="muted">${open ? "▲" : "▼"}</span>
     </button></div>
     ${open ? `<div class="proj-body">
@@ -4697,7 +4996,7 @@
         </div>
       </div>
       <div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${L("ความคืบหน้าโปรเจค", "Project Progress")}</b><b class="mono emerald">${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
-        ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">${L("คำนวณอัตโนมัติจากจำนวนขั้นตอนหลัก (Steps) ที่เปลี่ยนสถานะเป็น Done", "Auto-calculated from steps marked Done")}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
+        ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">✨ ${L(`คำนวณอัตโนมัติแบบถ่วงน้ำหนักจากทั้ง ขั้นตอนหลัก (${cnt("done")}/${p.steps.length}) และ กิจกรรมย่อย (${doneActs}/${totalActs})`, `Weighted auto-calculation from Steps (${cnt("done")}/${p.steps.length}) & Sub-activities (${doneActs}/${totalActs})`)}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
       <div>
         <div class="proj-sec-head" style="border-left-color:var(--sky)">
           <div>
@@ -4746,6 +5045,26 @@
         </form>
         <b class="sm" style="display:block;margin-top:12px">${L("งานที่อยู่ในคิวงานของโปรเจคนี้", "Linked tasks in Daily Queue")} (${tasks.length})</b>
         ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span>${stepChip(t)}</div><div class="row" style="gap:4px"><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="pte-${t.id}" title="${L("แก้ไขงาน", "Edit task")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="qdateGo" data-v="${t.date}" id="ptq-${t.id}" title="${L("ไปที่คิววันนั้น", "Open that day's queue")}" aria-label="${L("ไปที่คิววันนั้น", "Open that day's queue")}">📅</button></div></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีงาน — เพิ่มจากฟอร์มด้านบน หรือจากกิจกรรมย่อยของขั้นตอน", "No tasks yet — add one above or from a step's activities")}</p>`}</div>
+      <div>
+        <div class="proj-sec-head" style="border-left-color:var(--amber)">
+          <div><b>5️⃣ 💰 ${L("งบการเงินของโปรเจค (รายรับ • ต้นทุน/รายจ่าย • กำไรสุทธิ)", "Project Budget & Finance (Income • Costs • Net)")}</b><div class="muted sm">${L("🔗 บันทึกรายรับหรือค่าใช้จ่ายของโปรเจคนี้ ระบบจะซิงค์เข้าหน้า “📔 Planner › การเงิน (F)” อัตโนมัติ", "🔗 Log project revenue or costs here — syncs automatically with Finance Planner (F)")}</div></div>
+        </div>
+        <div class="money" style="margin:8px 0">
+          <div class="stat"><b class="emerald mono">+${money(pInc)}</b><span>${L("รายรับโปรเจค", "Project Income")}</span></div>
+          <div class="stat"><b class="rose mono">−${money(pExp)}</b><span>${L("ต้นทุน/รายจ่าย", "Project Costs")}</span></div>
+          <div class="stat"><b class="mono ${pNet >= 0 ? "amber" : "rose"}">${pNet >= 0 ? "+" : "−"}${money(Math.abs(pNet))}</b><span>${L("คงเหลือสุทธิ", "Net Profit")}</span></div>
+        </div>
+        <form class="row" data-form="addProjTxn" data-pid="${p.id}" style="gap:6px;flex-wrap:wrap" autocomplete="off">
+          <select class="input" name="type" style="width:120px;min-height:36px">
+            <option value="exp">➖ ${L("รายจ่าย/ต้นทุน", "Cost / Expense")}</option>
+            <option value="inc">➕ ${L("รายรับโปรเจค", "Income / Revenue")}</option>
+          </select>
+          <input class="input grow" name="note" placeholder="${L("รายการ เช่น ค่าโฆษณา / ค่าโดเมน / รับเงินมัดจำลูกค้า…", "e.g. Ad spend / Domain / Client deposit…")}" style="flex:2;min-width:150px;min-height:36px" required>
+          <input class="input" name="amount" type="number" inputmode="decimal" step="any" min="1" placeholder="${L("จำนวนเงิน (฿)", "Amount (฿)")}" style="width:130px;min-height:36px" required>
+          <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px">＋ ${L("บันทึกงบโปรเจค", "Log Finance")}</button>
+        </form>
+        ${pTxns.length ? `<ul class="rows" style="margin-top:8px">${pTxns.slice().reverse().slice(0, 8).map(tx => `<li class="row-item"><div>${tx.type === "inc" ? "💵" : "🧾"} <b>${esc(tx.note)}</b> <span class="muted sm">· ${fmtDate(tx.date)}</span></div><div class="row" style="gap:6px;align-items:center"><b class="mono ${tx.type === "inc" ? "emerald" : "rose"}">${tx.type === "inc" ? "+" : "−"}${money(tx.amount)} ฿</b><button type="button" class="icon-btn" data-act="editItem" data-kind="txn" data-id="${esc(tx.id)}" title="${L("แก้ไข", "Edit")}">✏️</button><button type="button" class="icon-btn" data-act="delTxn" data-id="${esc(tx.id)}" title="${L("ลบ", "Delete")}">✕</button></div></li>`).join("")}</ul>` : ""}
+      </div>
       <div class="row"><button class="btn btn-emerald grow" data-act="share" data-id="${p.id}" id="share-${p.id}">🔗 ${L("สร้างลิงก์แชร์ความคืบหน้า", "Create progress share link")}</button><button class="btn btn-ghost" data-act="delProject" data-id="${p.id}" id="pdel-${p.id}">🗑️ ${L("ลบ", "Delete")}</button></div>
     </div>` : ""}
   </article>`;
@@ -5006,20 +5325,57 @@
       return "";
     }
 
+    function calcHourSpan(startTime, endTime) {
+      if (!startTime || !endTime) return 1;
+      const [sh, sm] = String(startTime).split(":").map(Number);
+      const [eh, em] = String(endTime).split(":").map(Number);
+      if (isNaN(sh) || isNaN(eh)) return 1;
+      let sMin = sh * 60 + (sm || 0);
+      let eMin = eh * 60 + (em || 0);
+      if (eMin <= sMin) eMin += 24 * 60;
+      return Math.max(1, Math.min(16, Math.ceil((eMin - sMin) / 60)));
+    }
+
+    function hourItemSpanInfo(it, hNum) {
+      const defStart = `${pad(hNum)}:00`;
+      const startTime = it?.startTime || defStart;
+      const spanHours = Math.max(1, Number(it?.spanHours) || (it?.endTime ? calcHourSpan(startTime, it.endTime) : 1));
+      const defEndHour = (hNum + spanHours) % 24;
+      const endTime = it?.endTime || `${pad(defEndHour)}:00`;
+      const color = it?.color || (spanHours > 1 ? "amber" : "");
+      const [sh, sm] = String(startTime).split(":").map(Number);
+      const [eh, em] = String(endTime).split(":").map(Number);
+      let diffMin = (eh * 60 + (em || 0)) - (sh * 60 + (sm || 0));
+      if (diffMin <= 0) diffMin += 24 * 60;
+      const durTxt = diffMin % 60 === 0 ? `${diffMin / 60} ${L("ชม.", "h")}` : minLabel(diffMin);
+      return { startTime, endTime, spanHours, color, durTxt, diffMin };
+    }
+
     function cgItemRow(sec, key, sub, it, timeStr = "", darkBg = false) {
       const ds = `data-sec="${esc(sec)}" data-key="${esc(key)}" data-sub="${esc(sub)}" data-id="${esc(it.id)}"`;
       const grpTitle = cgGroupTitle(sec, key, sub);
+      let timeBadgeHtml = "";
+      if (sec === "hour") {
+        const hNum = Number(String(sub || "h06").replace("h", "")) || 0;
+        const info = hourItemSpanInfo(it, hNum);
+        const colStyle = info.spanHours > 1
+          ? "background:rgba(245,158,11,.2);color:var(--amber);border-color:rgba(245,158,11,.45);font-weight:800"
+          : "background:var(--surface-3);color:var(--sky);border-color:var(--border)";
+        timeBadgeHtml = `<button type="button" class="chip" data-act="openHourBlockEdit" ${ds} style="font-size:.72rem;padding:2px 8px;cursor:pointer;${colStyle}" title="${L("คลิกเพื่อตั้งค่า/เปลี่ยนกรอบช่วงเวลา", "Click to configure time range")}">⏰ ${esc(info.startTime)} – ${esc(info.endTime)} ${L("น.", "")} (${info.durTxt})</button>`;
+      }
       return `<li class="cg-item ${darkBg ? "dark" : ""}" data-sort-id="${esc(it.id)}">
-        <div class="cg-main">
+        <div class="cg-main" style="flex-wrap:wrap;align-items:center">
           <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ/ย้ายหมวด", "Drag to reorder / move")}" style="width:20px;min-height:24px;font-size:.92rem;margin-top:1px">⠿</span>
           <button type="button" class="check" data-act="cgToggle" ${ds} style="width:22px;height:22px;margin:1px 0 0;border-radius:6px;font-size:.75rem;flex:none;${it.done ? "background:var(--emerald);border-color:var(--emerald);color:#04150f" : ""}" aria-label="${L("สลับสถานะ", "Toggle done")}">${it.done ? "✓" : ""}</button>
-          <span class="cg-text" style="${it.done ? "text-decoration:line-through;opacity:.65" : ""}">${esc(it.text)}</span>
+          ${timeBadgeHtml}
+          <span class="cg-text" style="${it.done ? "text-decoration:line-through;opacity:.65" : "font-weight:600"}">${esc(it.text)}</span>
         </div>
         <div class="cg-actions">
-          <button type="button" class="icon-btn" data-act="cgToQueue" data-title="${esc(it.text)}" data-time="${esc(timeStr)}" title="${L("ส่งเข้าคิวงานวันนี้ (1-Click)", "Send to today's queue")}" aria-label="${L("ส่งเข้าคิวงานวันนี้", "Send to today's queue")}">📅</button>
+          ${sec === "hour" ? `<button type="button" class="icon-btn" data-act="openHourBlockEdit" ${ds} title="${L("ตั้งค่าช่วงเวลา / กรอบหลายชั่วโมง", "Set time range / multi-hour block")}" aria-label="${L("ตั้งค่าช่วงเวลา", "Set time range")}">⏰</button>` : ""}
+          <button type="button" class="icon-btn" data-act="cgToQueue" data-title="${esc(it.text)}" data-time="${esc(it.startTime || timeStr)}" data-dur="${sec === "hour" ? hourItemSpanInfo(it, Number(String(sub || "h06").replace("h", "")) || 0).diffMin : 60}" title="${L("ส่งเข้าคิวงานวันนี้ (1-Click)", "Send to today's queue")}" aria-label="${L("ส่งเข้าคิวงานวันนี้", "Send to today's queue")}">📅</button>
           <button type="button" class="icon-btn" data-act="cgItemToProject" data-title="${esc(it.text)}" data-done="${it.done ? "1" : ""}" data-grp="${esc(grpTitle)}" title="${L("เพิ่มไปยังโปรเจค (สร้างโปรเจคใหม่ หรือเพิ่มเป็นขั้นตอนในโปรเจค)", "Add to Project (new project or step in existing project)")}" aria-label="${L("เพิ่มไปยังโปรเจค", "Add to Project")}">🗂️</button>
           <button type="button" class="icon-btn" data-act="editItem" data-kind="cgItem" ${ds} title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>
-          ${rBtn(`cg-${sec}-${it.id}`, it.text, timeStr)}
+          ${rBtn(`cg-${sec}-${it.id}`, it.text, it.startTime || timeStr)}
           <button type="button" class="icon-btn" data-act="cgDel" ${ds} title="${L("ลบ", "Delete")}" aria-label="${L("ลบ", "Delete")}">✕</button>
         </div>
       </li>`;
@@ -5029,19 +5385,74 @@
       const mk = dkey().slice(0, 7), date = state.plannerDate || dkey();
       ensureCgItems(date, mk);
       const D = P().daily[date] || {};
-      const hour = h => {
+      const renderHourSingle = h => {
         const k = `h${pad(h)}`, tStr = `${pad(h)}:00`;
         const items = getCgList("hour", date, k);
         return `<div class="hour" style="align-items:start;grid-template-columns:58px 1fr">
-          <b style="margin-top:2px">${tStr}</b>
+          <b style="margin-top:6px">${tStr}</b>
           <div style="display:grid;gap:6px;min-width:0">
             ${items.length ? `<ul data-sort="cg:hour:${date}:${k}" style="list-style:none;display:grid;gap:4px">${items.map(it => cgItemRow("hour", date, k, it, tStr)).join("")}</ul>` : ""}
-            <form class="row" data-form="cgAdd" data-sec="hour" data-key="${date}" data-sub="${k}" style="gap:6px" autocomplete="off">
-              <input class="input grow" name="text" id="hr-${k}" placeholder="${items.length ? L("＋ เพิ่มรายการในชั่วโมงนี้…", "＋ Add another item…") : L("พิมพ์แผนงานชั่วโมงนี้ แล้วกด ＋ หรือ Enter…", "Add plan for this hour…")}" style="min-height:36px;padding:6px 10px;font-size:.86rem">
-              <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px;padding:0 10px" title="${L("เพิ่มรายการ", "Add item")}">＋</button>
+            <form class="row" data-form="cgHourAdd" data-date="${date}" data-hour="${h}" style="gap:6px" autocomplete="off">
+              <input class="input grow" name="text" id="hr-${k}" placeholder="${items.length ? L("＋ พิมพ์รายการเพิ่มในชั่วโมงนี้ แล้วกด ＋ เพื่อตั้งช่วงเวลา…", "＋ Add item & set time range…") : L("พิมพ์แผนงานชั่วโมงนี้ แล้วกด ＋ เพื่อตั้งช่วงเวลา…", "Type item & click ＋ to set time block…")}" style="min-height:36px;padding:6px 10px;font-size:.86rem">
+              <button class="btn btn-sm btn-emerald" type="submit" style="min-height:36px;padding:0 10px" title="${L("ตั้งค่าช่วงเวลาและเพิ่มรายการ", "Set time range & add")}">＋</button>
             </form>
           </div>
         </div>`;
+      };
+      const renderHourGroup = hoursArr => {
+        let html = "";
+        for (let i = 0; i < hoursArr.length; i++) {
+          const h = hoursArr[i];
+          const k = `h${pad(h)}`, tStr = `${pad(h)}:00`;
+          const items = getCgList("hour", date, k);
+          const spanInfos = items.map(it => ({ it, info: hourItemSpanInfo(it, h) }));
+          const primarySpan = spanInfos.reduce((best, cur) => (!best || cur.info.spanHours > best.info.spanHours ? cur : best), null);
+          if (primarySpan && (primarySpan.info.spanHours > 1 || primarySpan.it.isSpanBlock)) {
+            const spanH = primarySpan.info.spanHours;
+            const coveredCount = Math.max(1, Math.min(spanH, hoursArr.length - i));
+            const coveredHours = hoursArr.slice(i, i + coveredCount);
+            const allCoveredItems = [];
+            coveredHours.forEach(ch => {
+              const ck = `h${pad(ch)}`, ctStr = `${pad(ch)}:00`;
+              getCgList("hour", date, ck).forEach(cit => {
+                allCoveredItems.push({ ch, ck, ctStr, cit });
+              });
+            });
+            const pInfo = primarySpan.info;
+            const col = pInfo.color || "amber";
+            const minH = Math.max(116, coveredCount * 54);
+            html += `<div class="hour-span-frame" data-color="${esc(col)}" style="min-height:${minH}px">
+              <div class="hour-span-rail" title="${L(`กรอบเวลาครอบคลุม ${pInfo.startTime} – ${pInfo.endTime} น.`, `Spans ${pInfo.startTime} – ${pInfo.endTime}`)}">
+                ${coveredHours.map((ch, idx) => `
+                  <span class="rail-pill">${pad(ch)}:00</span>
+                  ${idx < coveredHours.length - 1 ? `<div class="rail-line"></div>` : ""}
+                `).join("")}
+                <div class="rail-line"></div>
+                <span class="rail-pill rail-pill-end" style="border-color:var(--amber);color:var(--amber)">🏁 ${esc(pInfo.endTime)}</span>
+              </div>
+              <div class="hour-span-box">
+                <div class="hour-span-head">
+                  <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap">
+                    <span class="hour-range-badge">⏰ ${esc(pInfo.startTime)} – ${esc(pInfo.endTime)} ${L("น.", "")} • ${L(`ครอบคลุม ${pInfo.durTxt}`, `${pInfo.durTxt} Block`)}</span>
+                    <span class="muted sm">(${coveredHours.map(ch => `${pad(ch)}:00`).join(" ➔ ")})</span>
+                  </div>
+                  <button type="button" class="btn btn-sm" style="min-height:26px;padding:2px 8px;font-size:.74rem" data-act="openHourBlockEdit" data-sec="hour" data-key="${date}" data-sub="${k}" data-id="${esc(primarySpan.it.id)}">⏰ ${L("ปรับช่วงเวลา", "Edit Time Span")}</button>
+                </div>
+                <ul data-sort="cg:hour:${date}:${k}" style="list-style:none;display:grid;gap:6px">
+                  ${allCoveredItems.map(({ ck, ctStr, cit }) => cgItemRow("hour", date, ck, cit, ctStr)).join("")}
+                </ul>
+                <form class="row" data-form="cgHourAdd" data-date="${date}" data-hour="${h}" style="gap:6px;margin-top:2px" autocomplete="off">
+                  <input class="input grow" name="text" id="hr-${k}" placeholder="${L(`＋ เพิ่มรายการในกรอบเวลา ${pInfo.startTime}–${pInfo.endTime} น. แล้วกด ＋…`, `＋ Add item in ${pInfo.startTime}–${pInfo.endTime} block…`)}" style="min-height:34px;padding:4px 10px;font-size:.83rem">
+                  <button class="btn btn-sm btn-emerald" type="submit" style="min-height:34px;padding:0 10px" title="${L("ตั้งค่าช่วงเวลาและเพิ่มรายการ", "Set time range & add")}">＋</button>
+                </form>
+              </div>
+            </div>`;
+            i += coveredCount - 1;
+          } else {
+            html += renderHourSingle(h);
+          }
+        }
+        return html;
       };
       const focusItems = getCgList("mfocus", mk);
       const focusGroups = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] }).focusGroups ||= [];
@@ -5134,11 +5545,16 @@
             <button class="btn btn-sm btn-emerald" type="submit" style="min-height:38px">＋ ${L("เพิ่ม", "Add")}</button>
           </form>
         </div></article>
-      <article class="card"><div class="card-head"><h3>📆 Daily 24h Plan</h3><input type="date" class="input" style="width:auto;min-height:38px" value="${date}" data-act-change="plannerDate" id="planner-date" aria-label="${L("เลือกวันที่", "Pick a date")}"></div>
-        <div class="row" style="justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface-2)"><b>Rate your day</b>${stars(`planner.daily.${date}.rate`, D.rate, "Rate your day")}</div>
-        <h4 style="margin:14px 0 8px">🌅 Morning Plan (06:00–11:00)</h4><div class="hours">${[6, 7, 8, 9, 10, 11].map(hour).join("")}</div>
-        <h4 style="margin:14px 0 8px">🌇 Noon & Evening Plan (12:00–21:00)</h4><div class="hours">${[12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(hour).join("")}</div>
-        <h4 style="margin:14px 0 8px">🌙 Night & Sleep (22:00–05:00) • ${L("เวลานอนหลับ & ฟื้นฟูสมอง", "Sleep & Recovery Hours")}</h4><div class="hours">${[22, 23, 0, 1, 2, 3, 4, 5].map(hour).join("")}</div></article>
+      <article class="card"><div class="card-head" style="flex-wrap:wrap;gap:8px"><div><h3>📆 Daily 24h Plan</h3><p class="muted sm" style="margin-top:2px">${L("พิมพ์ชื่อรายการแล้วกด ＋ เพื่อตั้งค่าช่วงเวลา — รายการที่กินเวลาหลายชั่วโมงจะแสดงผลเป็นกรอบใหญ่ครอบคลุมช่วงเวลาพร้อมเวลากำกับชัดเจน", "Type an item and click ＋ to set a time range — multi-hour items render as a unified frame across those hours with a time range badge.")}</p></div><div class="row" style="gap:6px;flex-wrap:wrap"><button type="button" class="btn btn-sm" data-act="pullQueueTo24h" data-date="${date}" title="${L("ดึงตารางงานจากหน้าคิวงานมาแสดงในตาราง 24 ชม.", "Pull tasks from Daily Queue into this 24h plan")}">📥 ${L("ดึงคิวงานมาแสดง", "Pull from Queue")}</button><button type="button" class="btn btn-sm" data-act="push24hToQueue" data-date="${date}" title="${L("ส่งรายการในตาราง 24 ชม. ทั้งหมดเข้าหน้าคิวงานรายวัน", "Send all 24h items to Daily Queue")}">📤 ${L("ส่งเข้าคิวงาน", "Send all to Queue")}</button><input type="date" class="input" style="width:auto;min-height:38px" value="${date}" data-act-change="plannerDate" id="planner-date" aria-label="${L("เลือกวันที่", "Pick a date")}"></div></div>
+        <div class="row" style="justify-content:space-between;padding:10px 12px;border-radius:14px;background:var(--surface-2);flex-wrap:wrap;gap:8px"><b>Rate your day</b>${stars(`planner.daily.${date}.rate`, D.rate, "Rate your day")}</div>
+        <form class="row" data-form="cgHourAdd" data-key="${date}" data-sub="h09" style="gap:6px;padding:10px 12px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(56,189,248,.1));border:1px solid rgba(245,158,11,.35);flex-wrap:wrap" autocomplete="off">
+          <span class="chip chip-amber" style="font-size:.74rem">⏰ ${L("สร้างบล็อกช่วงเวลา", "New Time Block")}</span>
+          <input class="input grow" name="text" id="h-quick-top" placeholder="${L("พิมพ์ชื่อรายการ แล้วกด ＋ เพื่อตั้งช่วงเวลา (เช่น ประชุมใหญ่ 09:00–12:00)…", "Type item name & click ＋ to set time range (e.g. Deep Work 09:00–12:00)…")}" style="min-height:38px;font-size:.88rem;min-width:200px">
+          <button class="btn btn-sm btn-amber" type="submit" style="min-height:38px;font-weight:800">＋ ${L("ตั้งช่วงเวลา", "Set Time Range")}</button>
+        </form>
+        <h4 style="margin:14px 0 8px">🌅 Morning Plan (06:00–11:00)</h4><div class="hours">${renderHourGroup([6, 7, 8, 9, 10, 11])}</div>
+        <h4 style="margin:14px 0 8px">🌇 Noon & Evening Plan (12:00–21:00)</h4><div class="hours">${renderHourGroup([12, 13, 14, 15, 16, 17, 18, 19, 20, 21])}</div>
+        <h4 style="margin:14px 0 8px">🌙 Night & Sleep (22:00–05:00) • ${L("เวลานอนหลับ & ฟื้นฟูสมอง", "Sleep & Recovery Hours")}</h4><div class="hours">${renderHourGroup([22, 23, 0, 1, 2, 3, 4, 5])}</div></article>
     </div>
     <article class="card">
       <div class="card-head" style="margin-bottom:10px">
@@ -7358,9 +7774,11 @@
         </div>`;
     }
     function renderIdeas() {
+      const hasProjs = (state.projects || []).length > 0;
       $("#ideas-body").innerHTML = `
     <div class="dlg-head"><h2 id="ideas-title">🗒️ ${L("คลังไอเดีย", "Idea inbox")} (${state.ideas.length})</h2><button class="icon-btn" data-act="closeDlg" data-id="ideas-dlg" aria-label="${L("ปิด", "Close")}" id="btn-close-ideas">✕</button></div>
-    ${state.ideas.length ? `<ul class="rows">${[...state.ideas].reverse().map(x => `<li class="row-item"><div>${esc(x.text)}<div class="muted sm">${fmtDT(x.at)}</div></div><button class="icon-btn" data-act="editItem" data-kind="idea" data-id="${x.id}" id="ie-${x.id}" title="${L("แก้ไขไอเดีย", "Edit idea")}" aria-label="${L("แก้ไขไอเดีย", "Edit idea")}">✏️</button><button class="btn btn-sm" data-act="ideaToTask" data-id="${x.id}" id="it-${x.id}">→ ${L("งาน", "Task")}</button><button class="icon-btn" data-act="delIdea" data-id="${x.id}" id="id-${x.id}" aria-label="${L("ลบไอเดีย", "Delete idea")}">🗑️</button></li>`).join("")}</ul>` : `<p class="empty">${L("พิมพ์ไอเดียในช่อง 💡 ด้านบน แล้วกด Enter", "Type an idea in the 💡 box at the top and press Enter")}</p>`}`;
+    <p class="muted sm" style="margin-bottom:8px">${L("แปลงไอเดียที่จดไว้ให้กลายเป็น “📋 คิวงานวันนี้”, “🗂️ โปรเจคใหม่” หรือ “🧭 ขั้นตอนในโปรเจค” ได้ในคลิกเดียว", "Turn captured ideas into a Daily Queue task, a new Project, or a Project Step in one click.")}</p>
+    ${state.ideas.length ? `<ul class="rows">${[...state.ideas].reverse().map(x => `<li class="row-item" style="flex-wrap:wrap"><div class="grow" style="min-width:180px"><b>${esc(x.text)}</b><div class="muted sm">${fmtDT(x.at)}</div></div><div class="row" style="gap:4px;flex-wrap:wrap"><button class="icon-btn" data-act="editItem" data-kind="idea" data-id="${x.id}" id="ie-${x.id}" title="${L("แก้ไขไอเดีย", "Edit idea")}" aria-label="${L("แก้ไขไอเดีย", "Edit idea")}">✏️</button><button class="btn btn-sm btn-emerald" data-act="ideaToTask" data-id="${x.id}" id="it-${x.id}" title="${L("ส่งเข้าคิวงานวันนี้", "Add to today's queue")}">→ 📋 ${L("งาน", "Task")}</button><button class="btn btn-sm" style="color:var(--violet);border-color:rgba(167,139,250,.4)" data-act="ideaToProj" data-id="${x.id}" title="${L("สร้างเป็นโปรเจคใหม่", "Create as new project")}">→ 🗂️ ${L("โปรเจค", "Project")}</button>${hasProjs ? `<button class="btn btn-sm" style="color:var(--amber);border-color:rgba(245,158,11,.4)" data-act="ideaToStep" data-id="${x.id}" title="${L("เพิ่มเป็นขั้นตอนในโปรเจค", "Add as step in a project")}">→ 🧭 ${L("ขั้นตอน", "Step")}</button>` : ""}<button class="icon-btn" data-act="delIdea" data-id="${x.id}" id="id-${x.id}" aria-label="${L("ลบไอเดีย", "Delete idea")}">🗑️</button></div></li>`).join("")}</ul>` : `<p class="empty">${L("พิมพ์ไอเดียในช่อง 💡 ด้านบน แล้วกด Enter", "Type an idea in the 💡 box at the top and press Enter")}</p>`}`;
     }
     function openShare(p) {
       const url = shareUrl(p);
@@ -8932,13 +9350,49 @@
       const matchP = t => pf === "all" || (pf === "none" ? !t.projectId : t.projectId === pf);
       const tasks = state.tasks.filter(t => inR(t.date) && matchP(t) && (tf === "all" || taskType(t) === tf));
       const done = tasks.filter(t => t.done);
-      const focusMin = done.filter(t => ["main", "secondary"].includes(taskType(t))).reduce((s, t) => s + t.dur, 0);
+      const workDone = done.filter(t => ["main", "secondary"].includes(taskType(t)));
+      const focusMin = workDone.reduce((s, t) => s + t.dur, 0);
+      const actualFocusMin = workDone.reduce((s, t) => s + (Number(t.actualMin) > 0 ? Number(t.actualMin) : t.dur), 0);
       const logs = state.focus.log.filter(l => inR(l.date) && !String(l.reason || "").startsWith("☕"));
       let rIns = 0; state.routines.forEach(r => Object.entries(r.log || {}).forEach(([d, v]) => { if (v && inR(d)) rIns++; }));
       let stepsDone = 0, actsDone = 0;
       state.projects.filter(p => pf === "all" || p.id === pf).forEach(p => p.steps.forEach(s => { if (s.status === "done" && tsIn(s.doneAt)) stepsDone++; (s.activities || []).forEach(x => { if (x.done && tsIn(x.doneAt)) actsDone++; }); }));
       const sl = (P().sleeps || []).filter(s => inR(s.date)), avgSleep = sl.length ? (sl.reduce((s, x) => s + (Number(x.hours) || 0), 0) / sl.length).toFixed(1) : "–";
-      return { a, b, tasks, done, pct: tasks.length ? Math.round(done.length / tasks.length * 100) : 0, focusMin, logs, lost: logs.reduce((s, l) => s + (l.mins || 0), 0), rIns, stepsDone, actsDone, avgSleep };
+      return { a, b, tasks, done, pct: tasks.length ? Math.round(done.length / tasks.length * 100) : 0, focusMin, actualFocusMin, logs, lost: logs.reduce((s, l) => s + (l.mins || 0), 0), rIns, stepsDone, actsDone, avgSleep };
+    }
+    function weeklyReviewCard() {
+      const today = dkey(), wStart = addDays(today, -6);
+      const inW = d => !!d && d >= wStart && d <= today;
+      const wTasks = state.tasks.filter(t => inW(t.date) && !t.isSleep && !t.isBreak);
+      const wDone = wTasks.filter(t => t.done);
+      const wPct = wTasks.length ? Math.round(wDone.length / wTasks.length * 100) : 0;
+      const wFocusHrs = Math.round(wDone.reduce((s, t) => s + (Number(t.actualMin) > 0 ? Number(t.actualMin) : (t.dur || 0)), 0) / 60 * 10) / 10;
+      let wHabits = 0;
+      Object.values(P().habitLog || {}).forEach(mp => Object.entries(mp || {}).forEach(([d, v]) => { if (v && inW(d)) wHabits++; }));
+      const wTxns = allTxns().filter(x => inW(x.date));
+      const wInc = sumAmt(wTxns, "inc"), wExp = sumAmt(wTxns, "exp");
+      const wins = [];
+      for (let d = today; d >= wStart; d = addDays(d, -1)) {
+        const wn = (P().daily?.[d]?.winNote || "").trim();
+        if (wn) wins.push([d, wn]);
+      }
+      const grade = wPct >= 80 ? "🏆 S — ยอดเยี่ยมมาก!" : wPct >= 60 ? "🌟 A — รักษาวินัยได้ดี" : wPct >= 40 ? "💪 B — ก้าวหน้าต่อเนื่อง" : "🌱 C — เริ่มสะสมโมเมนตัม";
+      return `<article class="card" style="background:linear-gradient(135deg,rgba(167,139,250,.11),rgba(16,185,129,.08));border-color:rgba(167,139,250,.35)">
+        <div class="card-head" style="flex-wrap:wrap;gap:8px">
+          <div>
+            <h3>🏆 ${L("Weekly Review Scorecard (สรุปผลงาน 7 วันล่าสุด)", "Weekly Review Scorecard (Last 7 Days)")}</h3>
+            <p class="muted sm">${fmtShort(wStart)} – ${fmtShort(today)} • ${L("ทบทวนความสำเร็จ วินัยนิสัย และการเงินในสัปดาห์ที่ผ่านมา", "Review your tasks, focus hours, habits & finances over the past 7 days")}</p>
+          </div>
+          <span class="pill pill-emerald" style="font-size:.8rem">${grade}</span>
+        </div>
+        <div class="kpis" style="margin-top:8px">
+          <div class="kpi"><b class="emerald">${wDone.length}/${wTasks.length} (${wPct}%)</b><span>✅ ${L("งานที่ทำสำเร็จ 7 วัน", "7-Day Tasks Completed")}</span></div>
+          <div class="kpi"><b class="amber">${wFocusHrs} ${L("ชม.", "h")}</b><span>⏱️ ${L("ชั่วโมงโฟกัสจริงสะสม", "Actual Focus Hours")}</span></div>
+          <div class="kpi"><b class="sky">${wHabits} ${L("ครั้ง", "checks")}</b><span>🔥 ${L("เช็กอินนิสัย & กิจวัตร", "Habit & Routine Check-ins")}</span></div>
+          <div class="kpi"><b class="${wInc - wExp >= 0 ? "emerald" : "rose"}">${wInc - wExp >= 0 ? "+" : "−"}${money(Math.abs(wInc - wExp))} ฿</b><span>💰 ${L(`การเงิน 7 วัน (+${money(wInc)} / −${money(wExp)})`, `7d Net (+${money(wInc)} / −${money(wExp)})`)}</span></div>
+        </div>
+        ${wins.length ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)"><b class="sm">🏅 ${L("บันทึกความภูมิใจรายวัน (Daily Wins):", "Recent Daily Wins:")}</b><ul style="margin:6px 0 0;padding-left:18px;font-size:.83rem;display:grid;gap:3px">${wins.slice(0, 4).map(([d, w]) => `<li><span class="muted mono">${fmtShort(d)}:</span> ${esc(w)}</li>`).join("")}</ul></div>` : ""}
+      </article>`;
     }
     function hbars(groups) {
       const rows = groups.filter(g => g.t);
@@ -8988,13 +9442,14 @@
         </div></article>
       <div class="kpis">
         ${kpi(`${D.done.length}/${D.tasks.length}`, L(`งานเสร็จ (${D.pct}%)`, `Tasks done (${D.pct}%)`), "emerald")}
-        ${kpi(minLabel(D.focusMin), L("เวลาโฟกัสที่ทำสำเร็จ", "Focused time completed"), "amber")}
+        ${kpi(minLabel(D.actualFocusMin || D.focusMin), L(`เวลาโฟกัสจริง (แผน ${minLabel(D.focusMin)})`, `Actual focus (planned ${minLabel(D.focusMin)})`), "amber")}
         ${kpi(`${D.logs.length}`, L(`ครั้งที่ถูกแทรก (${D.lost} นาที)`, `Interruptions (${D.lost} min)`), "rose")}
         ${kpi(`${D.stepsDone}`, L("ขั้นตอนโปรเจคที่เสร็จ", "Project steps done"), "violet")}
         ${kpi(`${D.actsDone}`, L("กิจกรรมย่อยที่เสร็จ", "Activities done"), "sky")}
         ${kpi(`${D.rIns}`, L("เช็กอินกิจวัตร", "Routine check-ins"))}
         ${kpi(D.avgSleep === "–" ? "–" : D.avgSleep + L(" ชม.", "h"), L("นอนเฉลี่ย", "Avg sleep"))}
       </div>
+      ${weeklyReviewCard()}
       <article class="card"><h3>📈 ${R.range === "day" ? L("งานในวันนี้", "Tasks this day") : R.range === "month" ? L("งานเสร็จรายวัน", "Completed per day") : L("งานเสร็จรายเดือน", "Completed per month")}</h3><div class="chart-wrap" style="margin-top:8px">${chart}</div></article>
       <div class="grid grid-2">
         <article class="card"><h3>🗂️ ${L("แยกตามโปรเจค", "By project")}</h3><p class="muted sm" style="margin-bottom:6px">${L("งานเสร็จ/ทั้งหมด • % ความคืบหน้าโปรเจค", "Done/total • project progress %")}</p>${hbars(byP)}</article>
@@ -9454,7 +9909,20 @@
       toggleTask: d => {
         _toggleTask(d);
         const t = state.tasks.find(x => x.id === d.id);
-        if (t?.actId) { const [p, s, a] = findAct(t.projectId, t.stepId, t.actId); if (a) { a.done = t.done; a.doneAt = t.done ? Date.now() : null; save(); autoSync(p, s); } }
+        if (t?.done && !t.actualMin) t.actualMin = t.dur || 30;
+        if (t?.actId) {
+          const [p, s, a] = findAct(t.projectId, t.stepId, t.actId);
+          if (a) {
+            a.done = t.done;
+            a.doneAt = t.done ? Date.now() : null;
+            if (s && Array.isArray(s.activities) && s.activities.length) {
+              if (s.activities.every(x => x.done)) { s.status = "done"; s.doneAt = Date.now(); }
+              else if (s.activities.some(x => x.done) && s.status === "todo") { s.status = "doing"; delete s.doneAt; }
+            }
+            save();
+            autoSync(p, s);
+          }
+        }
       },
       tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = nextWorkDay(t.date); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
       moveSecondary: d => {
@@ -9497,9 +9965,18 @@
       actToggle: d => {
         const [p, s, a] = findAct(d.pid, d.sid, d.aid); if (!a) return;
         a.done = !a.done; a.doneAt = a.done ? Date.now() : null;
-        const t = state.tasks.find(x => x.id === a.taskId); if (t) t.done = a.done;
-        if (a.done && s.activities.every(x => x.done) && s.status !== "done" && confirm(L("กิจกรรมครบแล้ว — ปิดขั้นตอนนี้เป็น Done?", "All activities done — mark this step Done?"))) { s.status = "done"; s.doneAt = Date.now(); }
-        rerender(); autoSync(p, s); if (a.done) { vibrate(40); toast(L("✅ กิจกรรมเสร็จแล้ว!", "✅ Activity done!")); }
+        const t = state.tasks.find(x => x.id === a.taskId); if (t) { t.done = a.done; if (t.done && !t.actualMin) t.actualMin = t.dur || 30; }
+        let autoFinishedStep = false;
+        if (s.activities.length && s.activities.every(x => x.done)) {
+          if (s.status !== "done") { s.status = "done"; s.doneAt = Date.now(); autoFinishedStep = true; }
+        } else if (s.activities.some(x => x.done) && s.status === "todo") {
+          s.status = "doing"; delete s.doneAt;
+        } else if (!s.activities.some(x => x.done) && s.status === "done") {
+          s.status = "doing"; delete s.doneAt;
+        }
+        rerender(); autoSync(p, s);
+        if (autoFinishedStep) { vibrate([40, 40, 80]); toast(L(`🎉 กิจกรรมย่อยครบ 100% — ปรับสถานะขั้นตอน "${trunc(s.title, 20)}" เป็น ✅ เสร็จแล้ว อัตโนมัติ!`, `🎉 All sub-activities done — step "${trunc(s.title, 20)}" marked Done!`)); }
+        else if (a.done) { vibrate(40); toast(L(`✅ กิจกรรมเสร็จแล้ว! (ความคืบหน้าโปรเจค ${prog(p)}%)`, `✅ Activity done! (Project ${prog(p)}%)`)); }
       },
       actQueue: d => { const [p, s, a] = findAct(d.pid, d.sid, d.aid); if (!a) return; const date = a.date && a.date >= dkey() ? a.date : dkey(); const t = queueAct(p, s, a, date); rerender(); toast(L(`📋 เพิ่ม "${trunc(a.title, 22)}" เข้าคิว ${fmtDate(date)} ${fmt(t.start)}`, `📋 Queued "${trunc(a.title, 22)}" for ${fmtDate(date)} ${fmt(t.start)}`)); },
       actDel: d => { const [, s] = findStep(d.pid, d.sid); if (!s) return; s.activities = (s.activities || []).filter(a => a.id !== d.aid); state.tasks.forEach(t => { if (t.actId === d.aid) delete t.actId; }); rerender(); },
@@ -10480,7 +10957,8 @@
           </select></label>
           <label class="field"><span>🗂️ ${L("ผูกกับโปรเจค", "Link to project")}</span><select class="input" name="project" id="et-project" data-act-change="editTaskProj">${projOpts}</select></label>
           <label class="field"><span>🧭 ${L("ขั้นตอนในโปรเจค", "Project step")}</span><select class="input" name="step" id="et-step" ${curProj ? "" : "disabled"}>${stepOpts}</select></label>
-          <label class="field full"><span>📌 ${L("Context Bookmark / โน้ตจุดค้าง", "Context Bookmark / Note")}</span><input class="input" name="bookmark" id="et-bookmark" value="${esc(t.bookmark || "")}" placeholder="${L("เช่น ทำถึงหน้า 3 เหลือใส่กราฟ…", "e.g. Stopped at slide 3, add chart next…")}"></label>
+          <label class="field"><span>⏱️ ${L("เวลาที่ใช้ทำจริง (นาที • บันทึกผลจริง)", "Actual time spent (min)")}</span><input class="input" type="number" name="actualMin" min="0" max="1440" value="${t.actualMin || ""}" placeholder="${L(`ตามแผน ${t.dur} นาที`, `Planned ${t.dur} min`)}"></label>
+          <label class="field"><span>📌 ${L("Context Bookmark / โน้ตจุดค้าง", "Context Bookmark / Note")}</span><input class="input" name="bookmark" id="et-bookmark" value="${esc(t.bookmark || "")}" placeholder="${L("เช่น ทำถึงหน้า 3 เหลือใส่กราฟ…", "e.g. Stopped at slide 3, add chart next…")}"></label>
         </div>
         <div class="row" style="margin-top:8px;gap:8px">
           <button class="btn btn-amber grow" type="submit" id="et-save">💾 ${L("บันทึกการแก้ไข", "Save changes")}</button>
@@ -10514,7 +10992,102 @@
       toast(L(`🐷 ออมเข้าทริป "${t.place}" +${money(amt)} ฿ แล้ว (เก็บได้ ${money(s.saved)}/${money(s.budget)} ฿)`, `🐷 Saved +${money(amt)} ฿ for "${t.place}" (${money(s.saved)}/${money(s.budget)} ฿)`));
     }
 
+    function openHourBlockDlg(opts = {}) {
+      const f = $("#hour-block-form");
+      if (!f) return;
+      const date = opts.date || state.plannerDate || dkey();
+      const baseH = opts.sub ? Number(String(opts.sub).replace(/\D/g, "")) || 9 : 9;
+      let it = null;
+      if (opts.id && opts.sub) {
+        const list = getCgList("hour", date, opts.sub);
+        it = list.find(x => x.id === opts.id) || null;
+      }
+      const text = opts.text !== undefined ? opts.text : (it?.text || "");
+      const startTime = it?.startTime || opts.startTime || `${pad(baseH)}:00`;
+      const endTime = it?.endTime || opts.endTime || `${pad((baseH + 1) % 24)}:00`;
+      const color = it?.color || opts.color || "amber";
+      f.dataset.date = date;
+      f.dataset.origSub = opts.sub || `h${pad(baseH)}`;
+      f.dataset.id = it?.id || "";
+      const colors = [
+        ["amber", L("🟠 ส้มโฟกัส (Deep Work)", "🟠 Amber Focus"), "#f59e0b"],
+        ["sky", L("🔵 ฟ้าประชุม/ประสานงาน", "🔵 Sky Meeting"), "#38bdf8"],
+        ["emerald", L("🟢 เขียวสุขภาพ/พักผ่อน", "🟢 Emerald Wellness"), "#10b981"],
+        ["violet", L("🟣 ม่วงโปรเจค/เรียนรู้", "🟣 Violet Project"), "#a78bfa"],
+        ["rose", L("🔴 ชมพูงานด่วน/สำคัญ", "🔴 Rose Urgent"), "#fb7185"]
+      ];
+      f.innerHTML = `
+        <div class="dlg-head">
+          <div>
+            <span class="chip chip-amber" style="font-size:.72rem;margin-bottom:4px">📆 Daily 24h Plan • ${fmtDate(date)}</span>
+            <h2 id="hour-block-dlg-title" style="font-size:1.15rem">⏰ ${it ? L("แก้ไขช่วงเวลา & กรอบแสดงผล", "Edit Time Range & Block Frame") : L("ตั้งค่าช่วงเวลา (Time-Range Block)", "Set Time Range for 24h Plan")}</h2>
+          </div>
+          <button type="button" class="icon-btn" data-act="closeDlg" data-id="hour-block-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+        </div>
+        <p class="muted sm" style="margin-top:-2px">${L("กำหนดเวลาเริ่มและเวลาสิ้นสุด — หากครอบคลุมหลายชั่วโมง ระบบจะแสดงผลเป็น “กรอบใหญ่ต่อเนื่อง” ครอบคลุมทุกชั่วโมงในช่วงเวลานั้นพร้อมป้ายเวลากำกับชัดเจน", "Set a start and end time — if it spans multiple hours, it renders as a large unified frame covering those hours with a clear time-range badge.")}</p>
+        <div class="form-grid">
+          <label class="field full">
+            <span>📝 ${L("ชื่อรายการ / กิจกรรมในช่วงเวลานี้", "Activity / Block Title")} *</span>
+            <input class="input" name="text" id="hb-text" required value="${esc(text)}" placeholder="${L("เช่น ลุยโปรเจคหลัก Deep Work, ประชุมวางแผนทีม, พักเที่ยง…", "e.g. Deep Work on main project, Team strategy sync…")}">
+          </label>
+          <label class="field">
+            <span>🟢 ${L("เวลาเริ่มต้น (Start Time)", "Start Time")}</span>
+            <input class="input" type="time" name="startTime" id="hb-start" required value="${esc(startTime)}">
+          </label>
+          <label class="field">
+            <span>🏁 ${L("เวลาสิ้นสุด (End Time)", "End Time")}</span>
+            <input class="input" type="time" name="endTime" id="hb-end" required value="${esc(endTime)}">
+          </label>
+          <div class="field full">
+            <span>⚡ ${L("แตะเลือกระยะเวลาด่วน (นับจากเวลาเริ่ม)", "Quick duration presets (from start time)")}</span>
+            <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:4px">
+              ${[
+                [1, L("1 ชม.", "1 hr")],
+                [2, L("2 ชม. (กรอบใหญ่)", "2 hrs (Span Frame)")],
+                [3, L("3 ชม. (กรอบใหญ่)", "3 hrs (Span Frame)")],
+                [4, L("4 ชม. (ครึ่งวัน)", "4 hrs (Half day)")],
+                [6, L("6 ชม.", "6 hrs")],
+                [8, L("8 ชม.", "8 hrs")]
+              ].map(([h, lbl]) => `<button type="button" class="btn btn-sm" data-act="hourPresetDur" data-h="${h}">⏱️ ${lbl}</button>`).join("")}
+            </div>
+            <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:6px">
+              <span class="muted sm">${L("ช่วงเวลายอดนิยม:", "Popular slots:")}</span>
+              ${[
+                ["06:00", "08:00", L("🌅 เช้าตรู่ 06:00–08:00", "🌅 Early 06:00–08:00")],
+                ["09:00", "12:00", L("☀️ ช่วงเช้า 09:00–12:00 (3 ชม.)", "☀️ Morning 09:00–12:00 (3h)")],
+                ["13:00", "17:00", L("🌇 ช่วงบ่าย 13:00–17:00 (4 ชม.)", "🌇 Afternoon 13:00–17:00 (4h)")],
+                ["19:00", "21:00", L("🌙 ช่วงค่ำ 19:00–21:00 (2 ชม.)", "🌙 Evening 19:00–21:00 (2h)")],
+                ["22:00", "06:00", L("😴 เวลานอน 22:00–06:00 (8 ชม.)", "😴 Sleep 22:00–06:00 (8h)")]
+              ].map(([st, en, lbl]) => `<button type="button" class="btn btn-sm" style="font-size:.74rem;padding:2px 8px;min-height:26px" data-act="hourPresetRange" data-st="${st}" data-en="${en}">${lbl}</button>`).join("")}
+            </div>
+          </div>
+          <div class="field full">
+            <span>🎨 ${L("สีกรอบช่วงเวลา (Frame Color)", "Frame Theme Color")}</span>
+            <input type="hidden" name="color" id="hb-color" value="${esc(color)}">
+            <div class="row" style="gap:6px;flex-wrap:wrap;margin-top:4px" id="hb-color-wrap">
+              ${colors.map(([k, lbl, hex]) => `<button type="button" class="btn btn-sm ${color === k ? "btn-amber" : ""}" data-act="hourPickColor" data-c="${k}" style="border-color:${hex};${color === k ? `background:${hex}26;color:var(--text);font-weight:800` : ""}">${lbl}</button>`).join("")}
+            </div>
+          </div>
+          ${!it ? `
+          <label class="mini-check full" style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+            <input type="checkbox" name="alsoQueue" value="1" checked>
+            <span>📋 ${L("ส่งรายการนี้เข้าหน้า “คิวงานรายวัน (Queue)” ตามช่วงเวลาเดียวกันให้อัตโนมัติด้วย", "Also add this time block directly into the Daily Queue at the same time & duration")}</span>
+          </label>` : ""}
+        </div>
+        <div class="row" style="margin-top:8px;gap:8px;justify-content:flex-end">
+          <button type="button" class="btn" data-act="closeDlg" data-id="hour-block-dlg">${L("ยกเลิก", "Cancel")}</button>
+          <button type="submit" class="btn btn-amber grow" style="max-width:300px;font-weight:800">💾 ${it ? L("บันทึกช่วงเวลา", "Save Time Block") : L("สร้างกรอบช่วงเวลาทันที", "Create Time Block")}</button>
+        </div>`;
+      const dlg = $("#hour-block-dlg");
+      if (dlg && !dlg.open) dlg.showModal();
+      setTimeout(() => $("#hb-text")?.focus(), 40);
+    }
+
     function openEditItemDlg(d) {
+      if (d.kind === "cgItem" && d.sec === "hour") {
+        openHourBlockDlg({ date: d.key, sub: d.sub, id: d.id });
+        return;
+      }
       const f = $("#edit-item-form");
       if (!f) return;
       const kind = d.kind;
@@ -10576,11 +11149,13 @@
         headTitle = L("แก้ไขรายการรายรับ-รายจ่าย", "Edit Finance Entry");
         const tp = x.type === "inc" ? "inc" : "exp";
         const cOpts = Object.entries(tp === "inc" ? ICAT() : XCAT()).map(([k, [i, l]]) => `<option value="${k}" ${x.cat === k ? "selected" : ""}>${i} ${l}</option>`).join("");
+        const pOpts = `<option value="">— ${L("ไม่ผูกกับโปรเจค", "No project")} —</option>` + (state.projects || []).map(p => `<option value="${esc(p.id)}" ${x.projectId === p.id ? "selected" : ""}>🗂️ ${esc(p.title)}</option>`).join("");
         bodyHtml = `
           <label class="field"><span>${L("ประเภท", "Type")}</span><select class="input" name="type" data-act-change="editTxnType"><option value="exp" ${tp === "exp" ? "selected" : ""}>➖ ${L("รายจ่าย", "Expense")}</option><option value="inc" ${tp === "inc" ? "selected" : ""}>➕ ${L("รายรับ", "Income")}</option></select></label>
           <label class="field"><span>${L("จำนวนเงิน (฿)", "Amount (฿)")}</span><input class="input" id="ei-title" name="amount" type="number" inputmode="decimal" step="any" min="0" required value="${esc(x.amount)}"></label>
           <label class="field"><span>${L("วันที่", "Date")}</span><input class="input" name="date" type="date" required value="${esc(x.date || dkey())}"></label>
           <label class="field"><span>${L("หมวดหมู่", "Category")}</span><select class="input" name="cat" id="ei-txn-cat">${cOpts}</select></label>
+          <label class="field full"><span>🗂️ ${L("ผูกกับโปรเจค (เพื่องบการเงินโปรเจค)", "Link to Project (optional)")}</span><select class="input" name="projectId">${pOpts}</select></label>
           <label class="field full"><span>${L("รายละเอียด / โน้ต", "Note / Details")}</span><input class="input" name="note" value="${esc(x.note || "")}"></label>`;
       } else if (kind === "act") {
         const aid = d.aid || d.id;
@@ -11239,7 +11814,10 @@
         const spentMins = Math.max(1, Math.round((totalSec - remSec) / 60));
         if (Pomo.taskId) {
           const t = state.tasks.find(x => x.id === Pomo.taskId);
-          if (t) t.done = true;
+          if (t) {
+            t.done = true;
+            t.actualMin = (Number(t.actualMin) || 0) + spentMins;
+          }
         } else {
           const today = dkey(), endMin = Math.floor(nowMin());
           state.tasks.push({
@@ -11248,6 +11826,7 @@
             date: today,
             start: Math.max(0, endMin - spentMins),
             dur: spentMins,
+            actualMin: spentMins,
             projectId: null,
             priority: "main",
             done: true,
@@ -11258,14 +11837,22 @@
         state.focus.pomo = null;
         if (activeFocusSound !== "off") stopAmbientSound();
         rerender();
-        toast(L(`✅ บันทึกเวลาโฟกัส ${spentMins} นาทีเรียบร้อยแล้ว!`, `✅ Completed & logged ${spentMins} min of focus!`));
+        toast(L(`✅ บันทึกเวลาโฟกัสจริง ${spentMins} นาทีเรียบร้อยแล้ว!`, `✅ Completed & logged ${spentMins} min of actual focus!`));
       },
       stopPomodoro: () => {
         if (state.focus?.pomo) {
+          const Pomo = state.focus.pomo;
+          const totalSec = (Pomo.durMins || 25) * 60;
+          const remSec = Pomo.paused ? (Pomo.remainSec || 0) : Math.max(0, (Pomo.targetEndMs - Date.now()) / 1000);
+          const spentMins = Math.max(0, Math.round((totalSec - remSec) / 60));
+          if (spentMins >= 1 && Pomo.taskId) {
+            const t = state.tasks.find(x => x.id === Pomo.taskId);
+            if (t) t.actualMin = (Number(t.actualMin) || 0) + spentMins;
+          }
           state.focus.pomo = null;
           if (activeFocusSound !== "off") stopAmbientSound();
           rerender();
-          toast(L("⏹️ หยุดจับเวลา Pomodoro เรียบร้อยแล้ว", "⏹️ Stopped Pomodoro timer"));
+          toast(spentMins >= 1 ? L(`⏹️ หยุดจับเวลา Pomodoro (บันทึกเวลาทำจริง +${spentMins} นาทีแล้ว)`, `⏹️ Stopped Pomodoro (+${spentMins} min actual time logged)`) : L("⏹️ หยุดจับเวลา Pomodoro เรียบร้อยแล้ว", "⏹️ Stopped Pomodoro timer"));
           return;
         }
         const cur = currentTask();
@@ -11275,6 +11862,7 @@
             state.tasks = state.tasks.filter(x => x.id !== cur.id);
           } else {
             cur.dur = elapsed;
+            cur.actualMin = elapsed;
             cur.done = true;
           }
           if (activeFocusSound !== "off") stopAmbientSound();
@@ -11337,24 +11925,25 @@
         const title = (d.title || "").trim();
         if (!title) return;
         const date = dkey();
-        if (state.tasks.some(k => k.date === date && k.title === title && !k.done)) {
+        if (state.tasks.some(k => k.date === date && (k.title === title || k.title === `🎯 ${title}`) && !k.done)) {
           toast(L("รายการนี้อยู่ในคิวงานวันนี้แล้ว", "Already in today's queue"));
           return;
         }
         const startMin = d.time ? toMin(d.time) : toMin(suggestStart(date));
+        const durMin = Math.max(15, Number(d.dur) || 60);
         state.tasks.push({
           id: uid(),
           title: `🎯 ${title}`,
           date,
           start: startMin,
-          dur: 60,
+          dur: durMin,
           projectId: null,
           priority: "main",
           done: false,
           bookmark: ""
         });
         rerender();
-        toast(L(`📅 ส่ง "${trunc(title, 24)}" เข้าคิวงานวันนี้ (${fmt(startMin)} น.) แล้ว!`, `📅 Sent "${trunc(title, 24)}" to today's queue (${fmt(startMin)})!`));
+        toast(L(`📅 ส่ง "${trunc(title, 24)}" เข้าคิวงานวันนี้ (${fmt(startMin)}–${fmt(startMin + durMin)} น.) แล้ว!`, `📅 Sent "${trunc(title, 24)}" to today's queue (${fmt(startMin)}–${fmt(startMin + durMin)})!`));
       },
       cgGroupToProject: d => {
         const grpTitle = (d.title || cgGroupTitle(d.sec, d.key, d.sub) || "").trim();
@@ -11543,6 +12132,11 @@
         t.priority = fd.priority === "secondary" ? "secondary" : "main";
         t.projectId = fd.project || null;
         t.bookmark = (fd.bookmark || "").trim();
+        if (fd.actualMin !== undefined && fd.actualMin !== "") {
+          t.actualMin = Math.max(0, Number(fd.actualMin) || 0);
+        } else {
+          delete t.actualMin;
+        }
         if (t.projectId && fd.step) {
           t.stepId = fd.step;
           if (t.projectId !== oldPid || t.stepId !== oldSid) delete t.actId;
@@ -11608,6 +12202,8 @@
           x.date = fd.date || x.date || dkey();
           x.cat = fd.cat || "other";
           x.note = (fd.note || "").trim();
+          if (fd.projectId) x.projectId = fd.projectId;
+          else delete x.projectId;
         } else if (kind === "act") {
           const aid = f.dataset.aid || f.dataset.id;
           const [p, s, a] = findAct(f.dataset.pid, f.dataset.sid, aid);
@@ -12269,6 +12865,282 @@
           if (lInp) lInp.value = tpl.acts.map(x => L(x[0], x[1])).join("\n");
         }
         toast(L(`✨ เติมข้อมูลตัวอย่าง "${L(tpl.label[0], tpl.label[1])}" ลงในฟอร์มแล้ว แก้ไขต่อได้ตามต้องการ`, `✨ Filled "${L(tpl.label[0], tpl.label[1])}" template into the form`));
+      },
+      ritualMode: d => {
+        state.ritualMode = d.v || "morning";
+        renderView();
+      },
+      queueViewMode: d => {
+        state.queueViewMode = d.v || "time";
+        save();
+        renderView();
+      },
+      startTaskPomo: d => {
+        const t = state.tasks.find(x => x.id === d.id);
+        if (!t) return;
+        const mins = Math.max(5, Math.min(180, Number(t.dur) || 25));
+        state.focus.pomo = {
+          startedAt: Date.now(),
+          targetEndMs: Date.now() + mins * 60000,
+          durMins: mins,
+          paused: false,
+          remainSec: mins * 60,
+          title: `🍅 ${t.title}`,
+          taskId: t.id,
+          alarmed: false
+        };
+        state.tab = "focus";
+        rerender();
+        toast(L(`🍅 เริ่มจับเวลาโฟกัส "${trunc(t.title, 22)}" (${mins} นาที) แล้ว!`, `🍅 Started ${mins}-min timer for "${trunc(t.title, 22)}"!`));
+      },
+      openHourBlockEdit: d => {
+        openHourBlockDlg({ date: d.key || state.plannerDate || dkey(), sub: d.sub || "h09", id: d.id || "" });
+      },
+      hourPresetDur: d => {
+        const stInp = $("#hb-start"), enInp = $("#hb-end");
+        if (!stInp || !enInp) return;
+        const addH = Math.max(1, Number(d.h) || 1);
+        const stMin = toMin(stInp.value || "09:00");
+        const enMin = (stMin + addH * 60) % (24 * 60);
+        enInp.value = fmt(enMin);
+      },
+      hourPresetRange: d => {
+        const stInp = $("#hb-start"), enInp = $("#hb-end");
+        if (stInp && d.st) stInp.value = d.st;
+        if (enInp && d.en) enInp.value = d.en;
+      },
+      hourPickColor: (d, btn) => {
+        const hid = $("#hb-color"), wrap = $("#hb-color-wrap");
+        if (!hid || !wrap) return;
+        const c = d.c || "amber";
+        hid.value = c;
+        const hexMap = { amber: "#f59e0b", sky: "#38bdf8", emerald: "#10b981", violet: "#a78bfa", rose: "#fb7185" };
+        wrap.querySelectorAll("button[data-c]").forEach(b => {
+          const on = b.dataset.c === c;
+          const hx = hexMap[b.dataset.c] || "#f59e0b";
+          b.classList.toggle("btn-amber", on);
+          b.style.background = on ? `${hx}26` : "";
+          b.style.fontWeight = on ? "800" : "";
+        });
+      },
+      pullQueueTo24h: d => {
+        const date = d.date || state.plannerDate || dkey();
+        ensureCgItems(date, date.slice(0, 7));
+        const dayTasks = state.tasks.filter(t => t.date === date && !t.isBreak).sort((a, b) => a.start - b.start);
+        if (!dayTasks.length) {
+          toast(L("ยังไม่มีคิวงานในวันนี้ให้ดึงมาแสดง", "No tasks in queue for this date"));
+          return;
+        }
+        let added = 0;
+        dayTasks.forEach(t => {
+          const stH = Math.max(0, Math.min(23, Math.floor((t.start || 0) / 60)));
+          const hk = `h${pad(stH)}`;
+          const list = getCgList("hour", date, hk);
+          const cleanTitle = t.title.replace(/^🎯\s*/, "").trim();
+          if (list.some(it => it.text === cleanTitle || it.text === t.title)) return;
+          const startTime = fmt(t.start);
+          const endTime = fmt((t.start + (t.dur || 60)) % (24 * 60));
+          const sp = calcHourSpan(startTime, endTime, stH);
+          list.push({
+            id: uid(),
+            text: cleanTitle,
+            done: !!t.done,
+            startTime: sp.startTime,
+            endTime: sp.endTime,
+            spanHours: sp.spanHours,
+            color: t.isSleep ? "violet" : t.priority === "secondary" ? "sky" : "amber",
+            isSpanBlock: true
+          });
+          added++;
+        });
+        rerender();
+        toast(added ? L(`📥 ดึงคิวงาน ${added} รายการมาแสดงเป็นกรอบเวลาใน Daily 24h Plan แล้ว!`, `📥 Pulled ${added} task(s) into Daily 24h Plan!`) : L("รายการคิวงานทั้งหมดอยู่ในตาราง 24 ชม. แล้ว", "All queue tasks are already in the 24h plan"));
+      },
+      push24hToQueue: d => {
+        const date = d.date || state.plannerDate || dkey();
+        ensureCgItems(date, date.slice(0, 7));
+        let added = 0;
+        for (let h = 0; h < 24; h++) {
+          const hk = `h${pad(h)}`;
+          const list = getCgList("hour", date, hk);
+          list.forEach(it => {
+            const title = (it.text || "").trim();
+            if (!title) return;
+            if (state.tasks.some(k => k.date === date && (k.title === title || k.title === `🎯 ${title}`))) return;
+            const info = hourItemSpanInfo(it, h);
+            state.tasks.push({
+              id: uid(),
+              title: `🎯 ${title}`,
+              date,
+              start: toMin(info.startTime),
+              dur: info.durMin,
+              projectId: null,
+              priority: "main",
+              done: !!it.done,
+              bookmark: ""
+            });
+            added++;
+          });
+        }
+        rerender();
+        toast(added ? L(`📤 ส่ง ${added} รายการจากตาราง 24 ชม. เข้าคิวงานรายวันเรียบร้อยแล้ว!`, `📤 Sent ${added} item(s) from 24h Plan to Daily Queue!`) : L("รายการทั้งหมดอยู่ในคิวงานแล้ว", "All items are already in the queue"));
+      },
+      ideaToProj: d => {
+        const x = state.ideas.find(i => i.id === d.id);
+        if (!x) return;
+        const p = {
+          id: uid(),
+          title: x.text.trim(),
+          monthlyGoal: L("ต่อยอดจากคลังไอเดีย 💡", "Created from Idea Inbox 💡"),
+          manual: 0,
+          coordinator: { name: "", contact: "" },
+          links: [],
+          steps: []
+        };
+        state.projects.unshift(p);
+        state.openProject = p.id;
+        state.ideas = state.ideas.filter(i => i.id !== d.id);
+        save();
+        renderIdeas();
+        renderTopbar();
+        renderView();
+        toast(L(`🗂️ สร้างโปรเจคใหม่ "${trunc(p.title, 24)}" จากไอเดียแล้ว!`, `🗂️ Created project "${trunc(p.title, 24)}" from idea!`));
+      },
+      ideaToStep: d => {
+        const x = state.ideas.find(i => i.id === d.id);
+        if (!x) return;
+        const targetProj = proj(state.openProject) || state.projects[0];
+        if (!targetProj) {
+          A.ideaToProj(d);
+          return;
+        }
+        targetProj.steps ||= [];
+        targetProj.steps.push({
+          id: uid(),
+          title: x.text.trim(),
+          status: "todo",
+          activities: [],
+          deps: []
+        });
+        state.openProject = targetProj.id;
+        state.ideas = state.ideas.filter(i => i.id !== d.id);
+        save();
+        renderIdeas();
+        renderTopbar();
+        renderView();
+        toast(L(`🧭 เพิ่ม "${trunc(x.text, 22)}" เป็นขั้นตอนในโปรเจค "${trunc(targetProj.title, 18)}" แล้ว!`, `🧭 Added "${trunc(x.text, 22)}" as a step in "${trunc(targetProj.title, 18)}"!`));
+      }
+    });
+    Object.assign(FORMS, {
+      cgHourAdd: (fd, f) => {
+        const text = (fd.text || "").trim();
+        const date = f.dataset.key || state.plannerDate || dkey();
+        const sub = f.dataset.sub || "h09";
+        const baseH = Number(String(sub).replace(/\D/g, "")) || 9;
+        // Check if user typed an inline time range like "09:00-12:00 งาน..." or "งาน... 13:00-16:00"
+        const rangeMatch = text.match(/(\d{1,2}:\d{2})\s*[-–—~ถึงto]+\s*(\d{1,2}:\d{2})/i);
+        let cleanText = text;
+        let st = `${pad(baseH)}:00`;
+        let en = `${pad((baseH + 1) % 24)}:00`;
+        if (rangeMatch) {
+          const p1 = rangeMatch[1].split(":").map(Number);
+          const p2 = rangeMatch[2].split(":").map(Number);
+          st = `${pad(p1[0] || 0)}:${pad(p1[1] || 0)}`;
+          en = `${pad(p2[0] || 0)}:${pad(p2[1] || 0)}`;
+          cleanText = text.replace(rangeMatch[0], "").replace(/^[\s•\-:]+|[\s•\-:]+$/g, "").trim() || text;
+        }
+        f.reset();
+        openHourBlockDlg({ date, sub, text: cleanText, startTime: st, endTime: en });
+      },
+      saveHourBlock: (fd, f) => {
+        const text = (fd.text || "").trim();
+        if (!text) return;
+        const date = f.dataset.date || state.plannerDate || dkey();
+        const origSub = f.dataset.origSub || "h09";
+        const editId = f.dataset.id || "";
+        const fallbackH = Number(String(origSub).replace(/\D/g, "")) || 9;
+        const sp = calcHourSpan(fd.startTime, fd.endTime, fallbackH);
+        const targetSub = `h${pad(sp.startH)}`;
+        const color = fd.color || "amber";
+        ensureCgItems(date, date.slice(0, 7));
+        if (editId) {
+          const oldList = getCgList("hour", date, origSub);
+          const idx = oldList.findIndex(x => x.id === editId);
+          const existing = idx >= 0 ? oldList[idx] : null;
+          if (existing) {
+            existing.text = text;
+            existing.startTime = sp.startTime;
+            existing.endTime = sp.endTime;
+            existing.spanHours = sp.spanHours;
+            existing.color = color;
+            existing.isSpanBlock = true;
+            if (origSub !== targetSub) {
+              oldList.splice(idx, 1);
+              getCgList("hour", date, targetSub).push(existing);
+            }
+          }
+        } else {
+          const list = getCgList("hour", date, targetSub);
+          list.push({
+            id: uid(),
+            text,
+            done: false,
+            startTime: sp.startTime,
+            endTime: sp.endTime,
+            spanHours: sp.spanHours,
+            color,
+            isSpanBlock: true
+          });
+          if (fd.alsoQueue) {
+            if (!state.tasks.some(k => k.date === date && (k.title === text || k.title === `🎯 ${text}`) && !k.done)) {
+              state.tasks.push({
+                id: uid(),
+                title: `🎯 ${text}`,
+                date,
+                start: toMin(sp.startTime),
+                dur: sp.durMin,
+                projectId: null,
+                priority: "main",
+                done: false,
+                bookmark: ""
+              });
+            }
+          }
+        }
+        $("#hour-block-dlg")?.close();
+        rerender();
+        toast(
+          sp.spanHours > 1
+            ? L(`⏰ บันทึกกรอบเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น. • ครอบคลุม ${sp.spanHours} ชม.) เรียบร้อยแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} • ${sp.spanHours}h span)!`)
+            : L(`⏰ บันทึกช่วงเวลา "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime} น.) เรียบร้อยแล้ว!`, `⏰ Saved "${trunc(text, 22)}" (${sp.startTime} – ${sp.endTime})!`)
+        );
+      },
+      addProjTxn: (fd, f) => {
+        const pid = f.dataset.pid;
+        const p = proj(pid);
+        const amount = Number(String(fd.amount || "").replace(/,/g, "").trim());
+        if (!p || !(amount > 0)) {
+          toast(L("กรุณาใส่จำนวนเงินมากกว่า 0", "Please enter an amount above 0"));
+          return;
+        }
+        const type = fd.type === "inc" ? "inc" : "exp";
+        const cat = type === "inc" ? "biz" : "biz";
+        const note = (fd.note || "").trim() || `🗂️ ${p.title}`;
+        (P().txns ||= []).push({
+          id: uid(),
+          ts: Date.now(),
+          date: dkey(),
+          type,
+          cat,
+          amount,
+          note,
+          projectId: p.id
+        });
+        f.reset();
+        rerender();
+        toast(type === "inc"
+          ? L(`➕ บันทึกรายรับโปรเจค "${trunc(p.title, 18)}" +${money(amount)} ฿ แล้ว`, `➕ Logged project income +${money(amount)} ฿`)
+          : L(`➖ บันทึกต้นทุน/รายจ่ายโปรเจค "${trunc(p.title, 18)}" −${money(amount)} ฿ แล้ว`, `➖ Logged project expense −${money(amount)} ฿`));
       }
     });
 
