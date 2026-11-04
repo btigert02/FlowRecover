@@ -2694,6 +2694,9 @@
   <dialog id="stripe-cfg-dlg" closedby="any" aria-labelledby="stripe-cfg-title" style="width:min(660px,95vw)">
     <form class="dlg-body" data-form="saveStripeLinks" id="stripe-cfg-form" autocomplete="off"></form>
   </dialog>
+  <dialog id="cg-proj-dlg" closedby="any" aria-labelledby="cg-proj-dlg-title" style="width:min(520px,95vw)">
+    <form class="dlg-body" data-form="cgItemAddStep" id="cg-proj-form" autocomplete="off"></form>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -4762,8 +4765,27 @@
       return [];
     }
 
+    function cgGroupTitle(sec, key, sub) {
+      if (sec === "mfgrp") {
+        const M = P().monthly?.[key];
+        const g = (M?.focusGroups || []).find(x => x.id === sub);
+        return g ? g.title : "";
+      }
+      if (sec === "goal") {
+        const d = DIMS.find(x => x.k === key);
+        return d ? L(`เป้าหมายด้าน${d.th}`, `${d.en} Goals`) : "";
+      }
+      if (sec === "dream") {
+        const d = DREAM.find(x => x.k === key);
+        return d ? `${d.t} (${L(d.th, d.en)})` : "";
+      }
+      if (sec === "mfocus") return L(`โฟกัสเดือน ${monthLabel()}`, `Monthly Focus ${monthLabel()}`);
+      return "";
+    }
+
     function cgItemRow(sec, key, sub, it, timeStr = "", darkBg = false) {
       const ds = `data-sec="${esc(sec)}" data-key="${esc(key)}" data-sub="${esc(sub)}" data-id="${esc(it.id)}"`;
+      const grpTitle = cgGroupTitle(sec, key, sub);
       return `<li class="cg-item ${darkBg ? "dark" : ""}" data-sort-id="${esc(it.id)}">
         <div class="cg-main">
           <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ/ย้ายหมวด", "Drag to reorder / move")}" style="width:20px;min-height:24px;font-size:.92rem;margin-top:1px">⠿</span>
@@ -4772,6 +4794,7 @@
         </div>
         <div class="cg-actions">
           <button type="button" class="icon-btn" data-act="cgToQueue" data-title="${esc(it.text)}" data-time="${esc(timeStr)}" title="${L("ส่งเข้าคิวงานวันนี้ (1-Click)", "Send to today's queue")}" aria-label="${L("ส่งเข้าคิวงานวันนี้", "Send to today's queue")}">📅</button>
+          <button type="button" class="icon-btn" data-act="cgItemToProject" data-title="${esc(it.text)}" data-done="${it.done ? "1" : ""}" data-grp="${esc(grpTitle)}" title="${L("เพิ่มไปยังโปรเจค (สร้างโปรเจคใหม่ หรือเพิ่มเป็นขั้นตอนในโปรเจค)", "Add to Project (new project or step in existing project)")}" aria-label="${L("เพิ่มไปยังโปรเจค", "Add to Project")}">🗂️</button>
           <button type="button" class="icon-btn" data-act="editItem" data-kind="cgItem" ${ds} title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไข", "Edit")}">✏️</button>
           ${rBtn(`cg-${sec}-${it.id}`, it.text, timeStr)}
           <button type="button" class="icon-btn" data-act="cgDel" ${ds} title="${L("ลบ", "Delete")}" aria-label="${L("ลบ", "Delete")}">✕</button>
@@ -4808,7 +4831,10 @@
         return `<div class="dim" style="--dc:${d.c}">
           <div class="dim-head">
             <div><b>${d.icon} ${d.en}</b><small>${LANG === "th" ? d.th : ""}${items.length ? ` • ${items.filter(x => x.done).length}/${items.length} ${L("รายการ", "items")}` : ""}</small></div>
-            <div class="row" style="gap:4px;align-items:center">${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}</div>
+            <div class="row" style="gap:4px;align-items:center">
+              <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="cgGroupToProject" data-sec="goal" data-key="${d.k}" data-sub="" data-title="${esc(L(`เป้าหมายด้าน${d.th}`, `${d.en} Goals`))}" title="${L("เพิ่มทั้งหมวดนี้และรายการทั้งหมดไปเป็นโปรเจคใหม่", "Create new project from this goal category & all items")}">🗂️</button>
+              ${stars(`planner.goals.${d.k}.rating`, P().goals[d.k]?.rating, d.en)}
+            </div>
           </div>
           ${items.length ? `<ul data-sort="cg:goal:${d.k}:" style="list-style:none;display:grid;gap:6px;margin-top:2px">${items.map(it => cgItemRow("goal", d.k, "", it)).join("")}</ul>` : `<p class="muted sm" style="padding:4px 2px">${L(`ยังไม่มีรายการเป้าหมายด้าน${d.th}`, `No ${d.en.toLowerCase()} goals yet`)}</p>`}
           <form class="row" data-form="cgAdd" data-sec="goal" data-key="${d.k}" style="gap:6px;margin-top:4px" autocomplete="off">
@@ -4844,6 +4870,7 @@
                     <span class="chip" style="padding:1px 7px;font-size:.7rem">${gDone}/${gItems.length}</span>
                   </div>
                   <div class="row" style="gap:2px;flex:none">
+                    <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="cgGroupToProject" data-sec="mfgrp" data-key="${mk}" data-sub="${esc(g.id)}" data-title="${esc(g.title)}" title="${L(`เพิ่มหัวข้อ "${g.title}" และรายการทั้งหมดไปเป็นโปรเจคใหม่`, `Create new project "${g.title}" with all items as steps`)}" aria-label="${L("เพิ่มหัวข้อและรายการทั้งหมดไปเป็นโปรเจคใหม่", "Add topic and all items as a new project")}">🗂️</button>
                     <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="editItem" data-kind="mfGroup" data-key="${mk}" data-id="${esc(g.id)}" title="${L("แก้ไขชื่อหัวข้อ", "Edit topic name")}" aria-label="${L("แก้ไขชื่อหัวข้อ", "Edit topic name")}">✏️</button>
                     <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="mfGroupDel" data-mk="${mk}" data-id="${esc(g.id)}" title="${L("ลบหัวข้อ", "Delete topic")}" aria-label="${L("ลบหัวข้อ", "Delete topic")}">🗑️</button>
                   </div>
@@ -4862,7 +4889,10 @@
           <div style="padding:10px 12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);margin-top:4px;display:grid;gap:8px">
             <div class="row" style="justify-content:space-between;align-items:center;gap:6px">
               <b class="sm">📌 ${focusGroups.length ? L("รายการโฟกัสทั่วไป (ลากเข้าหัวข้อด้านบนได้)", "General focus items (drag into any topic above)") : L("รายการโฟกัสเดือนนี้", "Monthly focus items")}</b>
-              <span class="chip" style="padding:1px 7px;font-size:.7rem">${focusItems.filter(x => x.done).length}/${focusItems.length}</span>
+              <div class="row" style="gap:4px;align-items:center">
+                <span class="chip" style="padding:1px 7px;font-size:.7rem">${focusItems.filter(x => x.done).length}/${focusItems.length}</span>
+                <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem" data-act="cgGroupToProject" data-sec="mfocus" data-key="${mk}" data-sub="" data-title="${esc(L(`โฟกัสเดือน ${monthLabel()}`, `Monthly Focus ${monthLabel()}`))}" title="${L("เพิ่มหมวดนี้และรายการทั้งหมดไปเป็นโปรเจคใหม่", "Create new project from all general focus items")}">🗂️</button>
+              </div>
             </div>
             <ul data-sort="cg:mfocus:${mk}:" data-drop-group="mfocus:${mk}" style="list-style:none;display:grid;gap:6px;min-height:36px;padding:4px;border-radius:10px;background:var(--surface-3);border:1px dashed var(--border)">
               ${focusItems.length ? focusItems.map(it => cgItemRow("mfocus", mk, "", it)).join("") : `<li class="muted sm center" data-empty-hint="1" style="padding:6px;pointer-events:none">${L("ยังไม่มีรายการในหมวดทั่วไป — พิมพ์เพิ่มด้านล่าง หรือลากรายการมาวางที่นี่", "No general items — add below or drag items here")}</li>`}
@@ -4898,7 +4928,10 @@
         return `<div class="dream-tile" style="background:${d.g}">
           <div class="row" style="justify-content:space-between;align-items:flex-start;gap:8px">
             <div><b>${d.icon} ${d.t}</b><br><small>${L(d.th, d.en)}</small></div>
-            ${dItems.length ? `<span class="chip" style="background:rgba(15,23,42,.38);color:#fff;border-color:rgba(255,255,255,.22);font-size:.74rem;padding:2px 8px">${doneCnt}/${dItems.length}</span>` : ""}
+            <div class="row" style="gap:4px;align-items:center">
+              ${dItems.length ? `<span class="chip" style="background:rgba(15,23,42,.38);color:#fff;border-color:rgba(255,255,255,.22);font-size:.74rem;padding:2px 8px">${doneCnt}/${dItems.length}</span>` : ""}
+              <button type="button" class="icon-btn" style="width:26px;height:26px;font-size:.78rem;background:rgba(15,23,42,.38);color:#fff;border-color:rgba(255,255,255,.25)" data-act="cgGroupToProject" data-sec="dream" data-key="${d.k}" data-sub="" data-title="${esc(`${d.t} (${L(d.th, d.en)})`)}" title="${L("เพิ่มหัวข้อและรายการทั้งหมดไปเป็นโปรเจคใหม่", "Create new project from this Dream Board category")}">🗂️</button>
+            </div>
           </div>
           ${dItems.length ? `<ul data-sort="cg:dream:${d.k}:" style="list-style:none;display:grid;gap:6px;margin:4px 0">${dItems.map(it => cgItemRow("dream", d.k, "", it, "", true)).join("")}</ul>` : `<p class="sm" style="opacity:.78;padding:6px 0">${L(`ยังไม่มีรายการในหมวด ${d.th} — พิมพ์เพิ่มด้านล่างได้เลย`, `No items in ${d.t} yet — add one below`)}</p>`}
           <form class="row" data-form="cgAdd" data-sec="dream" data-key="${d.k}" style="gap:6px;margin-top:auto" autocomplete="off">
@@ -10116,6 +10149,104 @@
         rerender();
         toast(L(`📅 ส่ง "${trunc(title, 24)}" เข้าคิวงานวันนี้ (${fmt(startMin)} น.) แล้ว!`, `📅 Sent "${trunc(title, 24)}" to today's queue (${fmt(startMin)})!`));
       },
+      cgGroupToProject: d => {
+        const grpTitle = (d.title || cgGroupTitle(d.sec, d.key, d.sub) || "").trim();
+        if (!grpTitle) return;
+        const items = getCgList(d.sec, d.key, d.sub) || [];
+        const steps = items
+          .filter(it => (it.text || "").trim())
+          .map(it => ({
+            id: uid(),
+            title: it.text.trim(),
+            status: it.done ? "done" : "todo",
+            activities: [],
+            deps: []
+          }));
+        const p = {
+          id: uid(),
+          title: grpTitle,
+          monthlyGoal: L(`ดึงจาก Life Planner (${monthLabel()})`, `From Life Planner (${monthLabel()})`),
+          manual: steps.length ? Math.round((steps.filter(s => s.status === "done").length / steps.length) * 100) : 0,
+          coordinator: { name: "", contact: "" },
+          links: [],
+          steps
+        };
+        state.projects.unshift(p);
+        state.openProject = p.id;
+        rerender();
+        toast(
+          L(`🗂️ สร้างโปรเจค "${trunc(grpTitle, 24)}" พร้อม ${steps.length} ขั้นตอนเรียบร้อยแล้ว!`, `🗂️ Created project "${trunc(grpTitle, 24)}" with ${steps.length} steps!`),
+          () => { state.projects = state.projects.filter(x => x.id !== p.id); }
+        );
+      },
+      cgItemToProject: d => {
+        const title = (d.title || "").trim();
+        if (!title) return;
+        const isDone = d.done === "1";
+        const grp = (d.grp || "").trim();
+        const f = $("#cg-proj-form");
+        if (!f) return;
+        f.dataset.title = title;
+        f.dataset.done = isDone ? "1" : "";
+        f.dataset.grp = grp;
+        const matchProj = grp ? state.projects.find(p => p.title.trim().toLowerCase() === grp.toLowerCase()) : null;
+        const projOpts = [
+          ...(grp && !matchProj ? [`<option value="__new_grp__">✨ ${L(`สร้างโปรเจคหัวข้อ "${esc(grp)}" แล้วเพิ่มรายการนี้เป็นขั้นตอน`, `Create topic project "${esc(grp)}" & add as step`)}</option>`] : []),
+          ...state.projects.map(p => `<option value="${p.id}" ${matchProj && matchProj.id === p.id ? "selected" : ""}>📂 ${esc(p.title)} (${(p.steps || []).length} ${L("ขั้นตอน", "steps")})</option>`)
+        ].join("");
+        f.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px">
+            <h3 style="margin:0;font-size:1.02rem">🗂️ ${L("เพิ่มไปยังโปรเจค (Projects)", "Add to Projects")}</h3>
+            <button type="button" class="icon-btn" data-act="closeDlg" data-id="cg-proj-dlg">✕</button>
+          </div>
+          <div style="padding:10px 12px;border-radius:10px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.28);font-size:.86rem">
+            <div class="muted" style="font-size:.74rem;margin-bottom:2px">${grp ? `📁 ${esc(grp)}` : L("รายการจาก Planner", "Planner Item")}</div>
+            <strong style="color:var(--text)">${esc(title)}</strong>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+            <label style="font-size:.78rem;color:var(--muted);font-weight:600">1️⃣ ${L("สร้างเป็นโปรเจคใหม่เดี่ยวๆ ทันที", "Create as a standalone new project")}</label>
+            <button type="button" class="btn" data-act="cgItemNewProj" style="width:100%;justify-content:center;background:rgba(16,185,129,.14);color:#6ee7b7;border-color:rgba(16,185,129,.35);font-weight:700;padding:9px 12px">
+              🆕 ${L(`สร้างโปรเจคใหม่ชื่อ "${trunc(title, 28)}"`, `Create new project "${trunc(title, 28)}"`)}
+            </button>
+          </div>
+          ${projOpts ? `
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px;padding-top:10px;border-top:1px solid var(--border)">
+            <label style="font-size:.78rem;color:var(--muted);font-weight:600">2️⃣ ${L("หรือเพิ่มเป็นขั้นตอน (Step) ในโปรเจค", "Or add as a Step inside a project")}</label>
+            <select name="pid" class="inp" style="width:100%">${projOpts}</select>
+            <div class="row" style="justify-content:flex-end;gap:8px;margin-top:6px">
+              <button type="button" class="btn ghost" data-act="closeDlg" data-id="cg-proj-dlg">${L("ยกเลิก", "Cancel")}</button>
+              <button type="submit" class="btn primary">➕ ${L("เพิ่มเป็นขั้นตอนในโปรเจคที่เลือก", "Add as Step")}</button>
+            </div>
+          </div>` : `
+          <div class="row" style="justify-content:flex-end;gap:8px;margin-top:6px">
+            <button type="button" class="btn ghost" data-act="closeDlg" data-id="cg-proj-dlg">${L("ปิด", "Close")}</button>
+          </div>`}
+        `;
+        $("#cg-proj-dlg")?.showModal();
+      },
+      cgItemNewProj: () => {
+        const f = $("#cg-proj-form");
+        const title = (f?.dataset.title || "").trim();
+        if (!title) return;
+        const grp = (f?.dataset.grp || "").trim();
+        const p = {
+          id: uid(),
+          title,
+          monthlyGoal: grp ? `📁 ${grp}` : L(`ดึงจาก Life Planner (${monthLabel()})`, `From Life Planner (${monthLabel()})`),
+          manual: f?.dataset.done === "1" ? 100 : 0,
+          coordinator: { name: "", contact: "" },
+          links: [],
+          steps: []
+        };
+        state.projects.unshift(p);
+        state.openProject = p.id;
+        $("#cg-proj-dlg")?.close();
+        rerender();
+        toast(
+          L(`🗂️ สร้างโปรเจคใหม่ "${trunc(title, 24)}" เรียบร้อยแล้ว!`, `🗂️ Created project "${trunc(title, 24)}"!`),
+          () => { state.projects = state.projects.filter(x => x.id !== p.id); }
+        );
+      },
       quickQueueText: d => {
         const title = (d.title || "").trim();
         if (!title) return;
@@ -10358,6 +10489,43 @@
         });
         rerender();
         toast(L("＋ เพิ่มรายการแล้ว", "＋ Item added"));
+      },
+      cgItemAddStep: (fd, f) => {
+        const title = (f.dataset.title || "").trim();
+        if (!title) return;
+        const isDone = f.dataset.done === "1";
+        const grp = (f.dataset.grp || "").trim();
+        let p = null;
+        if (fd.pid === "__new_grp__" && grp) {
+          p = {
+            id: uid(),
+            title: grp,
+            monthlyGoal: L(`ดึงจาก Life Planner (${monthLabel()})`, `From Life Planner (${monthLabel()})`),
+            manual: 0,
+            coordinator: { name: "", contact: "" },
+            links: [],
+            steps: []
+          };
+          state.projects.unshift(p);
+        } else {
+          p = proj(fd.pid);
+        }
+        if (!p) return;
+        const st = {
+          id: uid(),
+          title,
+          status: isDone ? "done" : "todo",
+          activities: [],
+          deps: []
+        };
+        (p.steps ||= []).push(st);
+        state.openProject = p.id;
+        $("#cg-proj-dlg")?.close();
+        rerender();
+        toast(
+          L(`🗂️ เพิ่ม "${trunc(title, 22)}" เป็นขั้นตอนในโปรเจค "${trunc(p.title, 20)}" แล้ว!`, `🗂️ Added "${trunc(title, 22)}" to project "${trunc(p.title, 20)}"!`),
+          () => { p.steps = (p.steps || []).filter(x => x.id !== st.id); }
+        );
       },
       tripSave: (fd, f) => {
         const amt = Number(fd.amount);
