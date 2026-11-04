@@ -2599,6 +2599,124 @@
     .sound-btn { font-size: .78rem; padding: 5px 10px; border-radius: 99px; background: var(--surface-3); border: 1px solid var(--border); color: var(--muted); cursor: pointer; transition: all .15s }
     .sound-btn.on { background: rgba(56, 189, 248, .18); border-color: var(--sky); color: var(--text); font-weight: 700 }
     @media (max-width: 560px) { .pkg-grid { grid-template-columns: 1fr } .pkg-card { flex-direction: row; justify-content: space-between; text-align: left; padding: 10px 14px } }
+
+    /* ---------- 🎓 Interactive Guided Workshop & Top Notification ---------- */
+    .ws-top-btn {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 4px 11px;
+      border-radius: 99px;
+      font-size: .78rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, rgba(245, 158, 11, .2), rgba(16, 185, 129, .15));
+      border: 1.5px solid rgba(245, 158, 11, .55);
+      color: var(--text);
+      white-space: nowrap;
+      box-shadow: 0 6px 18px -8px rgba(245, 158, 11, .5);
+      transition: transform .15s, border-color .2s, box-shadow .2s
+    }
+    .ws-top-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--amber);
+      box-shadow: 0 10px 22px -8px rgba(245, 158, 11, .75)
+    }
+    .ws-top-btn.needs-setup {
+      animation: wsPulse 2.4s infinite
+    }
+    @keyframes wsPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .45) }
+      50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0) }
+    }
+    .ws-top-badge {
+      display: inline-grid;
+      place-items: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: 99px;
+      font-size: .68rem;
+      font-weight: 800;
+      background: var(--amber);
+      color: #1a1204;
+      font-family: 'Inter', sans-serif
+    }
+    .ws-top-btn.done .ws-top-badge {
+      background: var(--emerald);
+      color: #031c14
+    }
+    @media (max-width: 680px) {
+      .ws-top-lbl { display: none }
+      .ws-top-btn { padding: 4px 8px }
+    }
+    .ws-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 8px 14px;
+      background: linear-gradient(90deg, rgba(245, 158, 11, .16), rgba(16, 185, 129, .14), rgba(56, 189, 248, .12));
+      border-bottom: 1px solid rgba(245, 158, 11, .35);
+      font-size: .82rem
+    }
+    .ws-stepper {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 6px
+    }
+    .ws-step-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 6px;
+      border-radius: 12px;
+      background: var(--surface-2);
+      border: 1.5px solid var(--border);
+      font-size: .73rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-align: center;
+      cursor: pointer;
+      transition: all .18s
+    }
+    .ws-step-tab b {
+      font-size: .95rem;
+      line-height: 1.1
+    }
+    .ws-step-tab.active {
+      border-color: var(--amber);
+      background: linear-gradient(145deg, rgba(245, 158, 11, .18), rgba(16, 185, 129, .08));
+      color: var(--text);
+      box-shadow: 0 8px 20px -12px var(--amber)
+    }
+    .ws-step-tab.done {
+      border-color: rgba(16, 185, 129, .5);
+      color: var(--emerald)
+    }
+    .ws-sim-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: radial-gradient(120% 120% at 100% 0%, rgba(245, 158, 11, .13), transparent 60%), var(--surface-2);
+      border: 1px solid rgba(245, 158, 11, .35);
+      display: grid;
+      gap: 10px
+    }
+    .ws-cfg-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: var(--surface-2);
+      border: 1.5px solid rgba(16, 185, 129, .38);
+      display: grid;
+      gap: 10px
+    }
+    @media (max-width: 560px) {
+      .ws-stepper { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px }
+      .ws-step-tab { font-size: .64rem; padding: 6px 3px }
+    }
   </style>
 </head>
 
@@ -2612,6 +2730,7 @@
     <div class="app-shell">
       <div class="topwrap">
         <div id="trial-banner" class="banner"></div>
+        <div id="workshop-banner" class="ws-banner" hidden></div>
         <header class="topbar">
           <div class="brand"><span class="brand-logo"><img src="/icon-192.png?v=2" alt="FlowRecover"></span><span class="brand-text brand-word">FlowRecover</span></div>
           <form class="idea-box" data-form="idea" id="idea-form" autocomplete="off" style="display:flex;align-items:center;gap:4px">
@@ -2619,6 +2738,7 @@
             <button type="button" class="icon-btn voice-btn" data-act="voiceInput" data-target="idea-input" id="btn-voice-idea" title="พูดเพื่อจดไอเดีย (Voice to Text)" aria-label="Voice input" style="width:34px;height:34px;flex:none">🎙️</button>
           </form>
           <button class="icon-btn" data-act="openSearch" id="btn-global-search" title="ค้นหาทั่วทั้งแอป (Cmd+K / Ctrl+K)" aria-label="Search">🔍</button>
+          <button class="ws-top-btn needs-setup" data-act="openWorkshop" id="btn-workshop" title="มาเรียนรู้การใช้งาน & ตั้งค่าด้วย Workshop จำลองใช้งาน" aria-label="Interactive Workshop">🎓 <span class="ws-top-lbl" id="ws-top-lbl">Workshop</span><b class="ws-top-badge" id="ws-top-badge">0/5</b></button>
           <button class="icon-btn" data-act="openWelcome" id="btn-welcome" title="แนะนำการใช้งานเบื้องต้น & ข้อมูลตัวอย่าง" aria-label="Welcome guide">🧭</button>
           <button class="btn btn-sm btn-emerald" data-act="installPwa" id="btn-install-pwa" hidden style="min-height:34px;padding:4px 10px;font-size:.76rem;white-space:nowrap">📲 Install</button>
           <button class="icon-btn badge-btn" data-act="ideas" id="btn-ideas">🗒️<b id="idea-count" hidden>0</b></button>
@@ -2696,6 +2816,9 @@
   </dialog>
   <dialog id="cg-proj-dlg" closedby="any" aria-labelledby="cg-proj-dlg-title" style="width:min(520px,95vw)">
     <form class="dlg-body" data-form="cgItemAddStep" id="cg-proj-form" autocomplete="off"></form>
+  </dialog>
+  <dialog id="workshop-dlg" closedby="any" aria-labelledby="workshop-dlg-title" style="width:min(760px,95vw)">
+    <div class="dlg-body" id="workshop-dlg-body"></div>
   </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
@@ -2798,6 +2921,7 @@
       report: { range: "month", date: null, project: "all", type: "all" },
       cal: { view: "month", date: null, sel: null }, finView: { range: "month", date: null, kind: "exp" },
       habitView: { range: "week", date: null },
+      workshop: { step: 0, done: {}, seen: false, bannerHidden: false, simState: "focus", simStepStatus: ["done", "doing", "todo"], simHabitDone: false },
       planner: {
         goals: {}, monthly: {}, daily: {}, dream: {},
         habits: [], habitLog: {}, tiny: { after: "", will: "" }, obstacle: "", solution: "",
@@ -2813,12 +2937,14 @@
       if (focus.pomo && typeof focus.pomo.targetEndMs !== "number" && typeof focus.pomo.remSec !== "number") {
         focus.pomo = null;
       }
+      const ws = o.workshop || {};
       return {
         ...d, ...o,
         sub: { ...d.sub, ...o.sub }, focus,
         alerts: { ...d.alerts, ...o.alerts, digest: { ...d.alerts.digest, ...(o.alerts?.digest || {}) } },
         offDays: { ...d.offDays, ...o.offDays }, gcal: { ...d.gcal, ...o.gcal }, report: { ...d.report, ...o.report },
         cal: { ...d.cal, ...o.cal }, finView: { ...d.finView, ...o.finView }, habitView: { ...d.habitView, ...o.habitView },
+        workshop: { ...d.workshop, ...ws, done: { ...(ws.done || {}) }, simStepStatus: Array.isArray(ws.simStepStatus) ? ws.simStepStatus : ["done", "doing", "todo"] },
         planner: {
           ...d.planner, ...P,
           tiny: { ...d.planner.tiny, ...P.tiny },
@@ -3787,10 +3913,48 @@
       const b = $("#btn-theme"); if (b) b.textContent = state.theme === "light" ? "☀️" : "🌙";
     }
     function renderAll() { applyTheme(); renderBanner(); renderTopbar(); renderView(); checkPaywall(); }
+    function workshopProgress() {
+      const W = (state.workshop ||= { step: 0, done: {}, seen: false, bannerHidden: false, simState: "focus", simStepStatus: ["done", "doing", "todo"], simHabitDone: false });
+      W.done ||= {};
+      let doneCount = 0;
+      for (let i = 0; i < 5; i++) if (W.done[i]) doneCount++;
+      return { W, doneCount, total: 5, isAllDone: doneCount >= 5 };
+    }
     function renderTopbar() {
       const u = state.user || {};
       $("#btn-account").innerHTML = u.photo ? `<img src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">` : esc((u.name || u.email || "?").trim().charAt(0).toUpperCase());
       const c = $("#idea-count"); c.textContent = state.ideas.length; c.hidden = !state.ideas.length;
+      const { W, doneCount, isAllDone } = workshopProgress();
+      const wsBtn = $("#btn-workshop");
+      const wsLbl = $("#ws-top-lbl");
+      const wsBadge = $("#ws-top-badge");
+      if (wsBtn && wsBadge) {
+        wsBtn.classList.toggle("needs-setup", !isAllDone);
+        wsBtn.classList.toggle("done", isAllDone);
+        if (wsLbl) wsLbl.textContent = isAllDone ? L("Workshop", "Workshop") : L("เรียนรู้ Workshop", "Workshop");
+        wsBadge.textContent = isAllDone ? "✓ 5/5" : `🔔 ${doneCount}/5`;
+        wsBtn.title = isAllDone
+          ? L("ทำ Workshop ครบ 5/5 แล้ว — คลิกเพื่อเข้ามาจำลองใช้งานหรือตั้งค่าใหม่ได้ทุกเมื่อ", "Workshop 5/5 complete — click to revisit or reconfigure anytime")
+          : L(`แจ้งเตือน: มาเรียนรู้การใช้งานและกำหนดค่าหลักผ่าน Workshop (${doneCount}/5 ขั้นตอน)`, `Notification: Learn & configure core features via Workshop (${doneCount}/5 done)`);
+      }
+      const wb = $("#workshop-banner");
+      if (wb) {
+        if (!state.user || isAllDone || W.bannerHidden) {
+          wb.hidden = true;
+          wb.innerHTML = "";
+        } else {
+          wb.hidden = false;
+          wb.innerHTML = `
+            <div class="row" style="gap:8px;align-items:center;flex-wrap:wrap">
+              <span class="chip chip-amber" style="font-size:.72rem;padding:2px 8px">🎓 Workshop (${doneCount}/5)</span>
+              <span><b>${L("มาเรียนรู้การใช้งานด้วย Workshop จำลองลงมือทำจริง!", "Learn FlowRecover with the Interactive Hands-On Workshop!")}</b> <span class="muted">${L("พากำหนดค่า 5 ฟังก์ชันหลักทีละขั้น หรือข้ามแล้วกลับมาตั้งค่าใหม่เมื่อไหร่ก็ได้", "Step-by-step simulation & setup for all 5 core features — skip or resume anytime")}</span></span>
+            </div>
+            <div class="row" style="gap:6px;align-items:center">
+              <button type="button" class="btn btn-sm btn-amber" data-act="openWorkshop" style="min-height:28px;padding:3px 12px;font-size:.78rem;font-weight:800">▶️ ${doneCount > 0 ? L(`กำหนดค่าต่อ (${doneCount}/5)`, `Continue (${doneCount}/5)`) : L("เริ่ม Workshop จำลองใช้งาน", "Start Workshop")}</button>
+              <button type="button" class="icon-btn" data-act="hideWorkshopBanner" style="width:26px;height:26px;font-size:.75rem" title="${L("ซ่อนแถบแจ้งเตือนนี้ (กดปุ่ม 🎓 ด้านบนของเว็บได้ตลอดเวลา)", "Hide banner (use the 🎓 top bar button anytime)")}" aria-label="${L("ซ่อนแถบแจ้งเตือน", "Hide banner")}">✕</button>
+            </div>`;
+        }
+      }
     }
     const proBtn = id => `<button class="btn btn-amber btn-sm" data-act="payChoose" id="${id}">${L("เลือกแพ็กเกจ PRO (30 / 90 / 365 วัน)", "Choose PRO Plan (30 / 90 / 365d)")}</button>`;
     function renderBanner() {
@@ -6622,7 +6786,14 @@
           <button type="button" class="icon-btn" data-act="dismissWelcome" aria-label="${L("ปิด", "Close")}">✕</button>
         </div>
         <div style="display:grid;gap:10px;max-height:64dvh;overflow-y:auto;padding-right:4px">
-          <div style="padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.14),rgba(16,185,129,.1));border:1px solid rgba(245,158,11,.35);font-size:.86rem;line-height:1.55">
+          <div style="padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.18),rgba(16,185,129,.14));border:1.5px solid rgba(245,158,11,.5);font-size:.86rem;line-height:1.55;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <b>🎓 ${L("ใหม่! Workshop จำลองการใช้งาน & พากำหนดค่า 5 ฟังก์ชันหลักทีละขั้น", "New! Interactive Hands-On Workshop & 5-Step Guided Setup")}</b>
+              <p class="muted sm" style="margin-top:3px">${L("ทดลองกดจำลองสถานการณ์จริง (เช่น เมื่อมีงานแทรก Auto-Reflow) พร้อมกรอกตั้งค่าเริ่มต้นของคุณทีละสเต็ป หรือข้ามแล้วกลับมาตั้งค่าใหม่ได้ตลอดเวลา", "Try interactive simulations (like Interrupt Auto-Reflow) and configure your workspace step by step — skip or revisit anytime.")}</p>
+            </div>
+            <button type="button" class="btn btn-amber" data-act="openWorkshop" style="font-weight:800;white-space:nowrap">🎓 ${L("เปิด Workshop จำลองใช้งาน →", "Start Interactive Workshop →")}</button>
+          </div>
+          <div style="padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);font-size:.84rem;line-height:1.55">
             <b>💡 ${L("ระบบได้จำลองข้อมูลตัวอย่าง (Sample Data) ไว้ให้ครบทุกเมนูแล้ว!", "We have populated realistic sample data across every section for you!")}</b>
             <p class="muted sm" style="margin-top:4px">${L("คุณสามารถคลิกดูตัวอย่างการกรอก แก้ไข ลบ หรือทดลองกดปุ่มต่างๆ ในแต่ละหน้าได้ทันที เมื่อเห็นภาพการใช้งานชัดเจนแล้ว สามารถกดปุ่ม “🧹 ล้างข้อมูลตัวอย่าง” ด้านล่างเพื่อเริ่มกรอกข้อมูลจริงของคุณได้ทุกเมื่อครับ (เปิดหน้าต่างนี้ซ้ำได้จากปุ่ม 🧭 ด้านบนขวา)", "Explore how each feature is filled out, try editing or checking items off, and when you're ready to start fresh, click “🧹 Clear Sample Data” below (reopen this guide anytime via the 🧭 icon in the top bar).")}</p>
           </div>
@@ -6644,6 +6815,423 @@
             <button type="button" class="btn btn-sm" style="color:var(--rose);border-color:rgba(251,113,133,.35)" data-act="clearSampleData" title="${L("ลบข้อมูลตัวอย่างออกทั้งหมดเพื่อเริ่มกรอกข้อมูลจริง", "Remove sample items and start with a clean slate")}">🧹 ${L("ล้างข้อมูลตัวอย่าง (เริ่มกรอกจริง)", "Clear Sample Data")}</button>
           </div>
           <button type="button" class="btn btn-amber" data-act="dismissWelcome" id="btn-welcome-start">🚀 ${L("เริ่มสำรวจแอปพร้อมข้อมูลตัวอย่างเลย!", "Start Exploring with Sample Data!")}</button>
+        </div>`;
+    }
+    function renderWorkshopDlg() {
+      const b = $("#workshop-dlg-body");
+      if (!b) return;
+      const { W, doneCount, isAllDone } = workshopProgress();
+      const step = Math.max(0, Math.min(4, Number(W.step) || 0));
+      W.step = step;
+      const stepsMeta = [
+        ["⚡", L("1. โฟกัส & งานแทรก", "1. Focus & Reflow"), "focus", ""],
+        ["🔁", L("2. กิจวัตร & นิสัย", "2. Routines & Habits"), "queue", ""],
+        ["🗂️", L("3. โปรเจค & ขั้นตอน", "3. Projects & Steps"), "projects", ""],
+        ["🌟", L("4. เป้าหมาย 5 มิติ", "4. 5-D Life Planner"), "planner", "cg"],
+        ["💰", L("5. การเงิน & วันหยุด", "5. Finance & Days Off"), "planner", "f"]
+      ];
+      const curMeta = stepsMeta[step];
+      let stepBody = "";
+
+      if (step === 0) {
+        const simSt = W.simState || "focus";
+        const defStart = suggestStart(dkey());
+        stepBody = `
+          <div class="ws-sim-box">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>🎮 ${L("ส่วนที่ 1: จำลองการใช้งานจริง — ระบบกู้คืนสมาธิเมื่อมี “งานแทรก!”", "Part 1: Interactive Simulation — Interrupt Recovery & Auto-Reflow")}</b>
+              <span class="chip chip-amber" style="font-size:.7rem">${L("ลองกดปุ่มด้านล่างเพื่อดูผลลัพธ์", "Click below to test")}</span>
+            </div>
+            <p class="muted sm">${L("จุดเด่นที่สุดของ FlowRecover คือ เมื่อคุณกำลังโฟกัสแล้วมีงานด่วนแทรก คุณไม่ต้องลบแก้ตารางเวลาเอง เพียงกดปุ่ม “⏸️ มีงานแทรก!” ระบบจะจับเวลาที่เสียไปและเลื่อนคิวงานถัดไปให้อัตโนมัติ (Auto-Reflow)", "When an urgent interruption hits mid-task, you don't have to manually edit your schedule. Tap “⏸️ Interrupted!” to bookmark where you left off and auto-shift remaining tasks.")}</p>
+            <div style="padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:grid;gap:8px">
+              ${simSt === "focus" ? `
+                <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+                  <div><span class="chip chip-amber">⚡ ${L("กำลังโฟกัส", "Focusing Now")}</span> <b>09:00 – 10:00</b> • ${L("ทำสไลด์นำเสนอลูกค้า", "Prepare client deck")}</div>
+                  <span class="muted sm">${L("งานถัดไป: 10:00 ประชุมทีม", "Next: 10:00 Team sync")}</span>
+                </div>
+                <div class="row" style="gap:8px;flex-wrap:wrap;margin-top:2px">
+                  <button type="button" class="btn btn-amber" data-act="wsSimState" data-v="interrupted" style="font-weight:800">⏸️ ${L("1. ลองกดปุ่ม “มีงานแทรก!” (จำลองถูกขัดจังหวะ)", "1. Click “⏸️ Interrupted!” (Simulate)")}</button>
+                </div>
+              ` : simSt === "interrupted" ? `
+                <div style="padding:8px 10px;border-radius:10px;background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4)">
+                  <div style="font-weight:800;color:var(--amber)">⏸️ ${L("กำลังจับเวลางานแทรก: ผ่านไป +15 นาที", "Timing interruption: +15 min elapsed")}</div>
+                  <div class="sm" style="margin-top:3px">📌 <b>${L("บันทึกจุดค้าง (Context Bookmark):", "Context Bookmark saved:")}</b> “${L("ทำสไลด์ถึงหน้า 5 เหลือใส่ตารางราคาหน้า 6", "Finished slide 5, need to add pricing table on slide 6")}”</div>
+                </div>
+                <div class="row" style="gap:8px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-emerald" data-act="wsSimState" data-v="reflowed" style="font-weight:800">▶️ ${L("2. ลองกด “กลับมาโฟกัสต่อ (Auto-Reflow เลื่อนคิวอัตโนมัติ)”", "2. Click “▶️ Resume Focus (Trigger Auto-Reflow)”")}</button>
+                  <button type="button" class="btn btn-sm" data-act="wsSimState" data-v="focus">↺ ${L("รีเซ็ต", "Reset")}</button>
+                </div>
+              ` : `
+                <div style="padding:8px 10px;border-radius:10px;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.4)">
+                  <div style="font-weight:800;color:var(--emerald)">✨ ${L("Auto-Reflow สำเร็จ! ปรับตารางเวลาที่เหลือให้อัตโนมัติแล้ว", "Auto-Reflow Complete! Remaining schedule shifted automatically")}</div>
+                  <div class="sm" style="margin-top:3px">
+                    • ${L("งานปัจจุบันขยายเวลาเป็น", "Current task extended to")}: <b>09:00 – 10:15</b> (${L("พร้อมแสดงจุดค้างที่จดไว้ให้เห็นทันที", "with your context bookmark ready")})<br>
+                    • ${L("งานถัดไป (ประชุมทีม) เลื่อนอัตโนมัติจาก", "Next task auto-shifted from")} <del class="muted">10:00</del> → <b class="emerald">10:15 – 11:15</b>
+                  </div>
+                </div>
+                <div class="row" style="gap:8px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-sm" data-act="wsSimState" data-v="focus">↺ ${L("ลองจำลองใหม่อีกครั้ง", "Run Simulation Again")}</button>
+                </div>
+              `}
+            </div>
+          </div>
+
+          <form class="ws-cfg-box" data-form="wsSaveStep0" autocomplete="off">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>✍️ ${L("ส่วนที่ 2: ลงมือตั้งค่าจริง — เพิ่ม “งานสำคัญชิ้นแรกของวันนี้” เข้าคิวงาน", "Part 2: Guided Setup — Schedule Your Main Focus Task for Today")}</b>
+              ${W.done[0] ? `<span class="chip chip-emerald" style="font-size:.72rem">✓ ${L("ตั้งค่าขั้นตอนนี้แล้ว", "Configured")}</span>` : `<span class="chip" style="font-size:.72rem">${L("กรอกหรือคลิกตัวเลือกด่วนด้านล่าง", "Fill in or tap a preset")}</span>`}
+            </div>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <span class="muted sm">${L("แตะเลือกตัวอย่างด่วน:", "Quick presets:")}</span>
+              ${[
+                L("💻 เคลียร์งานสำคัญของโปรเจคหลัก", "💻 Deep work on main project"),
+                L("📑 สรุปแผนงานและเตรียมประชุม", "📑 Review plan & prep meeting"),
+                L("🎨 ออกแบบกราฟิก / ทำคอนเทนต์", "🎨 Design graphics / create content"),
+                L("📚 อ่านหนังสือ / เรียนคอร์สพัฒนาทักษะ", "📚 Study course / read book")
+              ].map(p => `<button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:26px;font-size:.74rem" data-act="wsPresetTask" data-title="${esc(p)}">＋ ${esc(p)}</button>`).join("")}
+            </div>
+            <div class="grid grid-2" style="gap:8px">
+              <label class="field" style="grid-column:1/-1">
+                <span>🎯 ${L("ชื่องานที่คุณอยากโฟกัสให้สำเร็จในวันนี้", "Task title you want to focus on today")}</span>
+                <input class="input" name="title" id="ws-task-title" value="${esc(L("💻 เคลียร์งานสำคัญของโปรเจคหลัก", "💻 Deep work on main project"))}" required placeholder="${L("เช่น ทำใบเสนอราคาลูกค้า, อัดคลิปบทที่ 1…", "e.g., Write client proposal, Record video…")}">
+              </label>
+              <label class="field">
+                <span>⏰ ${L("เวลาเริ่ม", "Start time")}</span>
+                <input class="input" type="time" name="start" value="${defStart}">
+              </label>
+              <label class="field">
+                <span>⏳ ${L("ระยะเวลาโฟกัส", "Duration")}</span>
+                <select class="input" name="dur">
+                  <option value="25">25 ${L("นาที (Pomodoro)", "min (Pomodoro)")}</option>
+                  <option value="45">45 ${L("นาที", "min")}</option>
+                  <option value="60" selected>60 ${L("นาที (1 ชั่วโมง — แนะนำ)", "min (1 hour — Recommended)")}</option>
+                  <option value="90">90 ${L("นาที (Deep Work)", "min (Deep Work)")}</option>
+                </select>
+              </label>
+            </div>
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <button type="button" class="btn btn-sm" data-act="wsGoReal" data-tab="focus">↗ ${L("เปิดดูหน้าโฟกัสจริง", "Open Real Focus Tab")}</button>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="1">⏭️ ${L("ข้ามไปขั้นตอนที่ 2 →", "Skip to Step 2 →")}</button>
+                <button type="submit" class="btn btn-emerald" style="font-weight:800">💾 ${L("บันทึกเข้าคิววันนี้ & ไปขั้นตอนที่ 2 →", "Save Task to Today's Queue & Next →")}</button>
+              </div>
+            </div>
+          </form>
+        `;
+      } else if (step === 1) {
+        const simDone = !!W.simHabitDone;
+        stepBody = `
+          <div class="ws-sim-box">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>🎮 ${L("ส่วนที่ 1: จำลองการใช้งาน — กิจวัตรทำซ้ำซิงก์กับตารางนิสัย (Habit Streak)", "Part 1: Interactive Simulation — Routines Auto-Sync with Habit Tracker")}</b>
+              <span class="chip chip-emerald" style="font-size:.7rem">+5 ${L("แต้ม Level Up ต่อการเช็กอิน", "Level Up pts per check-in")}</span>
+            </div>
+            <p class="muted sm">${L("เมื่อคุณตั้ง “กิจวัตรทำซ้ำ (Routine)” ระบบจะสร้างแถวในตาราง Habit Tracker (หมวด H/M) ให้อัตโนมัติ ลองกดติ๊กถูกด้านล่างเพื่อดูการสะสมสถิติต่อเนื่อง (Streak) และแต้ม Level Up!", "Every recurring routine automatically links to your Habit Tracker. Try ticking the box below to see how streaks and Level Up points work!")}</p>
+            <div style="padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div class="row" style="gap:10px;align-items:center">
+                <button type="button" class="check ${simDone ? "on" : ""}" data-act="wsSimHabit" aria-label="Toggle simulated routine" style="width:28px;height:28px;font-size:1rem">${simDone ? "✓" : ""}</button>
+                <div>
+                  <b style="${simDone ? "text-decoration:line-through;opacity:.75" : ""}">🏃 ${L("ออกกำลังกาย / ยืดเหยียด 20 นาที (จำลอง)", "Exercise / Stretch 20 min (Simulation)")}</b>
+                  <div class="muted sm">⏰ 06:30 • ${L("ทุกวัน", "Daily")}</div>
+                </div>
+              </div>
+              <div class="row" style="gap:6px;align-items:center">
+                <span class="chip ${simDone ? "chip-amber" : ""}">🔥 Streak: <b>${simDone ? 4 : 3} ${L("วัน", "days")}</b></span>
+                ${simDone ? `<span class="chip chip-emerald">🎉 +5 ${L("แต้ม Level Up!", "Level Up pts!")}</span>` : `<span class="muted sm">👈 ${L("ลองกดติ๊กดูครับ", "Tap the checkbox")}</span>`}
+              </div>
+            </div>
+          </div>
+
+          <form class="ws-cfg-box" data-form="wsSaveStep1" autocomplete="off">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>✍️ ${L("ส่วนที่ 2: ลงมือตั้งค่าจริง — เพิ่มกิจวัตรและนิสัยที่คุณอยากทำเป็นประจำ", "Part 2: Guided Setup — Add Your Recurring Routine & Habit")}</b>
+              ${W.done[1] ? `<span class="chip chip-emerald" style="font-size:.72rem">✓ ${L("ตั้งค่าขั้นตอนนี้แล้ว", "Configured")}</span>` : ""}
+            </div>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <span class="muted sm">${L("แตะเลือกตัวอย่างกิจวัตร:", "Quick presets:")}</span>
+              ${[
+                [L("🏃 ออกกำลังกาย 20 นาที", "🏃 Exercise 20 minutes"), "06:30", "daily"],
+                [L("📖 อ่านหนังสือพัฒนาตัวเอง 15 หน้า", "📖 Read 15 pages"), "21:00", "daily"],
+                [L("💧 ดื่มน้ำ 1 แก้วหลังตื่นนอน", "💧 Drink a glass of water after waking"), "07:00", "daily"],
+                [L("📋 เช็กแผนงานและจัดลำดับความสำคัญ", "📋 Morning plan & priority review"), "08:30", "weekday"]
+              ].map(([t, tm, fq]) => `<button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:26px;font-size:.74rem" data-act="wsPresetRoutine" data-title="${esc(t)}" data-time="${tm}" data-freq="${fq}">＋ ${esc(t)}</button>`).join("")}
+            </div>
+            <div class="grid grid-3" style="gap:8px">
+              <label class="field" style="grid-column:1/-1">
+                <span>🔁 ${L("ชื่อกิจวัตร / นิสัยที่ต้องการสร้าง", "Routine / Habit name")}</span>
+                <input class="input" name="title" id="ws-routine-title" value="${esc(L("🏃 ออกกำลังกาย 20 นาที", "🏃 Exercise 20 minutes"))}" required>
+              </label>
+              <label class="field">
+                <span>📅 ${L("ความถี่", "Frequency")}</span>
+                <select class="input" name="freq" id="ws-routine-freq">
+                  <option value="daily">${L("ทุกวัน (Daily)", "Daily")}</option>
+                  <option value="weekday">${L("จันทร์–ศุกร์ (Mon–Fri)", "Mon–Fri")}</option>
+                  <option value="eod">${L("วันเว้นวัน (Every other day)", "Every other day")}</option>
+                  <option value="weekend">${L("เสาร์–อาทิตย์ (Sat–Sun)", "Sat–Sun")}</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>⏰ ${L("เวลาเตือน", "Reminder time")}</span>
+                <input class="input" type="time" name="time" id="ws-routine-time" value="06:30">
+              </label>
+              <label class="field">
+                <span>🔔 ${L("เตือนล่วงหน้า", "Advance alert")}</span>
+                <select class="input" name="remind">
+                  <option value="0">${L("เตือนตรงเวลา", "At start time")}</option>
+                  <option value="15">15 ${L("นาที", "min")}</option>
+                  <option value="30" selected>30 ${L("นาที", "min")}</option>
+                </select>
+              </label>
+            </div>
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <div class="row" style="gap:6px">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="0">← ${L("ย้อนกลับ", "Back")}</button>
+                <button type="button" class="btn btn-sm" data-act="wsGoReal" data-tab="queue">↗ ${L("ดูหน้าคิวงาน & กิจวัตรจริง", "Open Queue & Routines")}</button>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="2">⏭️ ${L("ข้ามไปขั้นตอนที่ 3 →", "Skip to Step 3 →")}</button>
+                <button type="submit" class="btn btn-emerald" style="font-weight:800">💾 ${L("บันทึกกิจวัตร & ไปขั้นตอนที่ 3 →", "Save Routine & Next →")}</button>
+              </div>
+            </div>
+          </form>
+        `;
+      } else if (step === 2) {
+        const stArr = Array.isArray(W.simStepStatus) && W.simStepStatus.length === 3 ? W.simStepStatus : ["done", "doing", "todo"];
+        const doneCnt = stArr.filter(s => s === "done").length;
+        const simPct = Math.round((doneCnt / 3) * 100);
+        const simSteps = [
+          L("1. วางโครงสร้างและสรุปขอบเขตงาน", "1. Outline scope & requirements"),
+          L("2. ออกแบบและพัฒนาระบบหลัก", "2. Design & build core deliverables"),
+          L("3. ตรวจสอบคุณภาพและเปิดใช้งานจริง", "3. QA review & launch")
+        ];
+        stepBody = `
+          <div class="ws-sim-box">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>🎮 ${L("ส่วนที่ 1: จำลองการใช้งาน — แตกโปรเจคเป็นขั้นตอน & คำนวณ % อัตโนมัติ", "Part 1: Interactive Simulation — Project Steps & Live Progress %")}</b>
+              <span class="chip chip-amber" style="font-size:.72rem">${L(`ความคืบหน้าจำลอง: ${simPct}%`, `Simulated Progress: ${simPct}%`)}</span>
+            </div>
+            <p class="muted sm">${L("ลองคลิกที่ปุ่มสถานะ (Todo / Doing / Waiting / Done) ของแต่ละขั้นตอนด้านล่าง เพื่อดูหลอดความคืบหน้าของโปรเจคขยับอัตโนมัติ!", "Click the status badges (Todo / Doing / Waiting / Done) below to watch the project progress bar update automatically!")}</p>
+            <div style="padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border);display:grid;gap:8px">
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <b>🗂️ ${L("โปรเจคจำลอง: เปิดตัวสินค้า Digital", "Simulated Project: Digital Product Launch")}</b>
+                <span class="mono sm emerald"><b>${simPct}%</b> (${doneCnt}/3 Done)</span>
+              </div>
+              <div class="bar"><i style="width:${simPct}%"></i></div>
+              <div style="display:grid;gap:6px;margin-top:2px">
+                ${simSteps.map((stTitle, idx) => {
+                  const stKey = stArr[idx] || "todo";
+                  const [stLbl, stCol] = STEP[stKey] || STEP.todo;
+                  return `<div class="row" style="justify-content:space-between;align-items:center;padding:6px 10px;border-radius:10px;background:var(--surface-2)">
+                    <span class="sm" style="${stKey === "done" ? "text-decoration:line-through;opacity:.75" : "font-weight:600"}">${stTitle}</span>
+                    <button type="button" class="btn btn-sm" data-act="wsSimStepCycle" data-idx="${idx}" style="min-height:26px;padding:2px 10px;font-size:.74rem;border-color:${stCol};color:${stCol}">🔄 ${stLbl} (${L("คลิกเปลี่ยน", "Click")})</button>
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+
+          <form class="ws-cfg-box" data-form="wsSaveStep2" autocomplete="off">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>✍️ ${L("ส่วนที่ 2: ลงมือตั้งค่าจริง — สร้างโปรเจคของคุณพร้อมขั้นตอนย่อย", "Part 2: Guided Setup — Create Your Project & Steps")}</b>
+              ${W.done[2] ? `<span class="chip chip-emerald" style="font-size:.72rem">✓ ${L("ตั้งค่าขั้นตอนนี้แล้ว", "Configured")}</span>` : ""}
+            </div>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <span class="muted sm">${L("แตะเลือกเทมเพลตโปรเจค:", "Project templates:")}</span>
+              ${[
+                [
+                  L("🚀 เปิดตัวสินค้า Digital", "🚀 Launch Digital Product"),
+                  L("สร้างรายได้เสริมจากสินค้าดิจิทัล", "Generate recurring digital income"),
+                  L("วิจัยตลาดและกำหนดกลุ่มเป้าหมาย\nออกแบบสินค้าและทำหน้าขาย\nตั้งระบบชำระเงินและโปรโมต", "Research market & audience\nDesign product & landing page\nSet up checkout & launch promo")
+                ],
+                [
+                  L("🌐 ดูแลและปรับปรุงเว็บไซต์", "🌐 Website Upgrade & Maintenance"),
+                  L("พัฒนาเว็บให้รองรับลูกค้าและ SEO", "Improve UX, speed & conversion"),
+                  L("ปรับปรุงดีไซน์หน้าแรกและมือถือ\nเชื่อมระบบหลังบ้านและฐานข้อมูล\nทดสอบความเร็วและขึ้นระบบจริง", "Redesign hero & mobile layout\nConnect backend & database\nTest performance & deploy")
+                ],
+                [
+                  L("🎥 ปั้นช่อง TikTok / คอนเทนต์", "🎥 Grow TikTok / Content Channel"),
+                  L("ลงคลิปสม่ำเสมอสัปดาห์ละ 3 คลิป", "Publish 3 high-value videos/week"),
+                  L("วางแผนหัวข้อคอนเทนต์ 10 คลิปแรก\nเขียนสคริปต์และถ่ายทำคลิปชุดแรก\nตัดต่อใส่ซับไตเติลและตั้งเวลาโพสต์", "Plan first 10 video topics\nScript & batch-record videos\nEdit captions & schedule posts")
+                ]
+              ].map(([t, g, s]) => `<button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:26px;font-size:.74rem" data-act="wsPresetProj" data-title="${esc(t)}" data-goal="${esc(g)}" data-steps="${esc(s)}">＋ ${esc(t)}</button>`).join("")}
+            </div>
+            <div class="grid grid-2" style="gap:8px">
+              <label class="field">
+                <span>🗂️ ${L("ชื่อโปรเจค", "Project Title")}</span>
+                <input class="input" name="title" id="ws-proj-title" value="${esc(L("🚀 เปิดตัวสินค้า Digital", "🚀 Launch Digital Product"))}" required>
+              </label>
+              <label class="field">
+                <span>🎯 ${L("เป้าหมายรายเดือนของโปรเจคนี้", "Monthly Goal")}</span>
+                <input class="input" name="goal" id="ws-proj-goal" value="${esc(L("สร้างรายได้เสริมจากสินค้าดิจิทัล", "Generate recurring digital income"))}">
+              </label>
+              <label class="field" style="grid-column:1/-1">
+                <span>🧭 ${L("ขั้นตอนย่อยของโปรเจค (พิมพ์บรรทัดละ 1 ขั้นตอน)", "Project Steps (one step per line)")}</span>
+                <textarea class="input" name="steps" id="ws-proj-steps" rows="3">${esc(L("วิจัยตลาดและกำหนดกลุ่มเป้าหมาย\nออกแบบสินค้าและทำหน้าขาย\nตั้งระบบชำระเงินและโปรโมต", "Research market & audience\nDesign product & landing page\nSet up checkout & launch promo"))}</textarea>
+              </label>
+            </div>
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <div class="row" style="gap:6px">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="1">← ${L("ย้อนกลับ", "Back")}</button>
+                <button type="button" class="btn btn-sm" data-act="wsGoReal" data-tab="projects">↗ ${L("เปิดดูหน้าโปรเจคจริง", "Open Projects Tab")}</button>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="3">⏭️ ${L("ข้ามไปขั้นตอนที่ 4 →", "Skip to Step 4 →")}</button>
+                <button type="submit" class="btn btn-emerald" style="font-weight:800">💾 ${L("สร้างโปรเจคจริง & ไปขั้นตอนที่ 4 →", "Create Project & Next →")}</button>
+              </div>
+            </div>
+          </form>
+        `;
+      } else if (step === 3) {
+        stepBody = `
+          <div class="ws-sim-box">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>🎮 ${L("ส่วนที่ 1: ประเมินสมดุลชีวิต 5 มิติ พร้อมดูกราฟเรดาร์สดๆ!", "Part 1: Interactive 5-Dimension Life Balance Radar")}</b>
+              <span class="chip chip-amber" style="font-size:.7rem">${L("คลิกให้ดาว ⭐ เพื่อดูกราฟขยับทันที", "Tap stars ⭐ to update radar live")}</span>
+            </div>
+            <div class="grid grid-2b" style="align-items:center;gap:12px;background:var(--surface);padding:12px;border-radius:12px;border:1px solid var(--border)">
+              <div class="center" id="ws-radar-box">${radar()}</div>
+              <div style="display:grid;gap:8px">
+                ${DIMS.map(d => {
+                  const curVal = Number(P().goals?.[d.k]?.rating) || 4;
+                  return `<div class="row" style="justify-content:space-between;align-items:center;padding:6px 10px;border-radius:10px;background:var(--surface-2)">
+                    <span style="font-weight:700;font-size:.86rem">${d.icon} ${L(d.th, d.en)}</span>
+                    <span class="stars" role="group">${[1, 2, 3, 4, 5].map(i => `<button type="button" class="${i <= curVal ? "on" : ""}" data-act="wsRateDim" data-dim="${d.k}" data-v="${i}">⭐</button>`).join("")}</span>
+                  </div>`;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+
+          <form class="ws-cfg-box" data-form="wsSaveStep3" autocomplete="off">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>✍️ ${L("ส่วนที่ 2: ลงมือตั้งค่าจริง — สร้างหัวข้อ Monthly Focus ประจำเดือนนี้", "Part 2: Guided Setup — Create Your Monthly Focus Topic")}</b>
+              ${W.done[3] ? `<span class="chip chip-emerald" style="font-size:.72rem">✓ ${L("ตั้งค่าขั้นตอนนี้แล้ว", "Configured")}</span>` : ""}
+            </div>
+            <p class="muted sm">${L("ในหน้า Life Planner คุณสามารถจัดกลุ่มสิ่งที่ต้องทำในเดือนนี้แยกตามหัวข้อ (📁) และสามารถกดปุ่ม 🗂️ ที่หัวข้อเพื่อส่งทั้งหัวข้อไปสร้างเป็นโปรเจคได้ในคลิกเดียว!", "Group your monthly focus items by topic (📁) — and click 🗂️ on any topic header in Planner to turn the whole topic into a Project in 1 click!")}</p>
+            <div class="row" style="gap:6px;flex-wrap:wrap">
+              <span class="muted sm">${L("แตะเลือกตัวอย่างหัวข้อ:", "Topic presets:")}</span>
+              ${[
+                [L("สินค้า Digital", "Digital Products"), L("วางระบบการทำงานตามปฏิทิน\nทำภาพกราฟิกเทศกาล\nออกแบบฟอร์มการทำงาน Planner", "Plan product calendar\nCreate seasonal graphics\nDesign Planner templates")],
+                [L("ดูแลสุขภาพ & ฟิตเนส", "Health & Fitness"), L("วิ่งหรือคาดิโอสัปดาห์ละ 3 ครั้ง\nเข้านอนก่อน 23:00 น.\nดื่มน้ำวันละ 2 ลิตร", "Cardio 3x/week\nSleep before 11 PM\nDrink 2L water daily")],
+                [L("พัฒนาทักษะ & รายได้เสริม", "Skills & Side Income"), L("เรียนคอร์ส AI / อัปสกิลสัปดาห์ละ 2 ชม.\nหาลูกค้าใหม่เพิ่ม 2 ราย", "Study AI course 2h/wk\nClose 2 new clients")]
+              ].map(([gt, items]) => `<button type="button" class="btn btn-sm" style="padding:2px 8px;min-height:26px;font-size:.74rem" data-act="wsPresetMf" data-title="${esc(gt)}" data-items="${esc(items)}">＋ 📁 ${esc(gt)}</button>`).join("")}
+            </div>
+            <div class="grid grid-2" style="gap:8px">
+              <label class="field" style="grid-column:1/-1">
+                <span>📁 ${L("ชื่อหัวข้อโฟกัสประจำเดือนนี้", "Monthly Focus Topic Name")}</span>
+                <input class="input" name="groupTitle" id="ws-mf-title" value="${esc(L("สินค้า Digital", "Digital Products"))}" required>
+              </label>
+              <label class="field" style="grid-column:1/-1">
+                <span>📝 ${L("รายการย่อยในหัวข้อนี้ (พิมพ์บรรทัดละ 1 รายการ)", "Action items inside this topic (one per line)")}</span>
+                <textarea class="input" name="items" id="ws-mf-items" rows="3">${esc(L("วางระบบการทำงานตามปฏิทิน\nทำภาพกราฟิกเทศกาล\nออกแบบฟอร์มการทำงาน Planner", "Plan product calendar\nCreate seasonal graphics\nDesign Planner templates"))}</textarea>
+              </label>
+              <label class="mini-check" style="grid-column:1/-1;color:var(--text)">
+                <input type="checkbox" name="alsoCreateProj" value="1">
+                <span>🗂️ ${L("ส่งหัวข้อและรายการทั้งหมดนี้ไปสร้างเป็น “โปรเจคใหม่” ในหน้าโปรเจคด้วยทันที", "Also convert this topic and all its items into a new Project immediately")}</span>
+              </label>
+            </div>
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <div class="row" style="gap:6px">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="2">← ${L("ย้อนกลับ", "Back")}</button>
+                <button type="button" class="btn btn-sm" data-act="wsGoReal" data-tab="planner" data-sec="cg">↗ ${L("เปิดดูหน้า Life Planner จริง", "Open Life Planner")}</button>
+              </div>
+              <div class="row" style="gap:8px;flex-wrap:wrap">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="4">⏭️ ${L("ข้ามไปขั้นตอนที่ 5 →", "Skip to Step 5 →")}</button>
+                <button type="submit" class="btn btn-emerald" style="font-weight:800">💾 ${L("บันทึกเข้า Life Planner & ไปขั้นตอนที่ 5 →", "Save to Planner & Next →")}</button>
+              </div>
+            </div>
+          </form>
+        `;
+      } else {
+        const cur = curSym();
+        const savGoal = Number(P().finance?.goal) || 50000;
+        const wds = state.offDays?.weekdays || [];
+        stepBody = `
+          <div class="ws-sim-box">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>🎮 ${L("ส่วนที่ 1: ตั้งค่าวันหยุดพักผ่อนประจำสัปดาห์ (🏖️ Days Off)", "Part 1: Configure Weekly Days Off (🏖️ Rest Days)")}</b>
+              <span class="chip chip-emerald" style="font-size:.7rem">${L("คลิกเลือกวันหยุดของคุณด้านล่าง", "Tap your rest days below")}</span>
+            </div>
+            <p class="muted sm">${L("ในวันที่คุณตั้งเป็นวันหยุด ระบบจะงดส่งเสียงแจ้งเตือนงาน และเมื่อคุณกดปุ่ม “ย้ายงานไปพรุ่งนี้” ระบบจะข้ามวันหยุดไปลงวันทำงานถัดไปให้อัตโนมัติ!", "On your days off, task alarms stay quiet and the “Move to tomorrow” button automatically skips to your next work day!")}</p>
+            <div class="wd-pick" style="margin-top:2px">
+              ${DAYS[LANG].map((l, i) => `<button type="button" class="${wds.includes(i) ? "on" : ""}" data-act="wsToggleWeekday" data-v="${i}" aria-pressed="${wds.includes(i)}">${wds.includes(i) ? "🏖️ " : ""}${l}</button>`).join("")}
+            </div>
+          </div>
+
+          <form class="ws-cfg-box" data-form="wsSaveStep4" autocomplete="off">
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <b>✍️ ${L("ส่วนที่ 2: ตั้งค่าสกุลเงิน เป้าหมายการออม & การแจ้งเตือนก่อนเริ่มงาน", "Part 2: Guided Setup — Currency, Savings Goal & Advance Reminder")}</b>
+              ${W.done[4] ? `<span class="chip chip-emerald" style="font-size:.72rem">✓ ${L("ตั้งค่าขั้นตอนนี้แล้ว", "Configured")}</span>` : ""}
+            </div>
+            <div class="grid grid-3" style="gap:8px">
+              <label class="field">
+                <span>💱 ${L("สกุลเงินหลัก", "Currency")}</span>
+                <select class="input" name="currency">
+                  ${CURRENCIES.map(c => `<option value="${c}" ${c === cur ? "selected" : ""}>${c}</option>`).join("")}
+                </select>
+              </label>
+              <label class="field">
+                <span>🐷 ${L("เป้าหมายเงินออมสะสม", "Savings Goal")} (${cur})</span>
+                <input class="input" type="number" name="goal" value="${savGoal}" min="0" step="100">
+              </label>
+              <label class="field">
+                <span>🔔 ${L("แจ้งเตือนก่อนเริ่มงานในคิว", "Task Advance Alert")}</span>
+                <select class="input" name="lead">
+                  <option value="0" ${Number(state.alerts?.lead) === 0 ? "selected" : ""}>${L("เตือนเมื่อถึงเวลาเริ่ม", "At start time")}</option>
+                  <option value="5" ${Number(state.alerts?.lead) === 5 ? "selected" : ""}>5 ${L("นาทีก่อนเริ่ม", "min before")}</option>
+                  <option value="10" ${Number(state.alerts?.lead) === 10 ? "selected" : ""}>10 ${L("นาทีก่อนเริ่ม", "min before")}</option>
+                  <option value="15" ${Number(state.alerts?.lead) === 15 ? "selected" : ""}>15 ${L("นาทีก่อนเริ่ม", "min before")}</option>
+                </select>
+              </label>
+            </div>
+            <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">
+              <div class="row" style="gap:6px">
+                <button type="button" class="btn btn-sm" data-act="wsStep" data-v="3">← ${L("ย้อนกลับ", "Back")}</button>
+                <button type="button" class="btn btn-sm" data-act="wsGoReal" data-tab="planner" data-sec="f">↗ ${L("เปิดดูหน้าการเงินจริง", "Open Finance Tab")}</button>
+              </div>
+              <button type="submit" class="btn btn-amber" style="font-weight:800;padding:10px 16px">🎉 ${L("บันทึกการตั้งค่า & จบ Workshop!", "Save Settings & Complete Workshop!")}</button>
+            </div>
+          </form>
+        `;
+      }
+
+      b.innerHTML = `
+        <div class="dlg-head" style="align-items:flex-start">
+          <div>
+            <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+              <span class="pill pill-amber" style="font-size:.72rem;padding:2px 8px">🎓 Interactive Workshop</span>
+              <span class="chip ${isAllDone ? "chip-emerald" : "chip-sky"}" style="font-size:.72rem;padding:2px 8px">
+                ${isAllDone ? `🎉 ${L("ตั้งค่าครบทั้ง 5 ขั้นตอนแล้ว!", "All 5 Steps Completed!")}` : `📊 ${L(`กำหนดค่าแล้ว ${doneCount}/5 ขั้นตอน`, `${doneCount}/5 Steps Configured`)}`}
+              </span>
+            </div>
+            <h2 id="workshop-dlg-title" style="font-size:1.18rem">${L("Workshop จำลองการใช้งาน & พากำหนดค่าฟังก์ชันหลัก", "Interactive Simulation & Guided Setup Workshop")}</h2>
+            <p class="muted sm" style="margin-top:2px">${L("ทดลองจำลองการทำงานจริงและตั้งค่าเริ่มต้นตามทีละขั้นตอน หรือกด “ข้ามไปก่อน” แล้วกลับมาตั้งค่าใหม่เมื่อไหร่ก็ได้จากปุ่ม 🎓 ด้านบนของเว็บไซต์", "Try hands-on simulations and configure each core feature step by step — or skip and return anytime via the 🎓 button in the top bar.")}</p>
+          </div>
+          <div class="row" style="gap:6px;align-items:center;flex:none">
+            <button type="button" class="btn btn-sm" data-act="skipWorkshop" title="${L("ข้ามไปก่อน แล้วค่อยกลับมาเรียนรู้/ตั้งค่าใหม่จากปุ่ม 🎓 ด้านบน", "Skip for now and return anytime via the top bar 🎓 button")}">⏭️ ${L("ข้ามไปก่อน", "Skip for now")}</button>
+            <button type="button" class="icon-btn" data-act="skipWorkshop" aria-label="${L("ปิด", "Close")}">✕</button>
+          </div>
+        </div>
+
+        <div class="ws-stepper" role="tablist" aria-label="Workshop Steps">
+          ${stepsMeta.map(([ico, lbl], idx) => `
+            <button type="button" class="ws-step-tab ${step === idx ? "active" : ""} ${W.done[idx] ? "done" : ""}" data-act="wsStep" data-v="${idx}" role="tab" aria-selected="${step === idx}">
+              <b>${W.done[idx] ? "✅" : ico}</b>
+              <span>${lbl}</span>
+            </button>
+          `).join("")}
+        </div>
+
+        <div style="display:grid;gap:12px;max-height:60dvh;overflow-y:auto;padding-right:4px">
+          ${stepBody}
+        </div>
+
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--border);font-size:.78rem">
+          <span class="muted">💡 ${L("คุณสามารถกลับมาเปิดหน้าต่าง Workshop นี้ซ้ำเพื่อจำลองหรือแก้ไขค่าได้ตลอดเวลาที่ปุ่ม 🎓 ด้านบนขวา", "Reopen this Workshop anytime via the 🎓 button in the top navigation bar.")}</span>
+          <div class="row" style="gap:6px">
+            <button type="button" class="btn btn-sm" data-act="openWelcomeFromWs">🧭 ${L("ดูข้อมูลตัวอย่างทั้งหมด", "Sample Data Guide")}</button>
+            <button type="button" class="btn btn-sm" data-act="skipWorkshop">${L("ปิดหน้าต่างนี้", "Close")}</button>
+          </div>
         </div>`;
     }
     function renderStripeCfgDlg(highlightPkg = "") {
@@ -6735,7 +7323,7 @@
       clearTimeout(toastT);
       toastT = setTimeout(() => { t.classList.remove("show"); lastUndoFn = null; }, lastUndoFn ? 7000 : 2800);
     }
-    const rerender = () => { save(); renderView(); };
+    const rerender = () => { save(); renderTopbar(); renderView(); };
     const A = {
       undoToast: () => {
         if (typeof lastUndoFn === "function") {
@@ -6822,6 +7410,7 @@
         if ($("#legal-dlg")?.open) renderLegalDlg();
         if ($("#gperm-dlg")?.open) renderGPermDlg();
         if ($("#welcome-dlg")?.open) renderWelcomeDlg();
+        if ($("#workshop-dlg")?.open) renderWorkshopDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
@@ -6832,6 +7421,117 @@
       openGPermGuide: d => { renderGPermDlg(d?.connect === "1"); const dlg = $("#gperm-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       openDemoPreview: () => { const dlg = $("#demo-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
       openWelcome: () => { renderWelcomeDlg(); const dlg = $("#welcome-dlg"); if (dlg && !dlg.open) dlg.showModal(); },
+      openWorkshop: d => {
+        if ($("#welcome-dlg")?.open) $("#welcome-dlg").close();
+        const { W } = workshopProgress();
+        if (d?.step !== undefined) W.step = Number(d.step) || 0;
+        W.bannerHidden = false;
+        save();
+        renderTopbar();
+        renderWorkshopDlg();
+        const dlg = $("#workshop-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      },
+      skipWorkshop: () => {
+        const { W, doneCount, isAllDone } = workshopProgress();
+        W.seen = true;
+        save();
+        $("#workshop-dlg")?.close();
+        renderTopbar();
+        if (!isAllDone) {
+          toast(L(`🎓 ข้าม Workshop ชั่วคราวแล้ว (${doneCount}/5) — กดปุ่ม “🎓 เรียนรู้ Workshop” ด้านบนของเว็บไซต์เพื่อกลับมาตั้งค่าต่อได้ทุกเมื่อครับ!`, `🎓 Workshop paused (${doneCount}/5) — click “🎓 Workshop” in the top bar anytime to resume!`));
+        }
+      },
+      hideWorkshopBanner: () => {
+        const { W } = workshopProgress();
+        W.bannerHidden = true;
+        save();
+        renderTopbar();
+        toast(L("💡 ซ่อนแถบแจ้งเตือนแล้ว — คุณยังกดปุ่ม 🎓 Workshop บนแถบเมนูด้านบนได้ตลอดเวลาครับ", "💡 Banner hidden — you can still click 🎓 Workshop in the top bar anytime"));
+      },
+      openWelcomeFromWs: () => {
+        $("#workshop-dlg")?.close();
+        renderWelcomeDlg();
+        const dlg = $("#welcome-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      },
+      wsStep: d => {
+        const { W } = workshopProgress();
+        W.step = Math.max(0, Math.min(4, Number(d.v) || 0));
+        save();
+        renderWorkshopDlg();
+      },
+      wsSimState: d => {
+        const { W } = workshopProgress();
+        W.simState = d.v || "focus";
+        renderWorkshopDlg();
+        if (d.v === "interrupted") toast(L("⏸️ จำลอง: ระบบบันทึกจุดค้างและเริ่มจับเวลางานแทรกแล้ว!", "⏸️ Simulation: Context bookmarked & timing interruption!"));
+        else if (d.v === "reflowed") toast(L("✨ จำลอง Auto-Reflow: เลื่อนตารางงานถัดไปออกไป +15 นาทีอัตโนมัติ!", "✨ Simulated Auto-Reflow: Shifted upcoming tasks by +15 min!"));
+      },
+      wsSimHabit: () => {
+        const { W } = workshopProgress();
+        W.simHabitDone = !W.simHabitDone;
+        renderWorkshopDlg();
+        if (W.simHabitDone) toast(L("🎉 จำลองเช็กอินสำเร็จ! ได้รับ +5 แต้ม Level Up และสะสม Streak ต่อเนื่อง", "🎉 Simulated check-in! +5 Level Up pts & streak increased"));
+      },
+      wsSimStepCycle: d => {
+        const { W } = workshopProgress();
+        W.simStepStatus ||= ["done", "doing", "todo"];
+        const idx = Number(d.idx) || 0;
+        const cur = W.simStepStatus[idx] || "todo";
+        W.simStepStatus[idx] = STEP_ORDER[(STEP_ORDER.indexOf(cur) + 1) % STEP_ORDER.length];
+        renderWorkshopDlg();
+      },
+      wsPresetTask: d => {
+        const inp = $("#ws-task-title");
+        if (inp && d.title) { inp.value = d.title; inp.focus(); }
+      },
+      wsPresetRoutine: d => {
+        const t = $("#ws-routine-title"), tm = $("#ws-routine-time"), fq = $("#ws-routine-freq");
+        if (t && d.title) t.value = d.title;
+        if (tm && d.time) tm.value = d.time;
+        if (fq && d.freq) fq.value = d.freq;
+      },
+      wsPresetProj: d => {
+        const t = $("#ws-proj-title"), g = $("#ws-proj-goal"), s = $("#ws-proj-steps");
+        if (t && d.title) t.value = d.title;
+        if (g && d.goal) g.value = d.goal;
+        if (s && d.steps) s.value = d.steps;
+      },
+      wsPresetMf: d => {
+        const t = $("#ws-mf-title"), it = $("#ws-mf-items");
+        if (t && d.title) t.value = d.title;
+        if (it && d.items) it.value = d.items;
+      },
+      wsRateDim: d => {
+        const dim = d.dim;
+        const val = Number(d.v) || 4;
+        if (!dim) return;
+        P().goals ||= {};
+        P().goals[dim] ||= { rating: 0, text: "", items: [] };
+        P().goals[dim].rating = val;
+        rerender();
+        renderWorkshopDlg();
+      },
+      wsToggleWeekday: d => {
+        const w = Number(d.v);
+        const Wd = (state.offDays ||= { weekdays: [], dates: {}, work: {} }).weekdays ||= [];
+        const i = Wd.indexOf(w);
+        if (i < 0) Wd.push(w); else Wd.splice(i, 1);
+        rerender();
+        renderWorkshopDlg();
+      },
+      wsGoReal: d => {
+        const { W } = workshopProgress();
+        W.seen = true;
+        if (d.tab) state.tab = d.tab;
+        if (d.sec) state.plannerSec = d.sec;
+        $("#workshop-dlg")?.close();
+        save();
+        renderStatic();
+        renderAll();
+        scrollTo({ top: 0, behavior: "smooth" });
+      },
       openStripeCfg: d => {
         renderStripeCfgDlg(d?.pkg || "");
         const dlg = $("#stripe-cfg-dlg");
@@ -10685,10 +11385,156 @@
         f.reset();
         rerender();
         toast(postNow ? L(`🔄 เพิ่มบิลประจำ "${title}" และลงบัญชีรายจ่ายเดือนนี้ (${money(amount)} ฿) แล้ว`, `🔄 Added fixed bill "${title}" and posted (${money(amount)} ฿) to this month`) : L(`🔄 เพิ่มบิลประจำ "${title}" (${money(amount)} ฿/เดือน) แล้ว`, `🔄 Added fixed bill "${title}" (${money(amount)} ฿/mo)`));
+      },
+      wsSaveStep0: fd => {
+        const title = (fd.title || "").trim();
+        if (!title) return;
+        const date = dkey();
+        const startMin = fd.start ? toMin(fd.start) : toMin(suggestStart(date));
+        const dur = Math.max(15, Number(fd.dur) || 60);
+        if (!state.tasks.some(t => t.date === date && t.title === title && !t.done)) {
+          state.tasks.push({
+            id: uid(),
+            title,
+            date,
+            start: startMin,
+            dur,
+            projectId: null,
+            priority: "main",
+            done: false,
+            bookmark: ""
+          });
+        }
+        const { W } = workshopProgress();
+        W.done[0] = true;
+        W.step = 1;
+        rerender();
+        renderWorkshopDlg();
+        toast(L(`✅ บันทึกงาน "${trunc(title, 22)}" เข้าคิววันนี้แล้ว! ไปต่อขั้นตอนที่ 2 กันเลย`, `✅ Added "${trunc(title, 22)}" to today's queue! Moving to Step 2`));
+      },
+      wsSaveStep1: fd => {
+        const title = (fd.title || "").trim();
+        if (!title) return;
+        makeRoutine({
+          title,
+          freq: fd.freq || "daily",
+          time: fd.time || "07:00",
+          remind: fd.remind === undefined ? 30 : Number(fd.remind) || 0
+        });
+        const { W } = workshopProgress();
+        W.done[1] = true;
+        W.step = 2;
+        rerender();
+        renderWorkshopDlg();
+        toast(L(`✅ บันทึกกิจวัตร "${trunc(title, 22)}" และเชื่อมตาราง Habit แล้ว! ไปต่อขั้นตอนที่ 3`, `✅ Saved routine "${trunc(title, 22)}" & linked to Habit Tracker! Moving to Step 3`));
+      },
+      wsSaveStep2: fd => {
+        const title = (fd.title || "").trim();
+        if (!title) return;
+        const goal = (fd.goal || "").trim();
+        const stepLines = String(fd.steps || "")
+          .split(/\r?\n/)
+          .map(s => s.trim())
+          .filter(Boolean);
+        const steps = stepLines.map((st, idx) => ({
+          id: uid(),
+          title: st,
+          status: idx === 0 ? "doing" : "todo",
+          activities: [],
+          deps: []
+        }));
+        const p = {
+          id: uid(),
+          title,
+          monthlyGoal: goal,
+          manual: 0,
+          coordinator: { name: "", contact: "" },
+          links: [],
+          steps
+        };
+        state.projects.unshift(p);
+        state.openProject = p.id;
+        const { W } = workshopProgress();
+        W.done[2] = true;
+        W.step = 3;
+        rerender();
+        renderWorkshopDlg();
+        toast(L(`✅ สร้างโปรเจค "${trunc(title, 22)}" (${steps.length} ขั้นตอน) แล้ว! ไปต่อขั้นตอนที่ 4`, `✅ Created project "${trunc(title, 22)}" (${steps.length} steps)! Moving to Step 4`));
+      },
+      wsSaveStep3: fd => {
+        const groupTitle = (fd.groupTitle || "").trim();
+        const itemLines = String(fd.items || "")
+          .split(/\r?\n/)
+          .map(s => s.trim())
+          .filter(Boolean);
+        if (groupTitle) {
+          const mk = dkey().slice(0, 7);
+          const M = (P().monthly[mk] ||= { focusItems: [], focusGroups: [] });
+          M.focusGroups ||= [];
+          let grp = M.focusGroups.find(g => g.title.trim().toLowerCase() === groupTitle.toLowerCase());
+          if (!grp) {
+            grp = { id: uid(), title: groupTitle, items: [] };
+            M.focusGroups.unshift(grp);
+          }
+          itemLines.forEach(line => {
+            if (!grp.items.some(it => it.text === line)) {
+              grp.items.push({ id: uid(), text: line, done: false });
+            }
+          });
+          if (fd.alsoCreateProj) {
+            const p = {
+              id: uid(),
+              title: groupTitle,
+              monthlyGoal: L(`ดึงจาก Life Planner (${monthLabel()})`, `From Life Planner (${monthLabel()})`),
+              manual: 0,
+              coordinator: { name: "", contact: "" },
+              links: [],
+              steps: itemLines.map(line => ({ id: uid(), title: line, status: "todo", activities: [], deps: [] }))
+            };
+            state.projects.unshift(p);
+            state.openProject = p.id;
+          }
+        }
+        const { W } = workshopProgress();
+        W.done[3] = true;
+        W.step = 4;
+        rerender();
+        renderWorkshopDlg();
+        toast(L(`✅ บันทึกเป้าหมาย 5 มิติ & หัวข้อ "${trunc(groupTitle, 20)}" แล้ว! ไปต่อขั้นตอนสุดท้าย`, `✅ Saved 5-D ratings & topic "${trunc(groupTitle, 20)}"! Moving to Step 5`));
+      },
+      wsSaveStep4: fd => {
+        P().finance ||= { income: 0, goal: 50000, saved: 0, currency: "" };
+        if (fd.currency) P().finance.currency = fd.currency;
+        if (fd.goal !== undefined && fd.goal !== "") P().finance.goal = Math.max(0, Number(fd.goal) || 0);
+        if (fd.lead !== undefined) state.alerts.lead = Number(fd.lead) || 0;
+        const { W } = workshopProgress();
+        W.done[4] = true;
+        W.seen = true;
+        rerender();
+        $("#workshop-dlg")?.close();
+        toast(L("🎉 ยินดีด้วย! คุณตั้งค่าระบบหลักผ่าน Workshop ครบแล้ว (กดปุ่ม 🎓 ด้านบนเพื่อกลับมาตั้งค่าใหม่ได้ทุกเมื่อ)", "🎉 Congratulations! Workshop setup complete (click 🎓 in the top bar anytime to revisit)"));
       }
     });
 
     /* ===================== Event delegation ===================== */
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      const outsideDialog = (e, dialog) => {
+        const r = dialog.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      for (const dialog of document.querySelectorAll('dialog[closedby="any"]')) {
+        let pressedOutside = false;
+        dialog.addEventListener("pointerdown", e => { pressedOutside = outsideDialog(e, dialog); });
+        dialog.addEventListener("pointerup", e => { if (pressedOutside && outsideDialog(e, dialog)) dialog.close(); });
+      }
+    }
+    $("#workshop-dlg")?.addEventListener("close", () => {
+      if (state?.workshop) {
+        state.workshop.seen = true;
+        save();
+        renderTopbar();
+      }
+    });
     document.addEventListener("click", e => {
       const el = e.target.closest("[data-act]"); if (!el) return;
       ensureAudio();
@@ -10745,10 +11591,11 @@
         }
       }
       renderAll();
-      if (forceWelcome && !$("#paywall")?.open) {
-        renderWelcomeDlg();
-        const dlg = $("#welcome-dlg");
-        if (dlg && !dlg.open) dlg.showModal();
+      const { W, isAllDone } = workshopProgress();
+      if ((forceWelcome || (!W.seen && !isAllDone)) && !$("#paywall")?.open) {
+        renderWorkshopDlg();
+        const wsDlg = $("#workshop-dlg");
+        if (wsDlg && !wsDlg.open) wsDlg.showModal();
       }
     }
     async function login() {
