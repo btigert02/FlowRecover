@@ -4601,12 +4601,15 @@
         <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep" style="flex:1;min-width:110px">🌙 ${L("เข้านอน", "Sleep")}</button>
       </div>
       <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn" data-act="editTask" data-id="${cur.id}" id="btn-edit-current">✏️ ${L("แก้ไข", "Edit")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
+      ${nxt ? `<div class="row" style="justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);flex-wrap:wrap"><span class="muted sm" style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⏭️ ${L("งานถัดไป", "Up next")} (${fmt(nxt.start)}): <b style="color:var(--text)">${esc(nxt.title)}</b></span><button type="button" class="btn btn-sm btn-emerald" data-act="startTaskNow" data-id="${nxt.id}" id="btn-start-next-early">▶️ ${L("เริ่มตอนนี้", "Start now")}</button></div>` : ""}
     </article>`;
       } else {
+        const upNextTask = nxt || tasksOn(today).find(t => !t.done && !t.isSleep);
         cockpit = `<article class="card cockpit idle" id="cockpit">
       <div class="cockpit-top"><span class="pill">☕ ${L("ช่วงว่าง", "Free time")}</span><span class="muted sm">${fmtDate(today)}</span></div>
-      <h2 class="cockpit-title">${nxt ? L("งานถัดไป: ", "Up next: ") + esc(nxt.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
-      ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
+      <h2 class="cockpit-title">${upNextTask ? L("งานถัดไป: ", "Up next: ") + esc(upNextTask.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
+      ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : upNextTask ? `<p class="muted center sm">${L(`กำหนดไว้ ${fmt(upNextTask.start)}–${fmt(upNextTask.start + upNextTask.dur)} • กด “▶️ เริ่มตอนนี้” เพื่อดึงมาเริ่มทำทันที`, `Scheduled ${fmt(upNextTask.start)}–${fmt(upNextTask.start + upNextTask.dur)} • Tap “▶️ Start now” to begin immediately`)}</p>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
+      ${upNextTask ? `<button class="btn btn-emerald btn-xl" data-act="startTaskNow" data-id="${upNextTask.id}" id="btn-start-next-now" style="width:100%;margin-bottom:8px;font-weight:800;box-shadow:0 8px 24px rgba(16,185,129,.22)">▶️ ${L(`เริ่มตอนนี้ (${trunc(upNextTask.title, 28)})`, `Start Now (${trunc(upNextTask.title, 28)})`)}</button>` : ""}
       <div class="row" style="gap:8px;margin-bottom:8px">
         <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1.2;min-width:130px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
         <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest" style="flex:1;min-width:110px">☕ ${L("พักผ่อน", "Break")}</button>
@@ -4753,7 +4756,7 @@
       return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}" data-sort-id="${t.id}">
     <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
     <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
-    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span>${t.done && actMin ? ` <span class="chip ${actMin <= t.dur ? "chip-emerald" : "chip-amber"}" style="font-size:.68rem;padding:1px 6px">⏱️ ${L(`ใช้จริง ${minLabel(actMin)}`, `Actual ${minLabel(actMin)}`)}</span>` : ""} ${!t.done ? `<span style="display:inline-flex;gap:3px;margin-left:4px"><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
+    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span>${t.done && actMin ? ` <span class="chip ${actMin <= t.dur ? "chip-emerald" : "chip-amber"}" style="font-size:.68rem;padding:1px 6px">⏱️ ${L(`ใช้จริง ${minLabel(actMin)}`, `Actual ${minLabel(actMin)}`)}</span>` : ""} ${!t.done ? `<span style="display:inline-flex;gap:3px;margin-left:4px;flex-wrap:wrap;align-items:center">${!live && !isSleep ? `<button type="button" class="link sm" style="font-size:.7rem;padding:1px 6px;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.14);color:var(--emerald);border-radius:6px;font-weight:700" data-act="startTaskNow" data-id="${t.id}" title="${L("ดึงงานนี้มาเริ่มโฟกัสตอนนี้ทันที", "Pull this task to start right now")}">▶️ ${L("เริ่มตอนนี้", "Start now")}</button>` : ""}<button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
       <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
       <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
       ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
@@ -13071,6 +13074,47 @@
         state.queueViewMode = d.v || "time";
         save();
         renderView();
+      },
+      startTaskNow: d => {
+        const today = dkey();
+        const t = (d?.id && state.tasks.find(x => x.id === d.id)) || nextTask() || tasksOn(today).find(x => !x.done && !x.isSleep);
+        if (!t) {
+          toast(L("ยังไม่มีงานถัดไปในคิววันนี้", "No upcoming task in today's queue"));
+          return;
+        }
+        const prevDate = t.date, prevStart = t.start;
+        const nowM = Math.max(0, Math.floor(nowMin()));
+        const cur = currentTask();
+        let prevCurStart = null;
+        if (cur && cur.id !== t.id) {
+          prevCurStart = cur.start;
+          cur.start = Math.min(23 * 60 + 45, nowM + (Number(t.dur) || 60));
+        }
+        t.date = today;
+        t.start = nowM;
+        if (t.actId) {
+          const [, , a] = findAct(t.projectId, t.stepId, t.actId);
+          if (a) { a.date = today; a.time = fmt(nowM); }
+        }
+        if (state.focus) {
+          state.focus.rest = null;
+          state.focus.pomo = null;
+          state.focus.sleep = null;
+          state.focus.interrupt = null;
+        }
+        state.tab = "focus";
+        syncDaily24hWithQueue(today);
+        rerender();
+        if (t.gcalId) gSyncChanges().catch(() => {});
+        toast(
+          L(`▶️ ดึง "${trunc(t.title, 24)}" มาเริ่มโฟกัสตอนนี้แล้ว (${fmt(t.start)}–${fmt(t.start + (t.dur || 60))} น.)!`, `▶️ Started "${trunc(t.title, 24)}" right now (${fmt(t.start)}–${fmt(t.start + (t.dur || 60))})!`),
+          () => {
+            t.date = prevDate;
+            t.start = prevStart;
+            if (cur && prevCurStart !== null) cur.start = prevCurStart;
+            syncDaily24hWithQueue(today);
+          }
+        );
       },
       startTaskPomo: d => {
         const t = state.tasks.find(x => x.id === d.id);
