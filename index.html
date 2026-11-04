@@ -2478,6 +2478,21 @@
     .pg-sec:hover { transform: translateY(-1px) }
     .pg-body ol, .pg-body ul { padding-left: 20px; display: grid; gap: 6px; font-size: .86rem; line-height: 1.55 }
     .pg-ex li { list-style: none; margin-left: -20px; padding: 8px 10px; border-radius: 12px; background: var(--surface-2); border-left: 3px solid var(--emerald) }
+    .proj-flow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; margin-top: 6px }
+    .proj-flow-node { padding: 12px; border-radius: 14px; background: var(--surface-2); border: 1.5px solid var(--border); display: flex; flex-direction: column; gap: 6px; position: relative; transition: border-color .2s, transform .15s }
+    .proj-flow-node:hover { border-color: var(--amber); transform: translateY(-1px) }
+    .proj-flow-node .pf-num { display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; width: fit-content }
+    .proj-flow-node b { font-size: .92rem; color: var(--text) }
+    .proj-flow-node p { font-size: .78rem; color: var(--muted); line-height: 1.45; margin: 0 }
+    .proj-flow-node .pf-link { margin-top: auto; padding-top: 6px; border-top: 1px dashed var(--border); font-size: .74rem; color: var(--sky); font-weight: 600 }
+    .proj-sec-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 12px; border-radius: 12px; background: linear-gradient(90deg, rgba(245, 158, 11, .1), rgba(56, 189, 248, .05)); border-left: 3px solid var(--amber); margin-bottom: 8px }
+    .dep-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px }
+    .dep-chip { padding: 6px 11px; border-radius: 10px; background: var(--surface-3); border: 1.5px solid var(--border); font-size: .8rem; font-weight: 600; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; text-align: left }
+    .dep-chip:hover { border-color: var(--amber); color: var(--text) }
+    .dep-chip.on { background: rgba(245, 158, 11, .16); border-color: var(--amber); color: var(--amber); font-weight: 700 }
+    .tpl-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px }
+    .tpl-pill { padding: 5px 10px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); font-size: .76rem; font-weight: 600; color: var(--text); cursor: pointer; transition: all .15s }
+    .tpl-pill:hover { border-color: var(--emerald); background: rgba(16, 185, 129, .12); color: var(--emerald) }
 
     .link-ico svg { width: 100%; height: 100%; display: block }
     .btn .link-ico { margin-right: 6px; display: inline-block; vertical-align: -3px }
@@ -2820,6 +2835,9 @@
   <dialog id="workshop-dlg" closedby="any" aria-labelledby="workshop-dlg-title" style="width:min(760px,95vw)">
     <div class="dlg-body" id="workshop-dlg-body"></div>
   </dialog>
+  <dialog id="proj-wizard-dlg" closedby="any" aria-labelledby="proj-wizard-dlg-title" style="width:min(740px,95vw)">
+    <div class="dlg-body" id="proj-wizard-dlg-body"></div>
+  </dialog>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script type="module">
@@ -2917,7 +2935,7 @@
       alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {}, digest: { on: true, mode: "evening", time: "17:00" } },
       offDays: { weekdays: [], dates: {}, work: {} },
       gcal: { calendarId: "primary", lastSync: 0 },
-      mapMode: "flow", mapProject: "", ganttZoom: "month", openStep: null, plannerGuideOpen: true,
+      mapMode: "flow", mapProject: "", ganttZoom: "month", openStep: null, plannerGuideOpen: true, projGuideOpen: true, projGuideSec: "flow",
       report: { range: "month", date: null, project: "all", type: "all" },
       cal: { view: "month", date: null, sel: null }, finView: { range: "month", date: null, kind: "exp" },
       habitView: { range: "week", date: null },
@@ -4613,7 +4631,14 @@
     function renderProjects() {
       const sub = state.projSub;
       $("#view-projects").innerHTML = `
-    <div class="view-head"><div><h1>🗂️ ${L("โปรเจค", "Projects")}</h1><p>${L("ขั้นตอน • กิจกรรมย่อย • Timeline หลายเดือน–หลายปี • Google Calendar & Drive", "Steps • activities • multi-month to multi-year timeline • Google Calendar & Drive")}</p></div></div>
+    <div class="view-head">
+      <div><h1>🗂️ ${L("โปรเจค", "Projects")}</h1><p>${L("ขั้นตอน • กิจกรรมย่อย • Timeline หลายเดือน–หลายปี • Google Calendar & Drive", "Steps • activities • multi-month to multi-year timeline • Google Calendar & Drive")}</p></div>
+      <div class="row" style="gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn btn-sm" data-act="toggleProjGuide" id="btn-proj-guide-top">📘 ${L("วิธีใช้ & ผังความเชื่อมโยง", "Guide & Data Flow")}</button>
+        <button type="button" class="btn btn-sm btn-amber" data-act="openProjWizard" data-mode="new" id="btn-proj-wizard-top">🪄 ${L("ตัวช่วยกรอกโปรเจคด่วน", "Quick-Fill Wizard")}</button>
+      </div>
+    </div>
+    ${projectGuide()}
     <div class="seg" style="margin-bottom:14px">
       <button class="${sub === "list" ? "on" : ""}" data-act="projSub" data-v="list" id="ps-list">🗂️ ${L("รายการ", "List")}</button>
       <button class="${sub === "gantt" ? "on" : ""}" data-act="projSub" data-v="gantt" id="ps-gantt">📆 Timeline</button>
@@ -4624,13 +4649,24 @@
     function projectList() {
       return `<div class="grid">
     ${googlePanel()}
-    <article class="card"><h3>＋ ${L("สร้างโปรเจคใหม่", "New project")}</h3>
+    <article class="card">
+      <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <h3 style="margin:0">＋ ${L("สร้างโปรเจคใหม่", "New project")}</h3>
+        <button type="button" class="btn btn-sm" data-act="openProjWizard" data-mode="new" style="border-color:rgba(16,185,129,.4);color:var(--emerald)">🪄 ${L("สร้างด่วนพร้อมขั้นตอน & กิจกรรมย่อย (Wizard)", "Create with Steps & Sub-tasks (Wizard)")}</button>
+      </div>
+      <div class="muted sm" style="margin-bottom:6px">✨ ${L("คลิกเลือกตัวอย่างเพื่อเติมชื่อโปรเจคเร็ว หรือพิมพ์เองด้านล่าง:", "Tap a preset to pre-fill or type your own below:")}</div>
+      <div class="tpl-pills" style="margin-bottom:10px">
+        <button type="button" class="tpl-pill" data-act="projQuickPreset" data-title="${L("ดูแล ปรับปรุง เว็บไซต์ / ระบบ", "Website & System Upgrade")}" data-goal="${L("พัฒนาระบบให้เสถียรและใช้งานง่าย", "Launch stable & user-friendly system")}">💻 ${L("พัฒนาเว็บ / ระบบ", "Web / System Dev")}</button>
+        <button type="button" class="tpl-pill" data-act="projQuickPreset" data-title="${L("พัฒนาสินค้า Digital & คอนเทนต์", "Digital Product & Content Launch")}" data-goal="${L("สร้างรายได้เสริมและขยายฐานลูกค้า", "Grow digital product revenue")}">📦 ${L("สินค้า Digital / แคมเปญ", "Digital Product")}</button>
+        <button type="button" class="tpl-pill" data-act="projQuickPreset" data-title="${L("โครงการ / งานเอกสารสำคัญ", "Official Project & Documentation")}" data-goal="${L("ส่งมอบงานครบถ้วนทันตามกำหนด", "Deliver all milestones on schedule")}">📑 ${L("งานโครงการ / ราชการ", "Official Project")}</button>
+        <button type="button" class="tpl-pill" data-act="projQuickPreset" data-title="${L("ปั้นช่องโซเชียล / วิดีโอคอนเทนต์", "Social Media & Video Channel")}" data-goal="${L("ลงคอนเทนต์สม่ำเสมอ เพิ่มผู้ติดตาม", "Consistent publishing & audience growth")}">🎬 ${L("ปั้นช่อง / คอนเทนต์", "Content Channel")}</button>
+      </div>
       <form class="form-grid" data-form="addProject" id="form-add-project" autocomplete="off">
-        <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" name="title" id="proj-title" required placeholder="${L("เช่น แคมเปญปีใหม่", "e.g. New Year campaign")}"></label>
-        <label class="field"><span>${L("เป้าหมายรายเดือนที่เกี่ยวข้อง", "Related monthly goal")}</span><input class="input" name="goal" id="proj-goal" placeholder="${L("เช่น เพิ่มยอดขาย 20%", "e.g. Grow sales by 20%")}"></label>
+        <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" name="title" id="proj-title" required placeholder="${L("เช่น แคมเปญปีใหม่ / ดูแลเว็บไซต์", "e.g. New Year campaign")}"></label>
+        <label class="field"><span>🎯 ${L("เป้าหมายรายเดือนที่เกี่ยวข้อง (เชื่อมหน้า แผนภูมิ & Planner)", "Related monthly goal (links to Map & Planner)")}</span><input class="input" name="goal" id="proj-goal" placeholder="${L("เช่น เพิ่มยอดขาย 20% / ปิดงานให้ทันสิ้นเดือน", "e.g. Grow sales by 20%")}"></label>
         <button class="btn btn-amber full" type="submit" id="btn-add-project">＋ ${L("สร้างโปรเจค", "Create project")}</button>
       </form></article>
-    ${state.projects.length ? `<p class="sort-hint">↕️ ${L("ใช้นิ้วลาก ⠿ เพื่อจัดลำดับความสำคัญของโปรเจค", "Drag ⠿ to prioritise projects")}</p><div class="grid" data-sort="projects">${state.projects.map(projectCard).join("")}</div>` : `<p class="empty">${L("ยังไม่มีโปรเจค", "No projects yet")}</p>`}
+    ${state.projects.length ? `<p class="sort-hint">↕️ ${L("ใช้นิ้วลาก ⠿ เพื่อจัดลำดับความสำคัญของโปรเจค • แตะชื่อโปรเจคเพื่อเปิดดูขั้นตอนและกิจกรรมย่อย", "Drag ⠿ to prioritise projects • Tap a project to manage steps & sub-activities")}</p><div class="grid" data-sort="projects">${state.projects.map(projectCard).join("")}</div>` : `<p class="empty">${L("ยังไม่มีโปรเจค — สร้างจากฟอร์มด้านบน หรือกดปุ่ม “🪄 ตัวช่วยกรอกโปรเจคด่วน”", "No projects yet — create one above or use the 🪄 Quick-Fill Wizard")}</p>`}
   </div>`;
     }
     function projectCard(p) {
@@ -4649,43 +4685,66 @@
       <span class="muted">${open ? "▲" : "▼"}</span>
     </button></div>
     ${open ? `<div class="proj-body">
-      <div class="form-grid">
-        <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" id="pt-${p.id}" data-bind="projects.${i}.title" value="${esc(p.title)}"></label>
-        <label class="field"><span>🎯 ${L("เป้าหมายรายเดือน", "Monthly goal")}</span><input class="input" id="pg-${p.id}" data-bind="projects.${i}.monthlyGoal" value="${esc(p.monthlyGoal)}"></label>
-        <label class="field"><span>👤 ${L("ผู้ประสานงาน", "Coordinator")}</span><input class="input" id="pc-${p.id}" data-bind="projects.${i}.coordinator.name" value="${esc(p.coordinator?.name)}" placeholder="${L("ชื่อ / ตำแหน่ง", "Name / role")}"></label>
-        <label class="field"><span>📞 ${L("ข้อมูลติดต่อ", "Contact")}</span><input class="input" id="pcc-${p.id}" data-bind="projects.${i}.coordinator.contact" value="${esc(p.coordinator?.contact)}" placeholder="${L("อีเมล / เบอร์ / Line", "Email / phone / Line")}"></label>
+      <div>
+        <div class="proj-sec-head">
+          <div><b>1️⃣ ${L("ข้อมูลหลักโปรเจค & ผู้ประสานงาน", "Project Info & Coordinator")}</b><div class="muted sm">${L("🔗 เชื่อมกับหน้า “🕸️ แผนภูมิ (ภาพรวม 4 ชั้น)” เพื่อดูว่าโปรเจคนี้ตอบโจทย์เป้าหมายใดและใครรับผิดชอบ", "🔗 Links to the 4-tier Relationship Map (Goals → Projects → Tasks → Coordinator)")}</div></div>
+        </div>
+        <div class="form-grid">
+          <label class="field"><span>${L("ชื่อโปรเจค", "Project name")}</span><input class="input" id="pt-${p.id}" data-bind="projects.${i}.title" value="${esc(p.title)}"></label>
+          <label class="field"><span>🎯 ${L("เป้าหมายรายเดือน", "Monthly goal")}</span><input class="input" id="pg-${p.id}" data-bind="projects.${i}.monthlyGoal" value="${esc(p.monthlyGoal)}" placeholder="${L("เช่น ส่งมอบระบบเฟสแรก", "e.g. Deliver Phase 1")}"></label>
+          <label class="field"><span>👤 ${L("ผู้ประสานงาน / ผู้รับผิดชอบ", "Coordinator")}</span><input class="input" id="pc-${p.id}" data-bind="projects.${i}.coordinator.name" value="${esc(p.coordinator?.name)}" placeholder="${L("ชื่อ / ตำแหน่ง", "Name / role")}"></label>
+          <label class="field"><span>📞 ${L("ข้อมูลติดต่อ", "Contact")}</span><input class="input" id="pcc-${p.id}" data-bind="projects.${i}.coordinator.contact" value="${esc(p.coordinator?.contact)}" placeholder="${L("อีเมล / เบอร์ / Line", "Email / phone / Line")}"></label>
+        </div>
       </div>
-      <div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${L("ความคืบหน้า", "Progress")}</b><b class="mono emerald">${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
-        ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">${L("คำนวณอัตโนมัติจากขั้นตอนที่ Done", "Auto-calculated from Done steps")}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
-      <div><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>🧭 ${L("Timeline ขั้นตอนการทำงาน", "Workflow timeline")}</b>
-          <div class="row" style="gap:6px"><button class="btn btn-sm" data-act="projSub" data-v="gantt" id="pgantt-${p.id}">📆 Gantt</button><button class="btn btn-sm" data-act="gcalSyncProject" data-id="${p.id}" id="gsp-${p.id}">📆 ${L("ส่งทั้งโปรเจคเข้า Calendar", "Push project to Calendar")}</button></div></div>
-        <p class="muted sm" style="margin-top:4px">${L("แตะชื่อขั้นตอน → กำหนดวันเริ่ม–สิ้นสุด (วางแผนได้หลายเดือนถึงหลายปี) แยกกิจกรรมย่อย ส่งเข้าคิวงาน/Google Calendar • แตะป้ายสถานะเพื่อเปลี่ยน • ลาก ⠿ จัดลำดับ", "Tap a step → set start/end (months to years), break into activities, queue them or push to Google Calendar • tap the status to cycle • drag ⠿ to reorder")}</p>
+      <div><div class="row" style="justify-content:space-between;margin-bottom:6px"><b>${L("ความคืบหน้าโปรเจค", "Project Progress")}</b><b class="mono emerald">${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>
+        ${p.steps.length ? `<p class="muted sm" style="margin-top:6px">${L("คำนวณอัตโนมัติจากจำนวนขั้นตอนหลัก (Steps) ที่เปลี่ยนสถานะเป็น Done", "Auto-calculated from steps marked Done")}</p>` : `<input type="range" min="0" max="100" step="5" value="${pct}" data-bind="projects.${i}.manual" data-num="1" data-rr="1" id="pr-${p.id}" style="width:100%;margin-top:10px;accent-color:var(--emerald)" aria-label="${L("ตั้งความคืบหน้า", "Set progress")}">`}</div>
+      <div>
+        <div class="proj-sec-head" style="border-left-color:var(--sky)">
+          <div>
+            <b>2️⃣ 🧭 ${L("ขั้นตอนหลัก (Steps) & กิจกรรมย่อย (Sub-activities)", "Main Steps & Sub-activities")}</b>
+            <div class="muted sm">${L("🔗 ขั้นตอนหลักแสดงเป็นแถบใน “📆 Timeline (Gantt)” และกล่องใน “🔀 Flowchart” • แตะชื่อขั้นตอนเพื่อแตก 🔹 กิจกรรมย่อยส่งเข้าคิวงานรายวัน", "🔗 Steps appear as bars on Timeline (Gantt) & boxes on Flowchart • Tap a step to add Sub-activities")}</div>
+          </div>
+          <div class="row" style="gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn-sm" data-act="openProjWizard" data-pid="${p.id}" data-mode="steps" style="border-color:rgba(16,185,129,.45);color:var(--emerald)">🪄 ${L("เพิ่มหลายขั้นตอน / กิจกรรมรวดเดียว", "Bulk Add Steps / Sub-tasks")}</button>
+            ${p.steps.length > 1 ? `<button type="button" class="btn btn-sm" data-act="autoChainSteps" data-pid="${p.id}" title="${L("ผูกเส้นเชื่อม Flowchart เรียงจากขั้นตอนที่ 1 ไปจนจบอัตโนมัติ", "Auto-connect steps sequentially for Flowchart")}">🔗 ${L("เรียง Flowchart อัตโนมัติ (1➔2➔3)", "Auto-Chain Flowchart")}</button>` : ""}
+            <button type="button" class="btn btn-sm" data-act="projSub" data-v="gantt" id="pgantt-${p.id}">📆 Gantt</button>
+            <button type="button" class="btn btn-sm" data-act="projSub" data-v="map">🕸️ Flowchart</button>
+            <button type="button" class="btn btn-sm" data-act="gcalSyncProject" data-id="${p.id}" id="gsp-${p.id}">📆 ${L("ส่งเข้า Calendar", "Push to Calendar")}</button>
+          </div>
+        </div>
+        <p class="muted sm" style="margin-top:4px">💡 ${L("วิธีใช้งานง่ายๆ: 1) เพิ่มขั้นตอนหลักด้านล่าง ➔ 2) แตะที่ชื่อขั้นตอนเพื่อเปิดรายละเอียด ➔ 3) เพิ่ม “🔹 กิจกรรมย่อย” พร้อมติ๊กส่งเข้าคิวงาน • กดปุ่ม ✏️ หลังรายการเพื่อแก้ไขได้ทุกเมื่อ", "Easy workflow: 1) Add main steps below ➔ 2) Tap a step title to expand ➔ 3) Add Sub-activities & queue them • Tap ✏️ on any item to edit")}</p>
         <ul class="steps" data-sort="steps:${p.id}" style="margin-top:10px">${p.steps.map(s => stepItem(p, s)).join("")}</ul>
         <form class="form-grid" data-form="addStep" data-pid="${p.id}" id="fs-${p.id}" style="margin-top:8px" autocomplete="off">
-          <label class="field full"><span>＋ ${L("ขั้นตอนใหม่", "New step")}</span><input class="input" name="title" required placeholder="${L("เช่น ออกแบบ / ผลิต / เปิดตัว…", "e.g. Design / Build / Launch…")}" id="fsi-${p.id}"></label>
-          <label class="field"><span>🚀 ${L("วันเริ่ม (ไม่บังคับ)", "Start (optional)")}</span><input class="input" type="date" name="start" id="fss-${p.id}"></label>
-          <label class="field"><span>🏁 ${L("วันสิ้นสุด (ไม่บังคับ)", "End (optional)")}</span><input class="input" type="date" name="end" id="fse-${p.id}"></label>
-          <button class="btn full" type="submit" id="fsb-${p.id}">＋ ${L("เพิ่มขั้นตอน", "Add step")}</button>
+          <label class="field full"><span>＋ ${L("เพิ่มขั้นตอนหลักใหม่ (Step / เฟสงาน)", "New main step / phase")}</span><input class="input" name="title" required placeholder="${L("เช่น เฟส 1: วางระบบ / ออกแบบ / พัฒนา / ทดสอบ…", "e.g. Phase 1: Design / Build / Test…")}" id="fsi-${p.id}"></label>
+          <label class="field"><span>🚀 ${L("วันเริ่มขั้นตอน (แสดงใน Gantt • ไม่บังคับ)", "Start date (for Gantt • optional)")}</span><input class="input" type="date" name="start" id="fss-${p.id}"></label>
+          <label class="field"><span>🏁 ${L("วันสิ้นสุดขั้นตอน (ไม่บังคับ)", "End date (optional)")}</span><input class="input" type="date" name="end" id="fse-${p.id}"></label>
+          <button class="btn full" type="submit" id="fsb-${p.id}">＋ ${L("เพิ่มขั้นตอนหลัก", "Add step")}</button>
         </form></div>
-      <div><div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><b>📁 ${L("ไฟล์แนบ Google Drive", "Google Drive files")}</b>
-          <button class="btn btn-sm" data-act="drivePick" data-pid="${p.id}" id="dp-${p.id}"><span class="link-ico">${DRIVE_SVG}</span>${L("เลือกไฟล์จาก Google Drive", "Pick from Google Drive")}</button></div>
+      <div>
+        <div class="proj-sec-head" style="border-left-color:var(--violet)">
+          <div><b>3️⃣ 📁 ${L("ไฟล์แนบ & เอกสารโปรเจค (Google Drive / ลิงก์)", "Project Files & Links (Google Drive)")}</b><div class="muted sm">${L("🔗 แนบเอกสาร Docs, Sheets, Slides หรือโฟลเดอร์งานไว้เปิดดูได้ทันทีจากในการ์ดโปรเจค", "🔗 Attach Docs, Sheets, Slides, or folders for 1-click access")}</div></div>
+          <button class="btn btn-sm" data-act="drivePick" data-pid="${p.id}" id="dp-${p.id}"><span class="link-ico">${DRIVE_SVG}</span>${L("เลือกไฟล์จาก Google Drive", "Pick from Google Drive")}</button>
+        </div>
         ${p.links.length ? `<ul class="links" style="margin-top:8px">${p.links.map(l => `<li>${linkIcon(l)}<a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.label || l.url)}</a><button class="icon-btn" data-act="editItem" data-kind="link" data-pid="${p.id}" data-id="${l.id}" id="le-${l.id}" title="${L("แก้ไขลิงก์", "Edit link")}" aria-label="${L("แก้ไขลิงก์", "Edit link")}">✏️</button><button class="icon-btn" data-act="delLink" data-pid="${p.id}" data-lid="${l.id}" id="ld-${l.id}" aria-label="${L("ลบลิงก์", "Remove link")}">✕</button></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีไฟล์แนบ — เลือกจาก Drive หรือคัดลอกลิงก์มาวาง", "No files yet — pick from Drive or paste a link")}</p>`}
         <form class="form-grid" data-form="addLink" data-pid="${p.id}" id="fl-${p.id}" style="margin-top:8px" autocomplete="off">
           <input class="input" name="label" placeholder="${L("ชื่อไฟล์ (เว้นว่างได้ ตั้งชื่อให้อัตโนมัติ)", "File name (optional, auto)")}" id="fll-${p.id}">
           <div class="row" style="gap:6px"><input class="input grow" name="url" type="url" required placeholder="https://drive.google.com/..." id="flu-${p.id}" style="flex:1;min-width:0"><button class="btn" type="button" data-act="pasteLink" data-pid="${p.id}" id="flp-${p.id}" title="${L("วางลิงก์จากคลิปบอร์ด", "Paste from clipboard")}">📋</button></div>
           <button class="btn full" type="submit" id="flb-${p.id}">📎 ${L("แนบลิงก์ที่คัดลอกมา", "Attach pasted link")}</button>
         </form></div>
-      <div><b>📋 ${L("เพิ่มคิวงานจากโปรเจคนี้", "Queue a task from this project")}</b>
+      <div>
+        <div class="proj-sec-head" style="border-left-color:var(--emerald)">
+          <div><b>4️⃣ 📋 ${L("คิวงานรายวันที่ผูกกับโปรเจคนี้", "Daily Queue Tasks Linked to This Project")} (${tasks.length})</b><div class="muted sm">${L("🔗 งานจากกิจกรรมย่อยที่ติ๊ก “เพิ่มเข้าคิวงาน” หรือเพิ่มจากฟอร์มนี้ จะซิงค์กับหน้า “📋 คิวงาน” และ “⚡ โฟกัส” อัตโนมัติ", "🔗 Tasks queued from sub-activities or added below sync directly with Daily Queue & Focus")}</div></div>
+        </div>
         <form class="form-grid" data-form="projTask" data-pid="${p.id}" id="fpt-${p.id}" style="margin-top:8px" autocomplete="off">
-          <label class="field full"><span>${L("ชื่องาน", "Task name")}</span><input class="input" name="title" required id="fptt-${p.id}" placeholder="${L("เช่น ประชุมสรุปแบบกับลูกค้า", "e.g. Design review with client")}"></label>
-          <label class="field"><span>📅 ${L("วันที่", "Date")}</span><input class="input" type="date" name="date" value="${nextWorkDay(addDays(today, -1))}" id="fptd-${p.id}"></label>
+          <label class="field full"><span>${L("ชื่องานด่วนที่ต้องการส่งเข้าคิวรายวัน", "Task name")}</span><input class="input" name="title" required id="fptt-${p.id}" placeholder="${L("เช่น ประชุมสรุปแบบกับลูกค้า", "e.g. Design review with client")}"></label>
+          <label class="field"><span>📅 ${L("วันที่ทำ", "Date")}</span><input class="input" type="date" name="date" value="${nextWorkDay(addDays(today, -1))}" id="fptd-${p.id}"></label>
           <label class="field"><span>⏰ ${L("เวลาเริ่ม", "Start")}</span><input class="input" type="time" name="start" value="${suggestStart(today)}" id="fpts-${p.id}"></label>
           <label class="field"><span>${L("ระยะเวลา", "Duration")}</span><select class="input" name="dur" id="fptu-${p.id}">${durOpts}</select></label>
-          <label class="field"><span>🧭 ${L("ขั้นตอน", "Step")}</span><select class="input" name="step" id="fptst-${p.id}"><option value="">—</option>${p.steps.map(s => `<option value="${s.id}">${esc(trunc(s.title, 40))}</option>`).join("")}</select></label>
+          <label class="field"><span>🧭 ${L("ผูกกับขั้นตอนหลัก", "Step")}</span><select class="input" name="step" id="fptst-${p.id}"><option value="">—</option>${p.steps.map(s => `<option value="${s.id}">${esc(trunc(s.title, 40))}</option>`).join("")}</select></label>
           <label class="field full"><span>${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority" id="fptp-${p.id}"><option value="main">⭐ ${L("งานหลัก", "Main")}</option><option value="secondary">${L("งานรอง", "Secondary")}</option></select></label>
-          <button class="btn btn-amber full" type="submit" id="fptb-${p.id}">＋ ${L("เพิ่มเข้าคิวงาน", "Add to queue")}</button>
+          <button class="btn btn-amber full" type="submit" id="fptb-${p.id}">＋ ${L("เพิ่มเข้าคิวงานรายวัน", "Add to queue")}</button>
         </form>
-        <b class="sm" style="display:block;margin-top:12px">${L("งานที่ผูกกับโปรเจคนี้", "Linked tasks")} (${tasks.length})</b>
+        <b class="sm" style="display:block;margin-top:12px">${L("งานที่อยู่ในคิวงานของโปรเจคนี้", "Linked tasks in Daily Queue")} (${tasks.length})</b>
         ${tasks.length ? `<ul class="rows" style="margin-top:8px">${tasks.map(t => `<li class="row-item"><div>${t.done ? "✅" : "⬜"} ${esc(t.title)} <span class="muted">· ${fmtDate(t.date)} ${fmt(t.start)}</span>${stepChip(t)}</div><div class="row" style="gap:4px"><button class="icon-btn" data-act="editTask" data-id="${t.id}" id="pte-${t.id}" title="${L("แก้ไขงาน", "Edit task")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="qdateGo" data-v="${t.date}" id="ptq-${t.id}" title="${L("ไปที่คิววันนั้น", "Open that day's queue")}" aria-label="${L("ไปที่คิววันนั้น", "Open that day's queue")}">📅</button></div></li>`).join("")}</ul>` : `<p class="muted sm">${L("ยังไม่มีงาน — เพิ่มจากฟอร์มด้านบน หรือจากกิจกรรมย่อยของขั้นตอน", "No tasks yet — add one above or from a step's activities")}</p>`}</div>
       <div class="row"><button class="btn btn-emerald grow" data-act="share" data-id="${p.id}" id="share-${p.id}">🔗 ${L("สร้างลิงก์แชร์ความคืบหน้า", "Create progress share link")}</button><button class="btn btn-ghost" data-act="delProject" data-id="${p.id}" id="pdel-${p.id}">🗑️ ${L("ลบ", "Delete")}</button></div>
     </div>` : ""}
@@ -7421,6 +7480,7 @@
         if ($("#gperm-dlg")?.open) renderGPermDlg();
         if ($("#welcome-dlg")?.open) renderWelcomeDlg();
         if ($("#workshop-dlg")?.open) renderWorkshopDlg();
+        if ($("#proj-wizard-dlg")?.open) renderProjWizardDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       setLang: d => {
@@ -7437,6 +7497,7 @@
         if ($("#gperm-dlg")?.open) renderGPermDlg();
         if ($("#welcome-dlg")?.open) renderWelcomeDlg();
         if ($("#workshop-dlg")?.open) renderWorkshopDlg();
+        if ($("#proj-wizard-dlg")?.open) renderProjWizardDlg();
         toast(L("🌐 เปลี่ยนเป็นภาษาไทยแล้ว", "🌐 Switched to English"));
       },
       theme: () => { state.theme = state.theme === "light" ? "dark" : "light"; save(); applyTheme(); if ($("#account-dlg").open) renderAccount(); if (state.tab === "projects") renderView(); },
@@ -8172,6 +8233,7 @@
         <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
         <button class="step-title" data-act="openStep" data-sid="${s.id}" id="so-${s.id}" aria-expanded="${open}"><span>${esc(s.title)}</span><small class="${late ? "rose" : "muted"}">📆 ${range}${late ? " ⚠️" : ""}${acts.length ? ` • 🔹 ${ad}/${acts.length}` : ""}${(s.deps || []).length ? ` • 🔗 ${s.deps.length}` : ""}${s.gcalId ? " • 📆✓" : s.gcal ? " • 📆" : ""}</small></button>
         <button class="st-btn" data-act="stepCycle" data-pid="${p.id}" data-sid="${s.id}" id="st-${s.id}">${STEP[s.status][0]}</button>
+        <button type="button" class="icon-btn" data-act="editItem" data-kind="step" data-pid="${p.id}" data-sid="${s.id}" data-id="${s.id}" id="se-btn-${s.id}" title="${L("แก้ไขขั้นตอนหลัก", "Edit step")}" aria-label="${L("แก้ไขขั้นตอนหลัก", "Edit step")}">✏️</button>
         <button class="icon-btn" data-act="delStep" data-pid="${p.id}" data-sid="${s.id}" id="sd-${s.id}" aria-label="${L("ลบขั้นตอน", "Delete step")}">✕</button>
       </div>
       ${open ? stepDetail(p, s, pi, si) : ""}
@@ -8180,24 +8242,52 @@
     function stepDetail(p, s, pi, si) {
       const acts = s.activities || [], base = `projects.${pi}.steps.${si}`, others = p.steps.filter(x => x.id !== s.id), today = dkey();
       const spans = [["w1", L("+1 สัปดาห์", "+1 wk")], ["m1", L("+1 เดือน", "+1 mo")], ["m3", L("+3 เดือน", "+3 mo")], ["m6", L("+6 เดือน", "+6 mo")], ["y1", L("+1 ปี", "+1 yr")], ["y2", L("+2 ปี", "+2 yr")], ["y3", L("+3 ปี", "+3 yr")]];
+      const curDeps = s.deps || [];
       return `<div class="step-detail">
       <div class="form-grid">
-        <label class="field full"><span>✏️ ${L("ชื่อขั้นตอน", "Step name")}</span><input class="input" id="stitle-${s.id}" data-bind="${base}.title" value="${esc(s.title)}"></label>
-        <label class="field"><span>🚀 ${L("วันเริ่ม", "Start date")}</span><input class="input" type="date" id="ss-${s.id}" data-bind="${base}.start" data-rr="1" value="${s.start || ""}"></label>
-        <label class="field"><span>🏁 ${L("วันสิ้นสุด", "End date")}</span><input class="input" type="date" id="se-${s.id}" data-bind="${base}.end" data-rr="1" value="${s.end || ""}" min="${s.start || ""}"></label>
+        <label class="field full"><span>✏️ ${L("ชื่อขั้นตอนหลัก (Step / เฟสงาน)", "Step name")}</span><input class="input" id="stitle-${s.id}" data-bind="${base}.title" value="${esc(s.title)}"></label>
+        <label class="field"><span>🚀 ${L("วันเริ่ม (แสดงบนแถบ Gantt)", "Start date (Gantt)")}</span><input class="input" type="date" id="ss-${s.id}" data-bind="${base}.start" data-rr="1" value="${s.start || ""}"></label>
+        <label class="field"><span>🏁 ${L("วันสิ้นสุด (แสดงบนแถบ Gantt)", "End date (Gantt)")}</span><input class="input" type="date" id="se-${s.id}" data-bind="${base}.end" data-rr="1" value="${s.end || ""}" min="${s.start || ""}"></label>
       </div>
       <div><span class="muted sm">⏳ ${L("กำหนดระยะเวลาเร็ว (นับจากวันเริ่ม)", "Quick duration (from start date)")}</span>
         <div class="span-btns" style="margin-top:6px">${spans.map(([v, l]) => `<button class="btn" data-act="stepSpan" data-pid="${p.id}" data-sid="${s.id}" data-v="${v}" id="sp-${v}-${s.id}">${l}</button>`).join("")}</div></div>
-      ${others.length ? `<label class="field"><span>🔗 ${L("ทำต่อจากขั้นตอน (ใช้วาด Flowchart) — กด Ctrl/⌘ เลือกได้หลายข้อ", "Comes after (used by the Flowchart) — Ctrl/⌘ for multiple")}</span><select class="input" multiple size="${Math.min(4, others.length)}" id="sdep-${s.id}" data-act-change="stepDeps" data-pid="${p.id}" data-sid="${s.id}" style="min-height:auto">${others.map(o => `<option value="${o.id}" ${(s.deps || []).includes(o.id) ? "selected" : ""}>${esc(o.title)}</option>`).join("")}</select></label>` : ""}
-      <div><b class="sm">🔹 ${L("กิจกรรมย่อย", "Activities")} (${acts.filter(a => a.done).length}/${acts.length})</b>
-        ${acts.length ? `<ul class="acts" data-sort="acts:${p.id}:${s.id}" style="margin-top:8px">${acts.map(a => actRow(p, s, a)).join("")}</ul>` : `<p class="muted sm">${L("แยกขั้นตอนนี้เป็นกิจกรรมย่อย แล้วส่งเข้าคิวงานได้ทันที", "Break this step into activities and queue them right away")}</p>`}
+      ${others.length ? `<div style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <div>
+            <b class="sm">🔗 ${L("ความเชื่อมโยงลำดับขั้นตอน (ใช้วาดเส้น 🔀 Flowchart)", "Step Dependencies (used to draw 🔀 Flowchart)")}</b>
+            <div class="muted sm">${L("คลิกเลือกขั้นตอนที่ต้องทำก่อนหน้าขั้นตอนนี้ (คลิกซ้ำเพื่อยกเลิก ไม่ต้องกด Ctrl/⌘)", "Tap steps that must come before this step (tap again to unselect)")}</div>
+          </div>
+          <div class="row" style="gap:6px">
+            ${si > 0 ? `<button type="button" class="btn btn-sm" data-act="stepDepPrev" data-pid="${p.id}" data-sid="${s.id}">⚡ ${L("ต่อจากข้อก่อนหน้า", "Link to previous")}</button>` : ""}
+            ${curDeps.length ? `<button type="button" class="btn btn-sm" data-act="stepDepClear" data-pid="${p.id}" data-sid="${s.id}">🧹 ${L("ล้างเส้นเชื่อม", "Clear")}</button>` : ""}
+          </div>
+        </div>
+        <div class="dep-chips">
+          ${others.map(o => {
+            const on = curDeps.includes(o.id);
+            return `<button type="button" class="dep-chip ${on ? "on" : ""}" data-act="toggleStepDep" data-pid="${p.id}" data-sid="${s.id}" data-dep="${o.id}" aria-pressed="${on}">
+              <span>${on ? "✅ 🔗" : "➕"}</span>
+              <span>${esc(o.title)}</span>
+            </button>`;
+          }).join("")}
+        </div>
+      </div>` : ""}
+      <div>
+        <div class="row" style="justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <div>
+            <b class="sm">🔹 ${L("กิจกรรมย่อย", "Activities")} (${acts.filter(a => a.done).length}/${acts.length})</b>
+            <div class="muted sm">${L("งานย่อยในขั้นตอนนี้ • กด ✏️ หลังรายการเพื่อแก้ไขชื่อ/วัน/เวลา/คิวงาน • ลาก ⠿ เพื่อเรียงลำดับ", "Sub-tasks in this step • Tap ✏️ to edit title/date/time/queue • Drag ⠿ to reorder")}</div>
+          </div>
+          <button type="button" class="btn btn-sm" data-act="openProjWizard" data-pid="${p.id}" data-sid="${s.id}" data-mode="acts" style="border-color:rgba(16,185,129,.45);color:var(--emerald)">🪄 ${L("เพิ่มหลายกิจกรรมย่อยรวดเดียว (เรียงวันอัตโนมัติ)", "Bulk Add Sub-activities (Auto-schedule)")}</button>
+        </div>
+        ${acts.length ? `<ul class="acts" data-sort="acts:${p.id}:${s.id}" style="margin-top:8px">${acts.map(a => actRow(p, s, a)).join("")}</ul>` : `<p class="muted sm" style="margin-top:6px">${L("ยังไม่มีกิจกรรมย่อย — เพิ่มทีละรายการด้านล่าง หรือกดปุ่ม “🪄 เพิ่มหลายกิจกรรมย่อยรวดเดียว” ด้านบน", "No sub-activities yet — add one below or use 🪄 Bulk Add above")}</p>`}
         <form class="act-form" data-form="addAct" data-pid="${p.id}" data-sid="${s.id}" id="fa-${s.id}" style="margin-top:8px" autocomplete="off">
-          <input class="input" name="title" required placeholder="${L("กิจกรรมย่อยใหม่…", "New activity…")}" id="fat-${s.id}" aria-label="${L("ชื่อกิจกรรม", "Activity name")}">
+          <input class="input" name="title" required placeholder="${L("ชื่อกิจกรรมย่อยใหม่… (เช่น อัปเดตแบบฟอร์ม / ทดสอบระบบ)", "New activity…")}" id="fat-${s.id}" aria-label="${L("ชื่อกิจกรรม", "Activity name")}">
           <input class="input" type="date" name="date" id="fad-${s.id}" value="${s.start && s.start > today ? s.start : today}" aria-label="${L("วันที่", "Date")}">
           <input class="input" type="time" name="time" id="fatm-${s.id}" value="${suggestStart(today)}" aria-label="${L("เวลา", "Time")}">
           <select class="input" name="dur" id="fadu-${s.id}" aria-label="${L("ระยะเวลา", "Duration")}">${[15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("")}</select>
-          <label class="mini-check full"><input type="checkbox" name="queue" id="faq-${s.id}" checked> 📋 ${L("เพิ่มเข้าคิวงานทันที (ตามวันและเวลาที่เลือก)", "Add to the queue now (selected date & time)")}</label>
-          <button class="btn btn-amber full" type="submit" id="fab-${s.id}">＋ ${L("เพิ่มกิจกรรม", "Add activity")}</button>
+          <label class="mini-check full"><input type="checkbox" name="queue" id="faq-${s.id}" checked> 📋 ${L("เพิ่มเข้าคิวงานรายวันทันที (ซิงค์ไปหน้าคิวงาน & โฟกัสตามวัน-เวลาที่เลือก)", "Add to Daily Queue immediately (syncs to Queue & Focus at selected date & time)")}</label>
+          <button class="btn btn-amber full" type="submit" id="fab-${s.id}">＋ ${L("เพิ่มกิจกรรมย่อย", "Add activity")}</button>
         </form></div>
       <div class="row" style="gap:8px;flex-wrap:wrap;align-items:center">
         <label class="mini-check"><input type="checkbox" id="sg-${s.id}" data-bind="${base}.gcal" data-rr="1" ${s.gcal ? "checked" : ""}> 📆 ${L("เชื่อมขั้นตอนนี้กับ Google Calendar", "Link this step to Google Calendar")}</label>
@@ -8207,18 +8297,31 @@
     }
     function actRow(p, s, a) {
       const q = taskQueued(a.taskId);
+      const qt = a.taskId ? state.tasks.find(t => t.id === a.taskId) : null;
+      const effDate = qt?.date || a.date || "";
+      const effTime = qt ? fmt(qt.start) : (a.time || "");
+      const effDur = qt ? qt.dur : (a.dur || 0);
       return `<li class="act ${a.done ? "done" : ""}" data-sort-id="${a.id}">
       <span class="drag-handle" aria-hidden="true">⠿</span>
-      <button class="check" data-act="actToggle" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ac-${a.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark done")}">${a.done ? "✓" : ""}</button>
-      <div class="grow" style="min-width:0"><div class="act-title">${esc(a.title)}</div><div class="muted sm">${a.date ? "📅 " + fmtDate(a.date) : L("ไม่มีวันที่", "No date")}${q ? " • 📋 " + L("อยู่ในคิว", "queued") : ""}${a.gcalId ? " • 📆✓" : ""}</div></div>
-      <button class="icon-btn" data-act="editItem" data-kind="act" data-pid="${p.id}" data-sid="${s.id}" data-id="${a.id}" id="ae-${a.id}" title="${L("แก้ไขกิจกรรม", "Edit activity")}" aria-label="${L("แก้ไขกิจกรรม", "Edit activity")}">✏️</button>
-      ${q ? "" : `<button class="icon-btn" data-act="actQueue" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="aq-${a.id}" title="${L("เพิ่มเข้าคิวงาน", "Add to queue")}" aria-label="${L("เพิ่มเข้าคิวงาน", "Add to queue")}">📋</button>`}
-      <button class="icon-btn" data-act="actDel" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ad-${a.id}" aria-label="${L("ลบกิจกรรม", "Delete activity")}">✕</button>
+      <button type="button" class="check" data-act="actToggle" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ac-${a.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark done")}">${a.done ? "✓" : ""}</button>
+      <div class="grow" style="min-width:0">
+        <div class="act-title">${esc(a.title)}</div>
+        <div class="muted sm" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span>${effDate ? "📅 " + fmtDate(effDate) : L("ไม่มีวันที่", "No date")}${effTime ? ` · ⏰ ${esc(effTime)}${effDur ? ` (${minLabel(effDur)})` : ""}` : ""}</span>
+          ${q ? `<button type="button" data-act="qdateGo" data-v="${esc(effDate || dkey())}" style="background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.35);color:var(--sky);border-radius:6px;padding:1px 6px;font-size:.7rem;font-weight:700;cursor:pointer" title="${L("คลิกเพื่อเปิดดูในหน้าคิวงานรายวัน", "Click to open in Daily Queue")}">📋 ${L("อยู่ในคิว", "queued")}</button>` : ""}
+          ${a.gcalId ? "<span>• 📆✓</span>" : ""}
+        </div>
+      </div>
+      <button type="button" class="icon-btn" data-act="editItem" data-kind="act" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" data-id="${a.id}" id="ae-${a.id}" title="${L("แก้ไขกิจกรรมย่อย (ชื่อ / วันที่ / เวลา / คิวงาน)", "Edit sub-activity (title / date / time / queue)")}" aria-label="${L("แก้ไขกิจกรรมย่อย", "Edit activity")}">✏️</button>
+      ${q ? "" : `<button type="button" class="icon-btn" data-act="actQueue" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="aq-${a.id}" title="${L("ส่งเข้าคิวงานรายวัน", "Add to queue")}" aria-label="${L("ส่งเข้าคิวงานรายวัน", "Add to queue")}">📋</button>`}
+      <button type="button" class="icon-btn" data-act="actDel" data-pid="${p.id}" data-sid="${s.id}" data-aid="${a.id}" id="ad-${a.id}" aria-label="${L("ลบกิจกรรม", "Delete activity")}">✕</button>
     </li>`;
     }
     function queueAct(p, s, a, date, start, dur) {
-      const t = { id: uid(), title: a.title, date, start: start ?? toMin(suggestStart(date)), dur: dur || 60, projectId: p.id, stepId: s.id, actId: a.id, priority: "main", done: !!a.done, bookmark: "" };
-      state.tasks.push(t); a.taskId = t.id; if (!a.date) a.date = date;
+      const startMin = start ?? (a.time ? toMin(a.time) : toMin(suggestStart(date)));
+      const durMin = dur || a.dur || 60;
+      const t = { id: uid(), title: a.title, date, start: startMin, dur: durMin, projectId: p.id, stepId: s.id, actId: a.id, priority: a.priority || "main", done: !!a.done, bookmark: "" };
+      state.tasks.push(t); a.taskId = t.id; if (!a.date) a.date = date; a.time = fmt(startMin); a.dur = durMin;
       if (s.status === "todo") s.status = "doing";
       return t;
     }
@@ -8958,7 +9061,354 @@
       </div>
     </details>`;
     }
-    document.addEventListener("toggle", e => { if (e.target?.id === "planner-guide") { state.plannerGuideOpen = e.target.open; save(); } }, true);
+    document.addEventListener("toggle", e => {
+      if (e.target?.id === "planner-guide") { state.plannerGuideOpen = e.target.open; save(); }
+      if (e.target?.id === "proj-guide") { state.projGuideOpen = e.target.open; save(); }
+    }, true);
+
+    /* ---------- 🗂️ Project Guide, Data Relationship Map & Smart Quick-Fill Wizard ---------- */
+    const PROJ_GUIDE_TABS = {
+      flow: {
+        i: "🗂️",
+        t: ["1. วิธีกรอกโปรเจค • ขั้นตอน • กิจกรรมย่อย", "1. How to Fill Projects, Steps & Sub-activities"],
+        d: ["กรอกทีละรายการ หรือวางหลายบรรทัดรวดเดียว", "Fill step-by-step or bulk-paste multiple lines"],
+        how: [
+          ["สร้างโปรเจคหลัก & ตั้งเป้าหมายรายเดือน (ระดับที่ 1) หรือดึงหัวข้อมาจากหน้า Planner ด้วยปุ่ม 🗂️", "Create a Project & Monthly Goal (Tier 1), or import a topic from the Planner tab using the 🗂️ button."],
+          ["เพิ่ม “🧭 ขั้นตอนหลัก (Steps)” เพื่อแบ่งโปรเจคออกเป็นเฟสหรือหัวข้อใหญ่ (เช่น เฟส 1: วางระบบ, เฟส 2: ทดสอบ)", "Add “🧭 Main Steps” to break your project into phases or major milestones."],
+          ["แตะที่ชื่อขั้นตอนหลักเพื่อเปิดกรอบรายละเอียด แล้วเพิ่ม “🔹 กิจกรรมย่อย (Sub-activities)” พร้อมติ๊ก 📋 เพิ่มเข้าคิวงานทันที", "Tap a step title to expand it, then add “🔹 Sub-activities” and tick 📋 Add to Daily Queue."],
+          ["กดปุ่ม ✏️ (ดินสอ) หลังกิจกรรมย่อยหรือขั้นตอนหลัก เพื่อแก้ไขชื่อ วันที่ เวลา ระยะเวลา หรือย้ายขั้นตอนได้ทุกเมื่อ", "Tap the ✏️ (pencil) icon behind any sub-activity or step to edit its title, date, time, duration, or move it anytime."]
+        ],
+        ex: [
+          ["🪄 ทางลัดแนะนำ: กดปุ่ม “🪄 ตัวช่วยกรอกโปรเจคด่วน” ด้านบน เพื่อวางรายการขั้นตอนหรือกิจกรรมย่อยหลายบรรทัดรวดเดียว พร้อมกระจายวันทำงานอัตโนมัติ!", "🪄 Pro tip: Click “🪄 Quick-Fill Wizard” to paste multiple steps or sub-activities at once and auto-schedule them across workdays!"],
+          ["🔄 ซิงค์ 2 ทางอัตโนมัติ: เมื่อติ๊ก ✓ เสร็จที่กิจกรรมย่อย หรือติ๊กเสร็จในหน้า “📋 คิวงาน” สถานะจะอัปเดตถึงกันและคำนวณ % โปรเจคทันที", "🔄 Two-way sync: Marking a sub-activity done in Projects or in Daily Queue updates both places and recalculates project % automatically."]
+        ]
+      },
+      gantt: {
+        i: "📆",
+        t: ["2. การเชื่อม Timeline ระยะยาว (Gantt)", "2. Linking to Long-Range Timeline (Gantt)"],
+        d: ["วางแผนกรอบเวลาตั้งแต่รายสัปดาห์ถึงหลายปี", "Visualize project schedules from weeks to multi-year"],
+        how: [
+          ["แตะเปิดขั้นตอนหลัก แล้วระบุ “🚀 วันเริ่ม” และ “🏁 วันสิ้นสุด” (หรือกดปุ่มลัด +1 สัปดาห์, +1 เดือน, +3 เดือน, +1 ปี)", "Expand a step and set its Start & End dates (or tap +1 wk, +1 mo, +3 mo, +1 yr quick buttons)."],
+          ["เปิดแท็บ “📆 Timeline” ด้านบน ขั้นตอนที่ระบุวันจะแสดงเป็นแถบสีตามสถานะ (Todo / Doing / Waiting / Done)", "Switch to the “📆 Timeline” tab — dated steps appear as color-coded Gantt bars."],
+          ["กิจกรรมย่อยที่มีวันที่กำหนด จะแสดงเป็นจุดเพชร (◆) เกาะอยู่บนแถบ Timeline ของขั้นตอนนั้นๆ", "Sub-activities with dates appear as diamond markers (◆) along their step's timeline bar."],
+          ["แตะที่แถบสีในหน้า Timeline เพื่อกระโดดกลับมาเปิดแก้ไขขั้นตอนนั้นได้ทันที", "Tap any bar on the Gantt chart to jump right back to editing that step."]
+        ],
+        ex: [
+          ["📆 เฟส 1: พ.ย. 69 (1 เดือน) ➔ เฟส 2: ธ.ค. 69 – ก.พ. 70 (3 เดือน) ซูมดูได้ทั้งระดับสัปดาห์ เดือน ไตรมาส และปี", "📆 Phase 1: Nov (1 mo) ➔ Phase 2: Dec–Feb (3 mo) — zoom smoothly between Week, Month, Quarter, and Year views."]
+        ]
+      },
+      map: {
+        i: "🕸️",
+        t: ["3. การเชื่อมแผนภูมิ Flowchart & Mind Map", "3. Linking to Flowchart & Mind Map"],
+        d: ["เห็นลำดับงานก่อน-หลัง และโครงสร้างความสัมพันธ์ครบทุกมิติ", "See workflow dependencies, parallel branches & hierarchy"],
+        how: [
+          ["ในรายละเอียดขั้นตอนหลัก คลิกปุ่มตัวเลือกภายใต้หัวข้อ “🔗 ความเชื่อมโยงลำดับขั้นตอน” เพื่อระบุว่าขั้นตอนนี้ทำต่อจากขั้นตอนใด (ไม่ต้องกด Ctrl/⌘)", "Inside an expanded step, tap the dependency chips under “🔗 Step Dependencies” to pick which step comes before it (no Ctrl/⌘ needed)."],
+          ["หรือกดปุ่มลัด “🔗 เรียง Flowchart อัตโนมัติ (1➔2➔3)” เพื่อผูกเส้นเชื่อมทุกขั้นตอนเรียงตามลำดับในคลิกเดียว", "Or click “🔗 Auto-Chain Flowchart (1➔2➔3)” to connect all steps sequentially in one click."],
+          ["เปิดแท็บ “🕸️ แผนภูมิ” เพื่อดู 3 มุมมอง: 🔀 Flowchart (ผังลำดับงาน), 🧠 Mind map (กิ่งก้านโปรเจค › ขั้นตอน › กิจกรรมย่อย), และ 🕸️ ภาพรวม 4 ชั้น (เป้าหมาย › โปรเจค › งานรายวัน › ผู้ประสานงาน)", "Open the “🕸️ Map” tab to switch between 🔀 Flowchart, 🧠 Mind map, and 🕸️ 4-Tier Overview."]
+        ],
+        ex: [
+          ["🔀 งานคู่ขนาน: หากขั้นตอน B และ C ต่างก็ทำต่อจากขั้นตอน A ระบบจะวาดกล่อง B และ C ขนานกันในแถวเดียวให้อัตโนมัติ!", "🔀 Parallel work: If steps B and C both depend on step A, the Flowchart automatically places B and C side-by-side in parallel!"]
+        ]
+      }
+    };
+
+    function projectGuide() {
+      const sec = state.projGuideSec || "flow";
+      const g = PROJ_GUIDE_TABS[sec] || PROJ_GUIDE_TABS.flow;
+      return `<details class="card pg-guide" id="proj-guide" ${state.projGuideOpen !== false ? "open" : ""}>
+      <summary>📘 ${L("คำแนะนำวิธีใช้งานโปรเจค • แผนผังความเชื่อมโยงข้อมูล 4 ระดับ & ตัวช่วยกรอกข้อมูลอย่างง่าย", "Project Usage Guide • 4-Tier Data Relationship Map & Easy Input Assistant")}</summary>
+      <div class="pg-body">
+        <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <p class="muted sm" style="margin:0;flex:1;min-width:240px">${L("ระบบโปรเจคออกแบบให้เชื่อมโยงกัน 4 ระดับตั้งแต่เป้าหมายใหญ่ไปจนถึงคิวงานรายวัน — ดูผังความเชื่อมโยงด้านล่าง หรือกดปุ่มสีส้มเพื่อกรอกข้อมูลหลายรายการพร้อมกันในหน้าเดียว", "Projects connect 4 tiers of data from high-level goals down to your daily focus queue — see the visual data flow below or launch the Quick-Fill Wizard.")}</p>
+          <button type="button" class="btn btn-sm btn-amber" data-act="openProjWizard" data-mode="new">🪄 ${L("เปิดตัวช่วยกรอกโปรเจคด่วน (Quick Wizard)", "Open Quick-Fill Wizard")}</button>
+        </div>
+
+        <div class="proj-flow-grid" aria-label="${L("แผนผังความเชื่อมโยงข้อมูล 4 ระดับ", "4-Tier Data Relationship Map")}">
+          <div class="proj-flow-node">
+            <span class="pf-num" style="background:rgba(167,139,250,.18);color:var(--violet)">1️⃣ ${L("ระดับที่ 1 • เป้าหมาย & โปรเจค", "Tier 1 • Project & Goal")}</span>
+            <b>🗂️ ${L("โปรเจค & ผู้ประสานงาน", "Project & Coordinator")}</b>
+            <p>${L("กรอกชื่อโปรเจค, เป้าหมายรายเดือน และชื่อผู้ประสานงาน (หรือดึงจากหน้า Planner ด้วยปุ่ม 🗂️)", "Set project name, monthly goal & coordinator (or import from Planner via 🗂️).")}</p>
+            <div class="pf-link">🔗 ${L("เชื่อมไปที่: แท็บ 🕸️ แผนภูมิ (ภาพรวม 4 ชั้น)", "Links to: 🕸️ Map (4-Tier Overview)")}</div>
+          </div>
+          <div class="proj-flow-node">
+            <span class="pf-num" style="background:rgba(245,158,11,.18);color:var(--amber)">2️⃣ ${L("ระดับที่ 2 • เฟสงานหลัก", "Tier 2 • Milestones")}</span>
+            <b>🧭 ${L("ขั้นตอนหลัก (Steps)", "Main Steps / Phases")}</b>
+            <p>${L("แบ่งโปรเจคเป็นขั้นตอนหลัก กำหนดวันเริ่ม–สิ้นสุด และคลิกเลือกความเชื่อมโยงก่อน–หลัง", "Break project into phases, set start/end dates & tap dependency chips.")}</p>
+            <div class="pf-link">🔗 ${L("เชื่อมไปที่: 📆 Timeline (Gantt) & 🔀 Flowchart", "Links to: 📆 Gantt & 🔀 Flowchart")}</div>
+          </div>
+          <div class="proj-flow-node">
+            <span class="pf-num" style="background:rgba(56,189,248,.18);color:var(--sky)">3️⃣ ${L("ระดับที่ 3 • งานย่อยในขั้นตอน", "Tier 3 • Sub-tasks")}</span>
+            <b>🔹 ${L("กิจกรรมย่อย (Sub-activities)", "Sub-activities")}</b>
+            <p>${L("แตะชื่อขั้นตอนหลักเพื่อแตกกิจกรรมย่อย ระบุวัน-เวลา • กดปุ่ม ✏️ หลังรายการเพื่อแก้ไขได้ทุกเมื่อ", "Tap a step to add sub-activities with date/time • Tap ✏️ anytime to edit.")}</p>
+            <div class="pf-link">🔗 ${L("เชื่อมไปที่: จุด ◆ บน Gantt & 🧠 Mind map", "Links to: ◆ on Gantt & 🧠 Mind map")}</div>
+          </div>
+          <div class="proj-flow-node">
+            <span class="pf-num" style="background:rgba(16,185,129,.18);color:var(--emerald)">4️⃣ ${L("ระดับที่ 4 • ลงมือทำรายวัน", "Tier 4 • Daily Execution")}</span>
+            <b>📋 ${L("คิวงานรายวัน & ⚡ โฟกัส", "Daily Queue & ⚡ Focus")}</b>
+            <p>${L("เมื่อติ๊ก “📋 เพิ่มเข้าคิวงานทันที” กิจกรรมย่อยจะไปโผล่ในหน้าคิวงานและหน้าโฟกัสตามวัน-เวลานั้นอัตโนมัติ!", "Tick “📋 Add to queue” and the sub-activity syncs straight to Daily Queue & Focus!")}</p>
+            <div class="pf-link">🔗 ${L("ซิงค์สถานะ ✓ เสร็จ 2 ทางอัตโนมัติ", "Auto 2-way completion sync")}</div>
+          </div>
+        </div>
+
+        <div class="pg-secs">${Object.entries(PROJ_GUIDE_TABS).map(([k, x]) => `<button type="button" class="pg-sec ${k === sec ? "on" : ""}" data-act="projGuideTab" data-v="${k}"><b>${x.i} ${L(x.t[0], x.t[1])}</b>${L(x.d[0], x.d[1])}</button>`).join("")}</div>
+        <div class="grid grid-2">
+          <div><b>🧭 ${L("ขั้นตอนการใช้งานแบบเข้าใจง่าย", "Step-by-step workflow")}</b><ol style="margin-top:8px">${g.how.map(h => `<li>${L(h[0], h[1])}</li>`).join("")}</ol></div>
+          <div><b>✨ ${L("เทคนิค & ความเชื่อมโยงอัตโนมัติ", "Tips & Auto-connections")}</b><ul class="pg-ex" style="margin-top:8px">${g.ex.map(h => `<li>${L(h[0], h[1])}</li>`).join("")}</ul></div>
+        </div>
+      </div>
+    </details>`;
+    }
+
+    const PROJ_WIZ_TEMPLATES = {
+      web: {
+        label: ["💻 พัฒนาเว็บ / ระบบ", "💻 Web / System Dev"],
+        title: ["พัฒนาระบบและปรับปรุงเว็บไซต์", "System & Website Upgrade"],
+        goal: ["เปิดตัวระบบใช้งานจริงอย่างเสถียร", "Launch stable production system"],
+        steps: [
+          ["วางโครงสร้างระบบและฐานข้อมูล", "System architecture & database design"],
+          ["ออกแบบหน้าจอและฟอร์มการใช้งาน (UI/UX)", "UI/UX & form design"],
+          ["พัฒนาฟังก์ชันหลักและเชื่อมต่อระบบ", "Core feature development & integration"],
+          ["ทดสอบการใช้งานและแก้ไขบั๊ก (QA)", "Testing, QA & bug fixing"],
+          ["อัปโหลดขึ้นเซิร์ฟเวอร์จริงและประชาสัมพันธ์", "Production deployment & rollout"]
+        ],
+        acts: [
+          ["อัปเดตระบบพิมพ์แบบฟอร์ม", "Update form printing module"],
+          ["เช็กกระบวนการและลำดับการใช้งาน", "Verify user flow & process order"],
+          ["เพิ่มเติมระบบอื่นๆ ที่จำเป็น", "Add remaining essential features"],
+          ["อัปโหลดระบบขึ้นเว็บไซต์จริง", "Deploy system to live website"],
+          ["รับสมัครคนทดสอบใช้งานและเก็บตก Comment", "Recruit testers & collect feedback"]
+        ]
+      },
+      digital: {
+        label: ["📦 สินค้า Digital / แคมเปญ", "📦 Digital Product"],
+        title: ["พัฒนาสินค้า Digital & แคมเปญการตลาด", "Digital Product & Campaign Launch"],
+        goal: ["สร้างยอดขายสินค้า Digital ตามเป้า", "Hit monthly digital product revenue goal"],
+        steps: [
+          ["วิจัยตลาดและวางระบบตามปฏิทิน", "Market research & calendar planning"],
+          ["ออกแบบกราฟิกและต้นฉบับสินค้า", "Design graphics & product templates"],
+          ["จัดทำคู่มือและไฟล์ส่งมอบลูกค้า", "Prepare user guide & delivery files"],
+          ["ทำคอนเทนต์โปรโมตและเปิดขาย", "Create promo content & launch sales"]
+        ],
+        acts: [
+          ["วางระบบการทำงานตามปฏิทิน", "Plan product calendar"],
+          ["ออกแบบภาพกราฟิกเทศกาล", "Create seasonal graphic assets"],
+          ["ทำแบบฟอร์มการทำงาน / Planner", "Build planner & workflow templates"],
+          ["ตรวจเช็กไฟล์ทั้งหมดก่อนวางขาย", "Final quality check before listing"]
+        ]
+      },
+      gov: {
+        label: ["📑 งานโครงการ / เอกสารราชการ", "📑 Official Project"],
+        title: ["โครงการดำเนินงานและระบบหนังสือราชการ", "Official Project & Document Workflow"],
+        goal: ["ดำเนินการครบทุกขั้นตอนทันกำหนดเวลา", "Complete all official milestones on time"],
+        steps: [
+          ["รวบรวมข้อมูลและระเบียบที่เกี่ยวข้อง", "Gather regulations & requirements"],
+          ["จัดทำร่างหนังสือและแบบฟอร์มขออนุมัติ", "Draft official letters & approval forms"],
+          ["เสนอพิจารณาและอนุมัติโครงการ", "Submit for review & approval"],
+          ["ประชาสัมพันธ์และดำเนินกิจกรรมตามแผน", "Publicize & execute project activities"],
+          ["สรุปผลและรายงานผลการดำเนินงาน", "Compile final report & evaluation"]
+        ],
+        acts: [
+          ["ร่างหนังสือขออนุมัติโครงการ", "Draft project approval memo"],
+          ["จัดเตรียมแบบฟอร์มลงทะเบียนผู้เข้าร่วม", "Prepare participant registration form"],
+          ["ทำหนังสือประชาสัมพันธ์ถึงหน่วยงาน", "Send announcement letter to departments"],
+          ["สรุปยอดและจัดเก็บเอกสารเข้าแฟ้ม", "Summarize results & archive documents"]
+        ]
+      },
+      content: {
+        label: ["🎬 ปั้นช่อง / คอนเทนต์", "🎬 Content Channel"],
+        title: ["ปั้นช่องคอนเทนต์ & วิดีโอโซเชียล", "Social Media & Video Channel"],
+        goal: ["ลงคลิปสม่ำเสมอและเพิ่มผู้ติดตาม", "Publish consistently & grow followers"],
+        steps: [
+          ["วางแผนหัวข้อคอนเทนต์ประจำเดือน", "Monthly content topic planning"],
+          ["เขียนสคริปต์และเตรียมอุปกรณ์ถ่ายทำ", "Scriptwriting & shoot preparation"],
+          ["ถ่ายทำและตัดต่อวิดีโอ", "Filming & video editing"],
+          ["ตั้งเวลาโพสต์และวิเคราะห์ผลตอบรับ", "Schedule posts & review analytics"]
+        ],
+        acts: [
+          ["ลิสต์หัวข้อคลิปสัปดาห์นี้ 5 หัวข้อ", "List 5 video topics for this week"],
+          ["เขียนสคริปต์และเตรียมฟุตเทจ", "Write scripts & gather B-roll"],
+          ["ตัดต่อคลิปและใส่ซับไตเติล", "Edit video & add captions"],
+          ["โพสต์ลงช่องและตอบคอมเมนต์", "Publish video & reply to comments"]
+        ]
+      }
+    };
+
+    let projWizState = { mode: "new", pid: "", sid: "", tpl: "" };
+    function renderProjWizardDlg(opts) {
+      const body = $("#proj-wizard-dlg-body");
+      if (!body) return;
+      if (opts) {
+        if (opts.mode) projWizState.mode = opts.mode;
+        if (opts.pid !== undefined) projWizState.pid = opts.pid;
+        if (opts.sid !== undefined) projWizState.sid = opts.sid;
+      }
+      if ((projWizState.mode === "steps" || projWizState.mode === "acts") && !state.projects.length) {
+        projWizState.mode = "new";
+      }
+      const curProj = proj(projWizState.pid) || state.projects[0] || null;
+      if (curProj && !projWizState.pid) projWizState.pid = curProj.id;
+      const curStep = curProj ? (curProj.steps.find(s => s.id === projWizState.sid) || curProj.steps[0] || null) : null;
+      if (curStep && !projWizState.sid) projWizState.sid = curStep.id;
+      if (projWizState.mode === "acts" && (!curProj || !curProj.steps.length)) {
+        projWizState.mode = curProj ? "steps" : "new";
+      }
+      const mode = projWizState.mode;
+      const today = dkey();
+      const durOpts = [15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${v === 60 ? "selected" : ""}>${minLabel(v)}</option>`).join("");
+
+      body.innerHTML = `
+        <div class="dlg-head" style="align-items:flex-start">
+          <div>
+            <div class="row" style="gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+              <span class="pill pill-amber" style="font-size:.72rem;padding:2px 8px">🪄 Smart Project Assistant</span>
+              <span class="chip chip-emerald" style="font-size:.72rem;padding:2px 8px">${L("กรอกข้อมูลหลายรายการในหน้าเดียว", "Bulk & Guided Data Entry")}</span>
+            </div>
+            <h2 id="proj-wizard-dlg-title" style="font-size:1.15rem">${L("ตัวช่วยสร้างและกรอกข้อมูลโปรเจคอย่างสะดวก", "Smart Project & Bulk Input Wizard")}</h2>
+            <p class="muted sm" style="margin-top:2px">${L("เลือกโหมดที่ต้องการด้านล่าง — พิมพ์หรือวางรายการทีละบรรทัด ระบบจะสร้างขั้นตอน กิจกรรมย่อย ผูกเส้น Flowchart และจัดลงคิวงานให้อัตโนมัติ", "Choose a mode below — type or paste 1 item per line to auto-create steps, sub-activities, Flowchart links, and Daily Queue tasks.")}</p>
+          </div>
+          <div class="row" style="gap:6px;align-items:center;flex:none">
+            <div class="seg" role="group" aria-label="Language" style="padding:2px">
+              <button type="button" class="${LANG === "th" ? "on" : ""}" data-act="setLang" data-v="th" style="padding:4px 8px;font-size:.74rem">🇹🇭 ไทย</button>
+              <button type="button" class="${LANG === "en" ? "on" : ""}" data-act="setLang" data-v="en" style="padding:4px 8px;font-size:.74rem">🇬🇧 EN</button>
+            </div>
+            <button type="button" class="icon-btn" data-act="closeDlg" data-id="proj-wizard-dlg" aria-label="${L("ปิด", "Close")}">✕</button>
+          </div>
+        </div>
+
+        <div class="seg" role="tablist">
+          <button type="button" class="${mode === "new" ? "on" : ""}" data-act="projWizMode" data-v="new">🆕 ${L("1. สร้างโปรเจคใหม่ + ขั้นตอน", "1. New Project + Steps")}</button>
+          <button type="button" class="${mode === "steps" ? "on" : ""}" data-act="projWizMode" data-v="steps" ${!state.projects.length ? "disabled" : ""}>🧭 ${L("2. เพิ่มหลายขั้นตอนหลัก", "2. Bulk Add Steps")}</button>
+          <button type="button" class="${mode === "acts" ? "on" : ""}" data-act="projWizMode" data-v="acts" ${!curProj || !curProj.steps.length ? "disabled" : ""}>🔹 ${L("3. เพิ่มหลายกิจกรรมย่อย + จัดคิว", "3. Bulk Add Sub-activities")}</button>
+        </div>
+
+        <div>
+          <span class="muted sm">✨ ${L("คลิกปุ่มเทมเพลตสำเร็จรูปเพื่อเติมข้อมูลตัวอย่างลงในฟอร์มทันที (แก้ไขต่อได้):", "Tap a template to pre-fill sample items into the form below (editable):")}</span>
+          <div class="tpl-pills">
+            ${Object.entries(PROJ_WIZ_TEMPLATES).map(([k, t]) => `
+              <button type="button" class="tpl-pill" data-act="projWizTpl" data-v="${k}">${L(t.label[0], t.label[1])}</button>
+            `).join("")}
+          </div>
+        </div>
+
+        <form class="form-grid" data-form="projWizardSave" id="proj-wizard-form" autocomplete="off">
+          <input type="hidden" name="mode" value="${esc(mode)}">
+          ${mode === "new" ? `
+            <label class="field">
+              <span>🗂️ ${L("ชื่อโปรเจคใหม่", "New project name")} *</span>
+              <input class="input" name="title" id="pw-title" required placeholder="${L("เช่น พัฒนาระบบพิมพ์หนังสือราชการ / สินค้า Digital", "e.g. Website Redesign / Digital Product")}">
+            </label>
+            <label class="field">
+              <span>🎯 ${L("เป้าหมายรายเดือน (เชื่อมหน้าแผนภูมิ & Planner)", "Monthly goal (links to Map)")}</span>
+              <input class="input" name="goal" id="pw-goal" placeholder="${L("เช่น เปิดใช้งานจริงภายในเดือนนี้", "e.g. Launch Phase 1 this month")}">
+            </label>
+            <label class="field">
+              <span>👤 ${L("ผู้ประสานงาน / ผู้รับผิดชอบ (ไม่บังคับ)", "Coordinator (optional)")}</span>
+              <input class="input" name="coordName" id="pw-coord" placeholder="${L("เช่น คุณอุทัย / ทีมพัฒนา", "e.g. Alex / Dev Team")}">
+            </label>
+            <label class="field">
+              <span>📞 ${L("ช่องทางติดต่อ (ไม่บังคับ)", "Contact info (optional)")}</span>
+              <input class="input" name="coordContact" placeholder="${L("เบอร์โทร / Line / อีเมล", "Phone / Line / Email")}">
+            </label>
+            <label class="field full">
+              <span>🧭 ${L("รายการขั้นตอนหลัก (Steps) — พิมพ์บรรทัดละ 1 ขั้นตอน", "Main Steps — enter 1 step per line")} *</span>
+              <textarea class="input" name="lines" id="pw-lines" rows="5" required placeholder="${L("วางระบบฐานข้อมูลและแบบฟอร์ม\nออกแบบหน้าจอการใช้งาน\nทดสอบระบบและแก้ไขบั๊ก\nอัปโหลดขึ้นเว็บไซต์จริง", "Design system architecture\nBuild core UI & forms\nTest & fix bugs\nDeploy to production")}" style="line-height:1.55"></textarea>
+            </label>
+            <label class="field">
+              <span>🚀 ${L("วันเริ่มขั้นตอนแรก (แสดงบน Gantt)", "First step start date")}</span>
+              <input class="input" type="date" name="startDate" value="${today}">
+            </label>
+            <label class="field">
+              <span>⏳ ${L("ระยะเวลาเฉลี่ยต่อขั้นตอน (สำหรับแถบ Gantt)", "Duration per step (for Gantt)")}</span>
+              <select class="input" name="stepSpanDays">
+                <option value="7" selected>${L("ขั้นตอนละ 1 สัปดาห์ (7 วัน)", "1 week per step (7 days)")}</option>
+                <option value="14">${L("ขั้นตอนละ 2 สัปดาห์ (14 วัน)", "2 weeks per step (14 days)")}</option>
+                <option value="30">${L("ขั้นตอนละ 1 เดือน (30 วัน)", "1 month per step (30 days)")}</option>
+                <option value="0">${L("ยังไม่ระบุวันสิ้นสุด", "No auto dates")}</option>
+              </select>
+            </label>
+            <label class="mini-check full" style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+              <input type="checkbox" name="autoChain" value="1" checked>
+              <span>🔗 ${L("ผูกเส้นเชื่อม Flowchart เรียงตามลำดับขั้นตอน (1 ➔ 2 ➔ 3) ให้อัตโนมัติ", "Auto-connect steps sequentially (1 ➔ 2 ➔ 3) on the Flowchart")}</span>
+            </label>
+          ` : mode === "steps" ? `
+            <label class="field full">
+              <span>🗂️ ${L("เลือกโปรเจคที่ต้องการเพิ่มขั้นตอนหลัก", "Select target project")}</span>
+              <select class="input" name="pid" id="pw-pid" data-act-change="projWizProjChange">
+                ${state.projects.map(p => `<option value="${esc(p.id)}" ${curProj && p.id === curProj.id ? "selected" : ""}>🗂️ ${esc(p.title)} (${p.steps.length} ${L("ขั้นตอน", "steps")})</option>`).join("")}
+              </select>
+            </label>
+            <label class="field full">
+              <span>🧭 ${L("รายการขั้นตอนหลักที่จะเพิ่ม — พิมพ์บรรทัดละ 1 ขั้นตอน", "Steps to add — 1 step per line")} *</span>
+              <textarea class="input" name="lines" id="pw-lines" rows="5" required placeholder="${L("เฟส 1: เตรียมข้อมูล\nเฟส 2: พัฒนาและปรับปรุง\nเฟส 3: ทดสอบและส่งมอบ", "Phase 1: Research & prep\nPhase 2: Build & refine\nPhase 3: QA & launch")}" style="line-height:1.55"></textarea>
+            </label>
+            <label class="field">
+              <span>🚀 ${L("วันเริ่มขั้นตอนแรก", "Start date")}</span>
+              <input class="input" type="date" name="startDate" value="${today}">
+            </label>
+            <label class="field">
+              <span>⏳ ${L("ระยะเวลาต่อขั้นตอน (สำหรับแถบ Gantt)", "Duration per step (Gantt)")}</span>
+              <select class="input" name="stepSpanDays">
+                <option value="7" selected>${L("ขั้นตอนละ 1 สัปดาห์ (7 วัน)", "1 week per step (7 days)")}</option>
+                <option value="14">${L("ขั้นตอนละ 2 สัปดาห์ (14 วัน)", "2 weeks per step (14 days)")}</option>
+                <option value="30">${L("ขั้นตอนละ 1 เดือน (30 วัน)", "1 month per step (30 days)")}</option>
+                <option value="0">${L("ยังไม่ระบุวัน", "No auto dates")}</option>
+              </select>
+            </label>
+            <label class="mini-check full" style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+              <input type="checkbox" name="autoChain" value="1" checked>
+              <span>🔗 ${L("ผูกเส้นเชื่อม Flowchart เรียงต่อกันให้อัตโนมัติ (1 ➔ 2 ➔ 3)", "Auto-connect steps sequentially on the Flowchart")}</span>
+            </label>
+          ` : `
+            <label class="field">
+              <span>🗂️ ${L("โปรเจค", "Project")}</span>
+              <select class="input" name="pid" id="pw-pid" data-act-change="projWizProjChange">
+                ${state.projects.map(p => `<option value="${esc(p.id)}" ${curProj && p.id === curProj.id ? "selected" : ""}>🗂️ ${esc(p.title)}</option>`).join("")}
+              </select>
+            </label>
+            <label class="field">
+              <span>🧭 ${L("เพิ่มเข้าในขั้นตอนหลัก (Step)", "Target Step")}</span>
+              <select class="input" name="sid" id="pw-sid">
+                ${(curProj?.steps || []).map(s => `<option value="${esc(s.id)}" ${curStep && s.id === curStep.id ? "selected" : ""}>🧭 ${esc(s.title)} (${(s.activities || []).length} ${L("กิจกรรมย่อย", "activities")})</option>`).join("")}
+              </select>
+            </label>
+            <label class="field full">
+              <span>🔹 ${L("รายการกิจกรรมย่อย — พิมพ์หรือวางบรรทัดละ 1 กิจกรรม", "Sub-activities — enter or paste 1 activity per line")} *</span>
+              <textarea class="input" name="lines" id="pw-lines" rows="6" required placeholder="${L("อัปเดตระบบพิมพ์แบบฟอร์ม\nเช็กกระบวนการและลำดับการใช้งาน\nเพิ่มเติมระบบอื่นๆ ที่จำเป็น\nอัปโหลดระบบขึ้นเว็บไซต์จริง\nรับสมัครคนทดสอบใช้งาน", "Update form printing module\nVerify user flow & process\nAdd remaining essential features\nDeploy to live server\nInvite beta testers")}" style="line-height:1.55"></textarea>
+            </label>
+            <label class="field">
+              <span>📅 ${L("วันที่เริ่มรายการแรก", "First activity date")}</span>
+              <input class="input" type="date" name="startDate" value="${curStep?.start && curStep.start > today ? curStep.start : today}">
+            </label>
+            <label class="field">
+              <span>🗓️ ${L("การกระจายวันที่อัตโนมัติ", "Auto-schedule spacing")}</span>
+              <select class="input" name="spreadMode">
+                <option value="workday1" selected>${L("เรียงวันทำงานถัดไป (วันละ 1 กิจกรรม • ข้ามวันหยุด)", "1 activity per workday (skips days off)")}</option>
+                <option value="workday2">${L("เรียงวันทำงานถัดไป (วันละ 2 กิจกรรม)", "2 activities per workday")}</option>
+                <option value="sameday">${L("ตั้งเป็นวันเดียวกันทั้งหมด", "All on the same date")}</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>⏰ ${L("เวลาเริ่มในคิวงาน", "Start time in queue")}</span>
+              <input class="input" type="time" name="startTime" value="${suggestStart(today)}">
+            </label>
+            <label class="field">
+              <span>⏳ ${L("ระยะเวลาต่อกิจกรรม", "Duration per activity")}</span>
+              <select class="input" name="dur">${durOpts}</select>
+            </label>
+            <label class="mini-check full" style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+              <input type="checkbox" name="queue" value="1" checked>
+              <span>📋 ${L("ส่งทุกกิจกรรมย่อยเข้าหน้า “คิวงานรายวัน” อัตโนมัติตามวันและเวลาด้านบน", "Automatically queue all sub-activities into Daily Queue at the scheduled dates & times")}</span>
+            </label>
+          `}
+          <div class="row full" style="margin-top:6px;gap:8px;justify-content:flex-end">
+            <button type="button" class="btn" data-act="closeDlg" data-id="proj-wizard-dlg">${L("ยกเลิก", "Cancel")}</button>
+            <button type="submit" class="btn btn-emerald grow" style="max-width:340px">
+              ✨ ${mode === "new" ? L("สร้างโปรเจคพร้อมขั้นตอนทันที", "Create Project & Steps") : mode === "steps" ? L("บันทึกขั้นตอนหลักทั้งหมด", "Add All Steps") : L("บันทึกกิจกรรมย่อย & จัดคิวทันที", "Add Sub-activities & Queue")}
+            </button>
+          </div>
+        </form>
+      `;
+    }
 
     /* ---------- 📖 Guide topics for the new features ---------- */
     GUIDE.th.push(
@@ -9144,8 +9594,11 @@
       addAct: (fd, f) => {
         const [p, s] = findStep(f.dataset.pid, f.dataset.sid), title = (fd.title || "").trim(); if (!s || !title) return;
         s.activities ||= [];
-        const a = { id: uid(), title, date: fd.date || "", done: false }; s.activities.push(a);
-        let t = null; if (fd.queue) { const date = fd.date || dkey(); t = queueAct(p, s, a, date, toMin(fd.time || suggestStart(date)), Number(fd.dur) || 60); }
+        const durVal = Number(fd.dur) || 60;
+        const timeVal = fd.time || suggestStart(fd.date || dkey());
+        const a = { id: uid(), title, date: fd.date || "", time: timeVal, dur: durVal, priority: "main", done: false };
+        s.activities.push(a);
+        let t = null; if (fd.queue) { const date = fd.date || dkey(); t = queueAct(p, s, a, date, toMin(timeVal), durVal); }
         rerender(); toast(t ? L(`📋 เพิ่มกิจกรรม + เข้าคิว ${fmtDate(t.date)} ${fmt(t.start)} แล้ว`, `📋 Activity added & queued for ${fmtDate(t.date)} ${fmt(t.start)}`) : L("🔹 เพิ่มกิจกรรมแล้ว", "🔹 Activity added"));
         setTimeout(() => document.getElementById(`fat-${s.id}`)?.focus(), 40);
       },
@@ -10069,8 +10522,8 @@
       f.dataset.id = d.id || "";
       f.dataset.name = d.name || "";
       f.dataset.pid = d.pid || "";
-      f.dataset.sid = d.sid || "";
-      f.dataset.aid = d.aid || "";
+      f.dataset.sid = d.sid || d.id || "";
+      f.dataset.aid = d.aid || d.id || "";
       f.dataset.tid = d.tid || "";
       f.dataset.sec = d.sec || "";
       f.dataset.key = d.key || "";
@@ -10130,12 +10583,40 @@
           <label class="field"><span>${L("หมวดหมู่", "Category")}</span><select class="input" name="cat" id="ei-txn-cat">${cOpts}</select></label>
           <label class="field full"><span>${L("รายละเอียด / โน้ต", "Note / Details")}</span><input class="input" name="note" value="${esc(x.note || "")}"></label>`;
       } else if (kind === "act") {
-        const [, , a] = findAct(d.pid, d.sid, d.aid);
-        if (!a) return;
+        const aid = d.aid || d.id;
+        const [p, s, a] = findAct(d.pid, d.sid, aid);
+        if (!a || !p || !s) return;
+        f.dataset.aid = a.id;
+        const qt = a.taskId ? state.tasks.find(t => t.id === a.taskId) : null;
+        const effDate = qt?.date || a.date || "";
+        const effTime = qt ? fmt(qt.start) : (a.time || suggestStart(effDate || dkey()));
+        const effDur = qt?.dur || a.dur || 60;
+        const effPrio = qt?.priority || a.priority || "main";
+        const durOpts = [15, 30, 45, 60, 90, 120, 180, 240].map(v => `<option value="${v}" ${Number(effDur) === v ? "selected" : ""}>${minLabel(v)}</option>`).join("");
+        const stepOpts = (p.steps || []).map(st => `<option value="${esc(st.id)}" ${st.id === s.id ? "selected" : ""}>🧭 ${esc(st.title)}</option>`).join("");
         headTitle = L("แก้ไขกิจกรรมย่อยในโปรเจค", "Edit Project Sub-activity");
         bodyHtml = `
-          <label class="field full"><span>${L("ชื่อกิจกรรมย่อย", "Activity title")}</span><input class="input" id="ei-title" name="title" required value="${esc(a.title)}"></label>
-          <label class="field full"><span>📅 ${L("วันที่กำหนด (ไม่บังคับ)", "Target date (optional)")}</span><input class="input" name="date" type="date" value="${esc(a.date || "")}"></label>`;
+          <label class="field full"><span>✏️ ${L("ชื่อกิจกรรมย่อย", "Activity title")}</span><input class="input" id="ei-title" name="title" required value="${esc(a.title)}"></label>
+          <label class="field full"><span>🧭 ${L("อยู่ในขั้นตอนหลัก (สามารถย้ายไปขั้นตอนอื่นได้)", "Belongs to Step (can move)")}</span><select class="input" name="targetStep">${stepOpts}</select></label>
+          <label class="field"><span>📅 ${L("วันที่กำหนด", "Target date")}</span><input class="input" name="date" type="date" value="${esc(effDate)}"></label>
+          <label class="field"><span>⏰ ${L("เวลาเริ่ม", "Start time")}</span><input class="input" name="time" type="time" value="${esc(effTime)}"></label>
+          <label class="field"><span>⏳ ${L("ระยะเวลาโฟกัส", "Duration")}</span><select class="input" name="dur">${durOpts}</select></label>
+          <label class="field"><span>⭐ ${L("ความสำคัญ", "Priority")}</span><select class="input" name="priority"><option value="main" ${effPrio === "main" ? "selected" : ""}>⭐ ${L("งานหลัก (Main)", "Main")}</option><option value="secondary" ${effPrio === "secondary" ? "selected" : ""}>${L("งานรอง (Secondary)", "Secondary")}</option></select></label>
+          <label class="mini-check full" style="padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+            <input type="checkbox" name="queue" value="1" ${qt ? "checked" : ""}>
+            <span>📋 ${qt ? L("ซิงค์อยู่ในคิวงานรายวัน (อัปเดตวัน-เวลาในหน้าคิวงานอัตโนมัติ • ติ๊กออกหากต้องการเอาออกจากคิว)", "Synced in Daily Queue (auto-updates date/time • uncheck to remove from queue)") : L("ส่งเข้าคิวงานรายวันด้วย (ตามวันและเวลาที่เลือกด้านบน)", "Send to Daily Queue (at selected date & time above)")}</span>
+          </label>`;
+      } else if (kind === "step") {
+        const [p, s] = findStep(d.pid, d.sid || d.id);
+        if (!p || !s) return;
+        f.dataset.sid = s.id;
+        headTitle = L("แก้ไขขั้นตอนหลักในโปรเจค", "Edit Project Step");
+        const stOpts = STEP_ORDER.map(k => `<option value="${k}" ${s.status === k ? "selected" : ""}>${STEP[k][0]}</option>`).join("");
+        bodyHtml = `
+          <label class="field full"><span>✏️ ${L("ชื่อขั้นตอนหลัก (Step / เฟสงาน)", "Step title")}</span><input class="input" id="ei-title" name="title" required value="${esc(s.title)}"></label>
+          <label class="field full"><span>🏷️ ${L("สถานะขั้นตอน", "Status")}</span><select class="input" name="status">${stOpts}</select></label>
+          <label class="field"><span>🚀 ${L("วันเริ่ม (แสดงบน Gantt)", "Start date")}</span><input class="input" name="start" type="date" value="${esc(s.start || "")}"></label>
+          <label class="field"><span>🏁 ${L("วันสิ้นสุด (แสดงบน Gantt)", "End date")}</span><input class="input" name="end" type="date" value="${esc(s.end || "")}"></label>`;
       } else if (kind === "link") {
         const p = proj(d.pid), l = p?.links?.find(x => x.id === d.id);
         if (!l) return;
@@ -11128,18 +11609,57 @@
           x.cat = fd.cat || "other";
           x.note = (fd.note || "").trim();
         } else if (kind === "act") {
-          const [p, s, a] = findAct(f.dataset.pid, f.dataset.sid, f.dataset.aid);
+          const aid = f.dataset.aid || f.dataset.id;
+          const [p, s, a] = findAct(f.dataset.pid, f.dataset.sid, aid);
           const title = (fd.title || "").trim();
-          if (!a || !title) return;
+          if (!a || !p || !s || !title) return;
           a.title = title;
           a.date = fd.date || "";
-          if (a.taskId) {
-            const t = state.tasks.find(k => k.id === a.taskId);
-            if (t) {
-              t.title = a.title;
-              if (a.date) t.date = a.date;
+          a.time = fd.time || a.time || "";
+          a.dur = Number(fd.dur) || a.dur || 60;
+          a.priority = fd.priority === "secondary" ? "secondary" : "main";
+          let activeStep = s;
+          if (fd.targetStep && fd.targetStep !== s.id) {
+            const dstStep = (p.steps || []).find(st => st.id === fd.targetStep);
+            if (dstStep) {
+              s.activities = (s.activities || []).filter(x => x.id !== a.id);
+              (dstStep.activities ||= []).push(a);
+              activeStep = dstStep;
+              state.openStep = dstStep.id;
             }
           }
+          const qt = a.taskId ? state.tasks.find(k => k.id === a.taskId) : null;
+          if (fd.queue) {
+            const qDate = a.date || qt?.date || dkey();
+            const qStart = fd.time ? toMin(fd.time) : (qt ? qt.start : toMin(suggestStart(qDate)));
+            const qDur = Number(fd.dur) || qt?.dur || 60;
+            if (qt) {
+              qt.title = a.title;
+              qt.date = qDate;
+              qt.start = qStart;
+              qt.dur = qDur;
+              qt.priority = a.priority;
+              qt.stepId = activeStep.id;
+            } else {
+              const newT = queueAct(p, activeStep, a, qDate, qStart, qDur);
+              newT.priority = a.priority;
+            }
+          } else if (qt) {
+            state.tasks = state.tasks.filter(k => k.id !== qt.id);
+            delete a.taskId;
+          }
+          autoSync(p, activeStep);
+        } else if (kind === "step") {
+          const [p, s] = findStep(f.dataset.pid, f.dataset.sid || f.dataset.id);
+          const title = (fd.title || "").trim();
+          if (!p || !s || !title) return;
+          s.title = title;
+          if (fd.status && STEP_ORDER.includes(fd.status)) {
+            s.status = fd.status;
+            if (s.status === "done") s.doneAt = Date.now(); else delete s.doneAt;
+          }
+          s.start = fd.start || "";
+          s.end = fd.end && fd.end >= (s.start || "") ? fd.end : (fd.end || "");
           autoSync(p, s);
         } else if (kind === "link") {
           const p = proj(f.dataset.pid), l = p?.links?.find(x => x.id === id);
@@ -11539,6 +12059,216 @@
         rerender();
         $("#workshop-dlg")?.close();
         toast(L("🎉 ยินดีด้วย! คุณตั้งค่าระบบหลักผ่าน Workshop ครบแล้ว (กดปุ่ม 🎓 ด้านบนเพื่อกลับมาตั้งค่าใหม่ได้ทุกเมื่อ)", "🎉 Congratulations! Workshop setup complete (click 🎓 in the top bar anytime to revisit)"));
+      },
+      projWizardSave: fd => {
+        const mode = fd.mode || "new";
+        const lines = String(fd.lines || "").split(/\r?\n/).map(s => s.replace(/^[\s•\-*\d.)]+/, "").trim()).filter(Boolean);
+        if (!lines.length) {
+          toast(L("กรุณากรอกอย่างน้อย 1 รายการ", "Please enter at least 1 line"));
+          return;
+        }
+        const today = dkey();
+        if (mode === "new") {
+          const title = (fd.title || "").trim();
+          if (!title) return;
+          const spanDays = Number(fd.stepSpanDays) || 0;
+          let curStart = fd.startDate || today;
+          const steps = lines.map((line, idx) => {
+            const s = { id: uid(), title: line, status: idx === 0 ? "doing" : "todo", activities: [], deps: [] };
+            if (spanDays > 0 && curStart) {
+              s.start = curStart;
+              s.end = addDays(curStart, Math.max(1, spanDays - 1));
+              curStart = addDays(s.end, 1);
+            }
+            return s;
+          });
+          if (fd.autoChain) {
+            steps.forEach((s, idx) => { if (idx > 0) s.deps = [steps[idx - 1].id]; });
+          }
+          const p = {
+            id: uid(),
+            title,
+            monthlyGoal: (fd.goal || "").trim(),
+            manual: 0,
+            coordinator: { name: (fd.coordName || "").trim(), contact: (fd.coordContact || "").trim() },
+            links: [],
+            steps
+          };
+          state.projects.unshift(p);
+          state.openProject = p.id;
+          state.openStep = steps[0]?.id || null;
+          state.tab = "projects";
+          state.projSub = "list";
+          $("#proj-wizard-dlg")?.close();
+          rerender();
+          toast(L(`🎉 สร้างโปรเจค "${trunc(title, 22)}" พร้อม ${steps.length} ขั้นตอนหลักเรียบร้อยแล้ว!`, `🎉 Created project "${trunc(title, 22)}" with ${steps.length} steps!`));
+        } else if (mode === "steps") {
+          const p = proj(fd.pid);
+          if (!p) return;
+          const spanDays = Number(fd.stepSpanDays) || 0;
+          let curStart = fd.startDate || today;
+          const prevLast = p.steps.at(-1);
+          const newSteps = lines.map(line => {
+            const s = { id: uid(), title: line, status: "todo", activities: [], deps: [] };
+            if (spanDays > 0 && curStart) {
+              s.start = curStart;
+              s.end = addDays(curStart, Math.max(1, spanDays - 1));
+              curStart = addDays(s.end, 1);
+            }
+            return s;
+          });
+          if (fd.autoChain) {
+            newSteps.forEach((s, idx) => {
+              if (idx === 0 && prevLast) s.deps = [prevLast.id];
+              else if (idx > 0) s.deps = [newSteps[idx - 1].id];
+            });
+          }
+          p.steps.push(...newSteps);
+          state.openProject = p.id;
+          state.openStep = newSteps[0]?.id || state.openStep;
+          $("#proj-wizard-dlg")?.close();
+          rerender();
+          toast(L(`🧭 เพิ่ม ${newSteps.length} ขั้นตอนหลักเข้าโปรเจค "${trunc(p.title, 20)}" เรียบร้อยแล้ว!`, `🧭 Added ${newSteps.length} steps to "${trunc(p.title, 20)}"!`));
+        } else if (mode === "acts") {
+          const [p, s] = findStep(fd.pid, fd.sid);
+          if (!p || !s) return;
+          s.activities ||= [];
+          let curDate = fd.startDate || today;
+          if (fd.spreadMode !== "sameday" && isOffDay(curDate)) {
+            curDate = nextWorkDay(addDays(curDate, -1));
+          }
+          const baseStartMin = fd.startTime ? toMin(fd.startTime) : toMin(suggestStart(curDate));
+          const durMin = Number(fd.dur) || 60;
+          let queuedCount = 0;
+          lines.forEach((line, idx) => {
+            let actDate = curDate;
+            let actStartMin = baseStartMin;
+            if (fd.spreadMode === "workday1") {
+              if (idx > 0) {
+                curDate = nextWorkDay(curDate);
+                actDate = curDate;
+              }
+            } else if (fd.spreadMode === "workday2") {
+              if (idx > 0 && idx % 2 === 0) {
+                curDate = nextWorkDay(curDate);
+              }
+              actDate = curDate;
+              if (idx % 2 === 1) actStartMin = Math.min(22 * 60, baseStartMin + durMin + 15);
+            } else {
+              actStartMin = Math.min(22 * 60, baseStartMin + idx * (durMin + 10));
+            }
+            const a = { id: uid(), title: line, date: actDate, time: fmt(actStartMin), dur: durMin, priority: "main", done: false };
+            s.activities.push(a);
+            if (fd.queue) {
+              queueAct(p, s, a, actDate, actStartMin, durMin);
+              queuedCount++;
+            }
+          });
+          state.openProject = p.id;
+          state.openStep = s.id;
+          $("#proj-wizard-dlg")?.close();
+          rerender();
+          toast(queuedCount
+            ? L(`🔹 เพิ่ม ${lines.length} กิจกรรมย่อย + ส่งเข้าคิวงานรายวันเรียบร้อยแล้ว!`, `🔹 Added ${lines.length} sub-activities & queued them!`)
+            : L(`🔹 เพิ่ม ${lines.length} กิจกรรมย่อยในขั้นตอน "${trunc(s.title, 20)}" แล้ว!`, `🔹 Added ${lines.length} sub-activities to "${trunc(s.title, 20)}"!`));
+        }
+      }
+    });
+    CHANGE.projWizProjChange = el => {
+      projWizState.pid = el.value;
+      const p = proj(el.value);
+      projWizState.sid = p?.steps?.[0]?.id || "";
+      renderProjWizardDlg();
+    };
+    Object.assign(A, {
+      toggleProjGuide: () => {
+        state.projGuideOpen = !(state.projGuideOpen !== false);
+        save();
+        renderView();
+        const el = $("#proj-guide");
+        if (el && state.projGuideOpen) el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      },
+      projGuideTab: d => {
+        state.projGuideSec = d.v || "flow";
+        state.projGuideOpen = true;
+        save();
+        renderView();
+      },
+      projQuickPreset: d => {
+        const tInp = $("#proj-title"), gInp = $("#proj-goal");
+        if (tInp && d.title) tInp.value = d.title;
+        if (gInp && d.goal) gInp.value = d.goal;
+        tInp?.focus();
+        toast(L("✨ เติมชื่อโปรเจคและเป้าหมายตัวอย่างแล้ว กด “＋ สร้างโปรเจค” ได้เลย", "✨ Pre-filled project name & goal — click Create Project"));
+      },
+      toggleStepDep: d => {
+        const [p, s] = findStep(d.pid, d.sid);
+        if (!p || !s || !d.dep) return;
+        s.deps = Array.isArray(s.deps) ? [...s.deps] : [];
+        const idx = s.deps.indexOf(d.dep);
+        if (idx >= 0) {
+          s.deps.splice(idx, 1);
+        } else {
+          if (reachable(p, d.dep, s.id)) {
+            toast(L("⚠️ ไม่สามารถเชื่อมโยงย้อนกลับเป็นวงวนได้", "⚠️ Cannot create a circular dependency"));
+            return;
+          }
+          s.deps.push(d.dep);
+        }
+        rerender();
+      },
+      stepDepPrev: d => {
+        const [p, s] = findStep(d.pid, d.sid);
+        if (!p || !s) return;
+        const si = p.steps.indexOf(s);
+        if (si > 0) {
+          const prev = p.steps[si - 1];
+          if (!reachable(p, prev.id, s.id)) {
+            s.deps = [prev.id];
+            rerender();
+            toast(L(`🔗 เชื่อมต่อจาก "${trunc(prev.title, 20)}" แล้ว`, `🔗 Linked after "${trunc(prev.title, 20)}"`));
+          }
+        }
+      },
+      stepDepClear: d => {
+        const [, s] = findStep(d.pid, d.sid);
+        if (!s) return;
+        s.deps = [];
+        rerender();
+        toast(L("🧹 ล้างเส้นเชื่อมของขั้นตอนนี้แล้ว", "🧹 Cleared step dependencies"));
+      },
+      autoChainSteps: d => {
+        const p = proj(d.pid);
+        if (!p || (p.steps || []).length < 2) return;
+        p.steps.forEach((s, i) => {
+          s.deps = i === 0 ? [] : [p.steps[i - 1].id];
+        });
+        rerender();
+        toast(L(`🔗 เรียงลำดับเส้นเชื่อม Flowchart ทั้ง ${p.steps.length} ขั้นตอน (1 ➔ 2 ➔ 3) เรียบร้อยแล้ว!`, `🔗 Connected all ${p.steps.length} steps sequentially for Flowchart!`));
+      },
+      openProjWizard: d => {
+        renderProjWizardDlg({ mode: d?.mode || "new", pid: d?.pid || state.openProject || "", sid: d?.sid || state.openStep || "" });
+        const dlg = $("#proj-wizard-dlg");
+        if (dlg && !dlg.open) dlg.showModal();
+      },
+      projWizMode: d => {
+        renderProjWizardDlg({ mode: d.v || "new" });
+      },
+      projWizTpl: d => {
+        const tpl = PROJ_WIZ_TEMPLATES[d.v];
+        if (!tpl) return;
+        const mode = projWizState.mode;
+        const tInp = $("#pw-title"), gInp = $("#pw-goal"), lInp = $("#pw-lines");
+        if (mode === "new") {
+          if (tInp) tInp.value = L(tpl.title[0], tpl.title[1]);
+          if (gInp) gInp.value = L(tpl.goal[0], tpl.goal[1]);
+          if (lInp) lInp.value = tpl.steps.map(x => L(x[0], x[1])).join("\n");
+        } else if (mode === "steps") {
+          if (lInp) lInp.value = tpl.steps.map(x => L(x[0], x[1])).join("\n");
+        } else {
+          if (lInp) lInp.value = tpl.acts.map(x => L(x[0], x[1])).join("\n");
+        }
+        toast(L(`✨ เติมข้อมูลตัวอย่าง "${L(tpl.label[0], tpl.label[1])}" ลงในฟอร์มแล้ว แก้ไขต่อได้ตามต้องการ`, `✨ Filled "${L(tpl.label[0], tpl.label[1])}" template into the form`));
       }
     });
 
