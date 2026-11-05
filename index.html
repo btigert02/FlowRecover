@@ -665,7 +665,14 @@
 
     .grid {
       display: grid;
-      gap: 14px
+      gap: 14px;
+      min-width: 0;
+      max-width: 100%
+    }
+
+    .grid > * {
+      min-width: 0;
+      max-width: 100%
     }
 
     .card {
@@ -673,7 +680,11 @@
       border: 1px solid var(--border);
       border-radius: var(--radius);
       padding: 18px;
-      box-shadow: var(--shadow)
+      box-shadow: var(--shadow);
+      min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word
     }
 
     .card h3 {
@@ -769,8 +780,15 @@
       overflow: hidden;
       display: grid;
       gap: 14px;
+      min-width: 0;
+      max-width: 100%;
       border: 1px solid rgba(245, 158, 11, .35);
       background: radial-gradient(500px 220px at 100% 0, rgba(245, 158, 11, .14), transparent 70%), var(--surface)
+    }
+
+    .cockpit > * {
+      min-width: 0;
+      max-width: 100%
     }
 
     .cockpit.interrupting {
@@ -786,11 +804,45 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px
+      gap: 8px;
+      flex-wrap: wrap
     }
 
     .cockpit-title {
-      font-size: 1.5rem
+      font-size: 1.35rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      word-break: break-word
+    }
+
+    .cockpit-task-block {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(245, 158, 11, .08);
+      border: 1px solid rgba(245, 158, 11, .28);
+      border-left: 4px solid var(--amber);
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+      max-width: 100%
+    }
+
+    .cockpit.idle .cockpit-task-block {
+      background: rgba(56, 189, 248, .08);
+      border-color: rgba(56, 189, 248, .26);
+      border-left-color: var(--sky)
+    }
+
+    .cockpit-task-block .cockpit-title {
+      font-size: 1.18rem;
+      margin: 0
+    }
+
+    .cockpit-task-block .cockpit-title.clamped {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
     }
 
     .big-timer {
@@ -986,45 +1038,69 @@
     .tasks {
       list-style: none;
       display: grid;
-      gap: 8px
+      gap: 10px;
+      min-width: 0;
+      max-width: 100%
     }
 
     .task {
       display: flex;
-      gap: 12px;
-      align-items: flex-start;
+      flex-direction: column;
+      gap: 8px;
+      align-items: stretch;
       padding: 12px;
       border-radius: 16px;
       background: var(--surface-2);
-      border: 1px solid transparent;
-      transition: border .2s, opacity .2s
+      border: 1px solid var(--border);
+      min-width: 0;
+      max-width: 100%;
+      transition: border .2s, opacity .2s, box-shadow .2s
     }
 
     .task.live {
-      border-color: rgba(245, 158, 11, .55);
-      background: linear-gradient(90deg, rgba(245, 158, 11, .1), var(--surface-2))
+      border-color: rgba(245, 158, 11, .6);
+      background: linear-gradient(90deg, rgba(245, 158, 11, .12), var(--surface-2));
+      box-shadow: 0 8px 22px -12px rgba(245, 158, 11, .45)
     }
 
     .task.done {
-      opacity: .55
+      opacity: .58
     }
 
     .task.done .task-title {
       text-decoration: line-through
     }
 
+    .task-head-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+      width: 100%
+    }
+
+    .task-head-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-width: 0;
+      flex: 1
+    }
+
     .check {
       flex: none;
-      width: 30px;
-      height: 30px;
-      border-radius: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
       border: 2px solid var(--muted);
       display: grid;
       place-items: center;
       font-weight: 800;
       color: #04150f;
-      transition: all .2s;
-      margin-top: 2px
+      transition: all .2s
     }
 
     .task.done .check,
@@ -1035,24 +1111,99 @@
 
     .task-main {
       flex: 1;
-      min-width: 0
+      min-width: 0;
+      width: 100%
     }
 
     .task-time {
       font-size: .8rem;
       color: var(--amber);
-      font-weight: 600
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap
+    }
+
+    .task-block-box {
+      width: 100%;
+      min-width: 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(245, 158, 11, .06);
+      border: 1px solid rgba(245, 158, 11, .22);
+      border-left: 3.5px solid var(--amber);
+      display: grid;
+      gap: 6px
+    }
+
+    .task.secondary-task .task-block-box {
+      background: rgba(56, 189, 248, .06);
+      border-color: rgba(56, 189, 248, .22);
+      border-left-color: var(--sky)
+    }
+
+    .task.rest-task .task-block-box {
+      background: rgba(16, 185, 129, .07);
+      border-color: rgba(16, 185, 129, .24);
+      border-left-color: var(--emerald)
+    }
+
+    .task.sleep-task .task-block-box {
+      background: rgba(99, 102, 241, .08);
+      border-color: rgba(129, 140, 248, .28);
+      border-left-color: #818cf8
     }
 
     .task-title {
       font-weight: 600;
-      margin: 2px 0 6px;
-      word-break: break-word
+      font-size: .92rem;
+      line-height: 1.5;
+      margin: 0;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      color: var(--text)
+    }
+
+    .task-title.clamped {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      cursor: pointer
+    }
+
+    .task-expand-btn {
+      justify-self: start;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .74rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 99px;
+      background: rgba(245, 158, 11, .14);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, .35);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .task-expand-btn:hover {
+      background: rgba(245, 158, 11, .24)
+    }
+
+    .task-expand-btn.on {
+      background: rgba(56, 189, 248, .15);
+      color: var(--sky);
+      border-color: rgba(56, 189, 248, .35)
     }
 
     .task-actions {
       display: flex;
-      gap: 2px
+      gap: 2px;
+      flex: none;
+      margin-left: auto
     }
 
     .form-grid {
@@ -2203,21 +2354,21 @@
 
     @media (min-width:860px) {
       .grid-2 {
-        grid-template-columns: 1.35fr 1fr;
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
         align-items: start
       }
 
       .grid-2b {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         align-items: start
       }
 
       .dims {
-        grid-template-columns: repeat(3, 1fr)
+        grid-template-columns: repeat(3, minmax(0, 1fr))
       }
 
       .guide-layout {
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 320px minmax(0, 1fr);
         align-items: start
       }
     }
@@ -3099,7 +3250,7 @@
       sub: { subscription_status: "trial", trial_start_at: Date.now() },
       theme: "dark", tab: "focus", plannerSec: "cg", projSub: "list", guideTopic: 0,
       queueDate: null, plannerDate: null, openProject: null, restTab: "break",
-      ideas: [], tasks: [], routines: [], projects: [],
+      ideas: [], tasks: [], routines: [], projects: [], deletedTaskIds: [], expandedTasks: {},
       focus: { interrupt: null, log: [], lastReflow: null, rest: null, sleep: null },
       alerts: { topic: "", sound: true, vibrate: true, notify: false, lead: 0, fired: {}, digest: { on: true, mode: "evening", time: "17:00" } },
       offDays: { weekdays: [], dates: {}, work: {} },
@@ -3186,15 +3337,186 @@
         return r.ok;
       } catch { return false; }
     }
-    function save() {
+    let lastLocalMutationAt = 0;
+    let isApplyingCloudSnapshot = false;
+    function saveLocalOnly() {
       try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) { console.warn(e); }
-      if (fb && state.user && !state.user.demo) { clearTimeout(cloudTimer); cloudTimer = setTimeout(cloudSave, 1200); }
+    }
+    function save() {
+      lastLocalMutationAt = Date.now();
+      state.lastModifiedAt = lastLocalMutationAt;
+      saveLocalOnly();
+      if (!isApplyingCloudSnapshot && fb && state.user && !state.user.demo) {
+        clearTimeout(cloudTimer);
+        cloudTimer = setTimeout(cloudSave, 900);
+      }
     }
     async function cloudSave() {
+      if (!fb || !state.user || state.user.demo) return;
       try {
-        const { user, sub, queueDate, plannerDate, openProject, ...rest } = state;
-        await fb.setDoc(fb.doc(fb.db, "users", state.user.uid, "data", "main"), { payload: JSON.stringify(rest), updated_at: fb.serverTimestamp() });
+        const { user, sub, queueDate, plannerDate, openProject, expandedTasks, ...rest } = state;
+        rest.lastModifiedAt = state.lastModifiedAt || Date.now();
+        await fb.setDoc(fb.doc(fb.db, "users", state.user.uid, "data", "main"), {
+          payload: JSON.stringify(rest),
+          updated_at: fb.serverTimestamp(),
+          client_ts: rest.lastModifiedAt
+        });
       } catch (e) { console.warn("cloud save failed", e); }
+    }
+    function mergeByIdList(remoteArr = [], localArr = [], deletedSet = new Set(), isTask = false) {
+      const map = new Map();
+      const put = (item, fromLocal) => {
+        if (!item || !item.id || deletedSet.has(item.id)) return;
+        const prev = map.get(item.id);
+        if (!prev) {
+          map.set(item.id, item);
+          return;
+        }
+        const tNew = Number(item.updatedAt) || 0;
+        const tOld = Number(prev.updatedAt) || 0;
+        if (tNew > tOld) {
+          map.set(item.id, item);
+        } else if (tNew === tOld && isTask) {
+          // If one version rolled the task forward to a newer date or marked it done, keep the more progressed state
+          if ((item.date || "") > (prev.date || "") || (item.done && !prev.done)) {
+            map.set(item.id, item);
+          } else if (fromLocal && (item.date || "") === (prev.date || "")) {
+            map.set(item.id, item);
+          }
+        }
+      };
+      (Array.isArray(remoteArr) ? remoteArr : []).forEach(x => put(x, false));
+      (Array.isArray(localArr) ? localArr : []).forEach(x => put(x, true));
+      return [...map.values()];
+    }
+    function mergeCloudAndLocalState(remoteRaw, localRaw) {
+      const remote = remoteRaw && typeof remoteRaw === "object" ? remoteRaw : {};
+      const local = localRaw && typeof localRaw === "object" ? localRaw : {};
+      const remoteTs = Number(remote.lastModifiedAt) || 0;
+      const localTs = Number(local.lastModifiedAt) || 0;
+      const newer = localTs > remoteTs ? local : remote;
+      const older = localTs > remoteTs ? remote : local;
+      const delIds = [...new Set([...(remote.deletedTaskIds || []), ...(local.deletedTaskIds || [])])].slice(-300);
+      const delSet = new Set(delIds);
+      const mergedTasks = mergeByIdList(remote.tasks, local.tasks, delSet, true);
+      const mergedProjects = mergeByIdList(remote.projects, local.projects, new Set(), false);
+      const mergedRoutines = mergeByIdList(remote.routines, local.routines, new Set(), false);
+      const mergedIdeas = mergeByIdList(remote.ideas, local.ideas, new Set(), false);
+      return {
+        ...older,
+        ...newer,
+        tasks: mergedTasks,
+        projects: mergedProjects,
+        routines: mergedRoutines,
+        ideas: mergedIdeas,
+        deletedTaskIds: delIds,
+        recovered20261105_v2: Boolean(remote.recovered20261105_v2 || local.recovered20261105_v2),
+        planner: {
+          ...(older.planner || {}),
+          ...(newer.planner || {}),
+          daily: { ...(older.planner?.daily || {}), ...(newer.planner?.daily || {}) },
+          monthly: { ...(older.planner?.monthly || {}), ...(newer.planner?.monthly || {}) },
+          goals: { ...(older.planner?.goals || {}), ...(newer.planner?.goals || {}) }
+        }
+      };
+    }
+    function reconcileAndRecoverTasks() {
+      if (!state || !Array.isArray(state.tasks)) return false;
+      state.deletedTaskIds ||= [];
+      const delSet = new Set(state.deletedTaskIds);
+      let changed = false;
+
+      // 1. Ensure any project sub-activity that has a queued taskId is present in state.tasks
+      (state.projects || []).forEach(p => {
+        (p.steps || []).forEach(s => {
+          (s.activities || []).forEach(a => {
+            if (!a || !a.taskId || delSet.has(a.taskId)) return;
+            const exists = state.tasks.some(t => t.id === a.taskId);
+            if (!exists && a.date) {
+              state.tasks.push({
+                id: a.taskId,
+                title: a.title,
+                date: a.date,
+                start: a.time ? toMin(a.time) : 9 * 60,
+                dur: Number(a.dur) || 60,
+                projectId: p.id,
+                stepId: s.id,
+                actId: a.id,
+                priority: a.priority || "main",
+                done: !!a.done,
+                bookmark: "",
+                updatedAt: Date.now()
+              });
+              changed = true;
+            }
+          });
+        });
+      });
+
+      // 2. Restore the 2 tasks from 2026-11-05 (06:00 mobile snapshot) that were overwritten by stale desktop sync
+      const targetDate = "2026-11-05";
+      const hasRealData = (state.projects && state.projects.length > 0) || (state.tasks && state.tasks.length > 0);
+      if (!state.recovered20261105_v2 && hasRealData) {
+        const stockTitle = "อัพเดท ระบบ StockScreener การวิเคราะห์ หุ้น เอา Stage 2 Pullback - ดักยิงหุ้นย่อลึกที่กำลังกลับตัว จัดทำผลการวิเคราะห์มาให้ใน วิเคราะห์ข้อมูล เพิ่มหัวข้อวิเคราะห์ 56756 ให้ประมวล ผลให้ ปรับหน้าตาใหม่";
+        const hasStockTask = state.tasks.some(t => /StockScreener|Stage\s*2\s*Pullback/i.test(t.title || ""));
+        if (!hasStockTask) {
+          let stockProj = (state.projects || []).find(p => /Stockscreen|วิเคราะห์หุ้น|ดูแล\s*ปรับปรุง\s*เว็บไซต์/i.test(p.title || ""));
+          let stockStep = null;
+          if (stockProj) {
+            stockStep = (stockProj.steps || []).find(s => /Stockscreen|วิเคราะห์หุ้น/i.test(s.title || "")) || stockProj.steps?.[0] || null;
+          } else {
+            for (const p of (state.projects || [])) {
+              const st = (p.steps || []).find(s => /Stockscreen|วิเคราะห์หุ้น/i.test(s.title || ""));
+              if (st) { stockProj = p; stockStep = st; break; }
+            }
+          }
+          const newTask = {
+            id: uid(),
+            title: stockTitle,
+            date: targetDate,
+            start: 13 * 60 + 30,
+            dur: 60,
+            projectId: stockProj ? stockProj.id : null,
+            priority: "main",
+            done: false,
+            bookmark: "",
+            updatedAt: Date.now()
+          };
+          if (stockStep) newTask.stepId = stockStep.id;
+          state.tasks.push(newTask);
+          changed = true;
+        }
+
+        const sysTitle = "จัดเวลา เซต ระบบ ที่วางแผนไว้ เข้าในคิวงาน ตามแผน และกิจวัตร";
+        const existingSysTask = state.tasks.find(t => /จัดเวลา\s*เซต\s*ระบบ/.test(t.title || "") && !t.done);
+        if (existingSysTask) {
+          if (existingSysTask.date < targetDate) {
+            existingSysTask.date = targetDate;
+            existingSysTask.start = 14 * 60 + 30;
+            existingSysTask.dur = existingSysTask.dur || 60;
+            existingSysTask.updatedAt = Date.now();
+            changed = true;
+          }
+        } else if (!state.tasks.some(t => /จัดเวลา\s*เซต\s*ระบบ/.test(t.title || ""))) {
+          state.tasks.push({
+            id: uid(),
+            title: sysTitle,
+            date: targetDate,
+            start: 14 * 60 + 30,
+            dur: 60,
+            projectId: null,
+            priority: "main",
+            done: false,
+            bookmark: "",
+            updatedAt: Date.now()
+          });
+          changed = true;
+        }
+        state.recovered20261105_v2 = true;
+        changed = true;
+      }
+
+      return changed;
     }
 
     /* ===================== Meta Pixel (ad conversion tracking) ===================== */
@@ -4411,7 +4733,7 @@
         <div class="row" style="justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
           <div style="min-width:0;flex:1">
             <b>⏪ ${L(`พบงานค้างจากวันก่อนหน้า ${ov.length} งาน`, `${ov.length} overdue task(s) from previous days`)}</b>
-            <div class="muted sm" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ov.slice(0, 3).map(t => `• ${esc(t.title)} (${fmtDate(t.date)})`).join(" ")}</div>
+            <div class="muted sm" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;margin-top:2px">${ov.slice(0, 3).map(t => `• ${esc(trunc(t.title, 70))} (${fmtDate(t.date)})`).join(" ")}</div>
           </div>
           <button type="button" class="btn btn-sm btn-amber" data-act="rolloverOverdue" id="btn-rollover-overdue">⏩ ${L(`ดึงมาทำวันนี้ทั้งหมด (${ov.length} งาน)`, `Rollover all ${ov.length} to Today`)}</button>
         </div>
@@ -4449,15 +4771,20 @@
           <span class="chip chip-violet">🎯 Monthly Focus ${L("คงเหลือ", "open")}: <b>${openMf.length}</b></span>
         </div>
         ${!isEvening ? `
-          ${mits.length ? `<div style="display:grid;gap:5px;margin:8px 0;padding:8px 10px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
+          ${mits.length ? `<div style="display:grid;gap:6px;margin:8px 0;padding:10px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)">
             <div class="sm" style="font-weight:700;color:var(--amber)">⭐ ${L("3 งานหลักที่ต้องทำให้สำเร็จวันนี้ (Top 3 Main Tasks):", "Top 3 Main Tasks for Today:")}</div>
-            ${mits.map((t, idx) => `<div class="row" style="justify-content:space-between;align-items:center;gap:6px;font-size:.84rem">
-              <div class="row" style="gap:6px;align-items:center;min-width:0;flex:1">
-                <button type="button" class="check ${t.done ? "done" : ""}" data-act="toggleTask" data-id="${t.id}" style="width:20px;height:20px;font-size:.72rem">${t.done ? "✓" : idx + 1}</button>
-                <span style="${t.done ? "text-decoration:line-through;opacity:.6" : "font-weight:600"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.title)}</span>
-              </div>
-              <span class="mono muted sm" style="flex:none">${fmt(t.start)} (${minLabel(t.dur)})</span>
-            </div>`).join("")}
+            ${mits.map((t, idx) => {
+              const isLongMit = (t.title || "").length > 80;
+              const isExpMit = !!state.expandedTasks?.["mit_" + t.id];
+              return `<div style="display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:8px;align-items:start;font-size:.84rem;padding:7px 9px;border-radius:10px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--amber)">
+                <button type="button" class="check ${t.done ? "done" : ""}" data-act="toggleTask" data-id="${t.id}" style="width:20px;height:20px;font-size:.72rem;margin-top:1px">${t.done ? "✓" : idx + 1}</button>
+                <div style="min-width:0">
+                  <div style="${t.done ? "text-decoration:line-through;opacity:.6" : "font-weight:600"};line-height:1.45;word-break:break-word;overflow-wrap:anywhere;${isLongMit && !isExpMit ? "display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden" : ""}">${esc(t.title)}</div>
+                  ${isLongMit ? `<button type="button" class="task-expand-btn" data-act="toggleTaskExpand" data-id="mit_${t.id}" style="margin-top:4px">${isExpMit ? "🔼 " + L("ย่อข้อความ", "Show less") : "🔽 " + L("อ่านเพิ่มเติม", "Read more")}</button>` : ""}
+                </div>
+                <span class="mono muted sm" style="white-space:nowrap;font-size:.74rem;padding-top:2px">${fmt(t.start)} (${minLabel(t.dur)})</span>
+              </div>`;
+            }).join("")}
           </div>` : `<p class="muted sm" style="margin:6px 0">💡 ${L("ยังไม่มีงานหลักในคิววันนี้ — ดึงจาก Monthly Focus ด้านล่าง หรือเพิ่มในหน้าคิวงานได้เลย", "No main tasks queued yet — pull from Monthly Focus below or add in Queue")}</p>`}
           ${openMf.length ? `<div class="row" style="gap:6px;flex-wrap:wrap;align-items:center;padding:8px 10px;border-radius:10px;background:var(--surface-2);font-size:.82rem">
             <b class="amber">🎯 ${L("ดึงจาก Monthly Focus เข้าคิววันนี้:", "Quick-queue from Monthly Focus:")}</b>
@@ -4569,7 +4896,9 @@
         <span class="pill ${Pomo.paused ? "pill-sky" : "pill-amber pulse-dot"}">${Pomo.paused ? "⏸️ " + L("หยุดพักเวลา Pomodoro ชั่วคราว", "Pomodoro Paused") : "🍅 " + L(`กำลังจับเวลาโฟกัส (${Pomo.durMins} นาที)`, `Pomodoro Focus (${Pomo.durMins} min)`)}</span>
         <span class="muted mono sm">${Pomo.paused ? L("พักเวลาไว้", "Paused") : L("ครบเวลา", "Until") + " " + fmtClock(Pomo.targetEndMs)}</span>
       </div>
-      <h2 class="cockpit-title">${esc(Pomo.title || L("🍅 โฟกัส Pomodoro", "🍅 Pomodoro Focus"))}</h2>
+      <div class="cockpit-task-block">
+        <h2 class="cockpit-title">${esc(Pomo.title || L("🍅 โฟกัส Pomodoro", "🍅 Pomodoro Focus"))}</h2>
+      </div>
       <div>
         <div class="big-timer" id="pomo-timer">${fmtDur(remainSec)}</div>
         <p class="muted center sm" style="margin:6px 0 10px">${Pomo.paused ? L("หยุดเวลาไว้ชั่วคราว — กด “▶️ ทำต่อ” เมื่อพร้อม หรือกด “⏹️ หยุด Pomodoro” เพื่อจบการทำงาน", "Timer paused — tap Resume to continue or Stop to end") : L("สามารถกดพักเวลาชั่วคราว หรือกดหยุดเมื่อต้องการได้ทุกเมื่อ", "You can pause or stop this timer anytime")}</p>
@@ -4589,11 +4918,16 @@
         cockpit = offDayCockpit(today);
       } else if (cur) {
         const p = proj(cur.projectId);
+        const curIsLong = (cur.title || "").length > 85;
+        const curExpanded = !!state.expandedTasks?.["ck_" + cur.id];
         cockpit = `<article class="card cockpit" id="cockpit">
       <div class="cockpit-top"><span class="pill pill-amber">⚡ ${L("กำลังโฟกัส", "Focusing")}</span><span class="muted mono sm">${fmt(cur.start)}–${fmt(cur.start + cur.dur)}</span></div>
-      <h2 class="cockpit-title">${esc(cur.title)}</h2>
-      <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(p.title)}</span>` : `<span class="chip">📌 ${L("งานทั่วไป", "General task")}</span>`}${prioChip(cur)}</div>
-      ${cur.bookmark ? `<div class="bookmark-note">📌 ${L("ทำค้างไว้ล่าสุด", "Last bookmark")}: ${esc(cur.bookmark)}</div>` : ""}
+      <div class="cockpit-task-block">
+        <h2 class="cockpit-title ${curIsLong && !curExpanded ? "clamped" : ""}">${esc(cur.title)}</h2>
+        ${curIsLong ? `<div><button type="button" class="task-expand-btn" data-act="toggleTaskExpand" data-id="ck_${cur.id}">${curExpanded ? "🔼 " + L("ย่อข้อความ", "Show less") : "🔽 " + L("ขยายอ่านรายละเอียดทั้งหมด", "Read full description")}</button></div>` : ""}
+        <div class="chips">${p ? `<span class="chip chip-violet">🗂️ ${esc(p.title)}</span>` : `<span class="chip">📌 ${L("งานทั่วไป", "General task")}</span>`}${prioChip(cur)}</div>
+        ${cur.bookmark ? `<div class="bookmark-note">📌 ${L("ทำค้างไว้ล่าสุด", "Last bookmark")}: ${esc(cur.bookmark)}</div>` : ""}
+      </div>
       <div><div class="big-timer" id="cd">--:--</div><p class="muted center sm" style="margin:6px 0 10px">${L("เวลาคงเหลือของบล็อกนี้", "Time left in this block")}</p><div class="bar"><i id="cd-bar"></i></div></div>
       <div class="row" style="gap:8px;margin-bottom:8px">
         <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1.2;min-width:130px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
@@ -4601,15 +4935,21 @@
         <button class="btn btn-indigo btn-xl sleep-btn grow" data-act="openRestDlg" data-tab="sleep" id="btn-sleep" style="flex:1;min-width:110px">🌙 ${L("เข้านอน", "Sleep")}</button>
       </div>
       <div class="row"><button class="btn grow" data-act="toggleTask" data-id="${cur.id}" id="btn-done-current">✅ ${L("เสร็จแล้ว", "Done")}</button><button class="btn" data-act="editTask" data-id="${cur.id}" id="btn-edit-current">✏️ ${L("แก้ไข", "Edit")}</button><button class="btn grow" data-act="tomorrow" data-id="${cur.id}" id="btn-defer-current">➡️ ${L("ไปพรุ่งนี้", "Tomorrow")}</button></div>
-      ${nxt ? `<div class="row" style="justify-content:space-between;align-items:center;gap:8px;margin-top:8px;padding:8px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border);flex-wrap:wrap"><span class="muted sm" style="min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">⏭️ ${L("งานถัดไป", "Up next")} (${fmt(nxt.start)}): <b style="color:var(--text)">${esc(nxt.title)}</b></span><button type="button" class="btn btn-sm btn-emerald" data-act="startTaskNow" data-id="${nxt.id}" id="btn-start-next-early">▶️ ${L("เริ่มตอนนี้", "Start now")}</button></div>` : ""}
+      ${nxt ? `<div style="display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;margin-top:6px;padding:8px 12px;border-radius:12px;background:var(--surface-2);border:1px solid var(--border)"><div class="muted sm" style="min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word">⏭️ ${L("งานถัดไป", "Up next")} (${fmt(nxt.start)}): <b style="color:var(--text)">${esc(nxt.title)}</b></div><button type="button" class="btn btn-sm btn-emerald" data-act="startTaskNow" data-id="${nxt.id}" id="btn-start-next-early">▶️ ${L("เริ่มตอนนี้", "Start now")}</button></div>` : ""}
     </article>`;
       } else {
         const upNextTask = nxt || tasksOn(today).find(t => !t.done && !t.isSleep);
+        const nxtIsLong = upNextTask && (upNextTask.title || "").length > 85;
+        const nxtExpanded = upNextTask && !!state.expandedTasks?.["ck_" + upNextTask.id];
         cockpit = `<article class="card cockpit idle" id="cockpit">
       <div class="cockpit-top"><span class="pill">☕ ${L("ช่วงว่าง", "Free time")}</span><span class="muted sm">${fmtDate(today)}</span></div>
-      <h2 class="cockpit-title">${upNextTask ? L("งานถัดไป: ", "Up next: ") + esc(upNextTask.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
+      <div class="cockpit-task-block">
+        <div class="muted sm" style="font-weight:700;color:var(--amber)">${upNextTask ? `⏭️ ${L("งานถัดไปในคิว", "Next Task in Queue")} (${fmt(upNextTask.start)}–${fmt(upNextTask.start + upNextTask.dur)})` : `🎉 ${L("คิวงานวันนี้", "Today's Queue")}`}</div>
+        <h2 class="cockpit-title ${nxtIsLong && !nxtExpanded ? "clamped" : ""}">${upNextTask ? esc(upNextTask.title) : L("ไม่มีคิวงานที่เหลือวันนี้ 🎉", "Nothing left in today's queue 🎉")}</h2>
+        ${nxtIsLong ? `<div><button type="button" class="task-expand-btn" data-act="toggleTaskExpand" data-id="ck_${upNextTask.id}">${nxtExpanded ? "🔼 " + L("ย่อข้อความ", "Show less") : "🔽 " + L("ขยายอ่านรายละเอียดทั้งหมด", "Read full description")}</button></div>` : ""}
+      </div>
       ${nxt ? `<div><p class="muted center sm">${L(`เริ่ม ${fmt(nxt.start)} • อีก`, `Starts ${fmt(nxt.start)} • in`)}</p><div class="big-timer" id="cd">--:--</div></div>` : upNextTask ? `<p class="muted center sm">${L(`กำหนดไว้ ${fmt(upNextTask.start)}–${fmt(upNextTask.start + upNextTask.dur)} • กด “▶️ เริ่มตอนนี้” เพื่อดึงมาเริ่มทำทันที`, `Scheduled ${fmt(upNextTask.start)}–${fmt(upNextTask.start + upNextTask.dur)} • Tap “▶️ Start now” to begin immediately`)}</p>` : `<p class="muted">${L("เพิ่มงานใหม่ หรือพักผ่อนให้เต็มที่ 🌿", "Add a task, or enjoy your rest 🌿")}</p>`}
-      ${upNextTask ? `<button class="btn btn-emerald btn-xl" data-act="startTaskNow" data-id="${upNextTask.id}" id="btn-start-next-now" style="width:100%;margin-bottom:8px;font-weight:800;box-shadow:0 8px 24px rgba(16,185,129,.22)">▶️ ${L(`เริ่มตอนนี้ (${trunc(upNextTask.title, 28)})`, `Start Now (${trunc(upNextTask.title, 28)})`)}</button>` : ""}
+      ${upNextTask ? `<button class="btn btn-emerald btn-xl" data-act="startTaskNow" data-id="${upNextTask.id}" id="btn-start-next-now" style="width:100%;margin-bottom:8px;font-weight:800;box-shadow:0 8px 24px rgba(16,185,129,.22)">▶️ ${L(`เริ่มตอนนี้ (${trunc(upNextTask.title, 26)})`, `Start Now (${trunc(upNextTask.title, 26)})`)}</button>` : ""}
       <div class="row" style="gap:8px;margin-bottom:8px">
         <button class="btn btn-amber btn-xl interrupt-btn grow" data-act="interrupt" id="btn-interrupt" style="flex:1.2;min-width:130px">⏸️ ${L("มีงานด่วนแทรก!", "Urgent interruption!")}</button>
         <button class="btn btn-emerald btn-xl rest-btn grow" data-act="openRestDlg" data-tab="break" id="btn-rest" style="flex:1;min-width:110px">☕ ${L("พักผ่อน", "Break")}</button>
@@ -4658,7 +4998,7 @@
       </div>
       <div class="grid">
         <article class="card"><div class="card-head"><h3>📋 ${L("คิวที่เหลือวันนี้", "Remaining today")}</h3><button class="btn btn-sm" data-act="tab" data-tab="queue" id="btn-focus-queue">${L("ดูทั้งหมด", "View all")}</button></div>
-          ${remaining.length ? `<p class="sort-hint">↕️ ${L("ลากที่ ⠿ เพื่อสลับลำดับคิว", "Drag ⠿ to reorder")}</p><ul class="tasks" data-sort="queue:${today}">${remaining.slice(0, 5).map(taskRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานค้าง 🎉", "All clear 🎉")}</p>`}</article>
+          ${remaining.length ? `<p class="sort-hint">↕️ ${L("ลากที่ ⠿ เพื่อสลับลำดับคิว", "Drag ⠿ to reorder")}</p><ul class="tasks" data-sort="queue:${today}">${remaining.slice(0, 6).map(taskRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีงานค้าง 🎉", "All clear 🎉")}</p>`}</article>
         <article class="card"><h3>🔁 ${L("กิจวัตรวันนี้", "Today's routines")}</h3>
           ${dueR.length ? `<ul class="tasks">${dueR.map(routineRow).join("")}</ul>` : `<p class="empty">${L("ไม่มีกิจวัตรที่ถึงรอบวันนี้", "No routines due today")}</p>`}</article>
         ${offDaysCard()}
@@ -4753,22 +5093,54 @@
       const isSleep = t.isSleep || /นอน|sleep|bedtime|เข้านอน/i.test(t.title);
       const isRest = !isSleep && (t.isBreak || /พัก|break|nap|relax|coffee/i.test(t.title));
       const actMin = Number(t.actualMin) || 0;
+      const cleanTxt = String(t.title || "").replace(/^(☕|🌙)\s*/, "");
+      const isLongText = cleanTxt.length > 85;
+      const isExpanded = !!state.expandedTasks?.[t.id];
+      const blockAccent = isSleep
+        ? "border-left-color:#818cf8"
+        : isRest
+        ? "border-left-color:var(--emerald)"
+        : p
+        ? "border-left-color:var(--violet)"
+        : t.priority === "secondary"
+        ? "border-left-color:var(--sky)"
+        : "border-left-color:var(--amber)";
       return `<li class="task ${t.done ? "done" : ""} ${live ? "live" : ""} ${isSleep ? "sleep-task" : isRest ? "rest-task" : ""}" data-sort-id="${t.id}">
-    <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
-    <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
-    <div class="task-main"><div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span>${t.done && actMin ? ` <span class="chip ${actMin <= t.dur ? "chip-emerald" : "chip-amber"}" style="font-size:.68rem;padding:1px 6px">⏱️ ${L(`ใช้จริง ${minLabel(actMin)}`, `Actual ${minLabel(actMin)}`)}</span>` : ""} ${!t.done ? `<span style="display:inline-flex;gap:3px;margin-left:4px;flex-wrap:wrap;align-items:center">${!live && !isSleep ? `<button type="button" class="link sm" style="font-size:.7rem;padding:1px 6px;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.14);color:var(--emerald);border-radius:6px;font-weight:700" data-act="startTaskNow" data-id="${t.id}" title="${L("ดึงงานนี้มาเริ่มโฟกัสตอนนี้ทันที", "Pull this task to start right now")}">▶️ ${L("เริ่มตอนนี้", "Start now")}</button>` : ""}<button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
-      <div class="task-title">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(t.title.replace(/^(☕|🌙)\s*/, ""))}</div>
-      <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 22))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
-      ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}</div>
-    <div class="task-actions">${!t.done && !isSleep && !isRest ? `<button class="icon-btn" data-act="startTaskPomo" data-id="${t.id}" title="${L("เริ่มโฟกัส Pomodoro งานนี้ทันที", "Start Pomodoro for this task")}" aria-label="Start Pomodoro">🍅</button>` : ""}<button class="icon-btn" data-act="editTask" data-id="${t.id}" id="edt-${t.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
+    <div class="task-head-row">
+      <div class="task-head-left">
+        <span class="drag-handle" aria-hidden="true" title="${L("ลากเพื่อจัดลำดับ", "Drag to reorder")}">⠿</span>
+        <button class="check" data-act="toggleTask" data-id="${t.id}" id="chk-${t.id}" aria-label="${L("ทำเครื่องหมายว่าเสร็จ", "Mark as done")}">${t.done ? "✓" : ""}</button>
+        <div class="task-time mono">${fmt(t.start)}–${fmt(t.start + t.dur)} <span class="muted">· ${minLabel(t.dur)}</span>${t.done && actMin ? ` <span class="chip ${actMin <= t.dur ? "chip-emerald" : "chip-amber"}" style="font-size:.68rem;padding:1px 6px">⏱️ ${L(`ใช้จริง ${minLabel(actMin)}`, `Actual ${minLabel(actMin)}`)}</span>` : ""} ${!t.done ? `<span style="display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center">${!live && !isSleep ? `<button type="button" class="link sm" style="font-size:.7rem;padding:1px 6px;border:1px solid rgba(16,185,129,.45);background:rgba(16,185,129,.14);color:var(--emerald);border-radius:6px;font-weight:700" data-act="startTaskNow" data-id="${t.id}" title="${L("ดึงงานนี้มาเริ่มโฟกัสตอนนี้ทันที", "Pull this task to start right now")}">▶️ ${L("เริ่มตอนนี้", "Start now")}</button>` : ""}<button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="-15" title="${L("เลื่อนเวลาเร็วขึ้น 15 นาที", "Earlier 15m")}">-15${L("น.", "m")}</button><button type="button" class="link sm" style="font-size:.7rem;padding:0 4px;border:1px solid var(--border);border-radius:6px" data-act="shiftTaskTime" data-id="${t.id}" data-v="15" title="${L("เลื่อนเวลาออกไป 15 นาที", "Later 15m")}">+15${L("น.", "m")}</button></span>` : ""}</div>
+      </div>
+      <div class="task-actions">${!t.done && !isSleep && !isRest ? `<button class="icon-btn" data-act="startTaskPomo" data-id="${t.id}" title="${L("เริ่มโฟกัส Pomodoro งานนี้ทันที", "Start Pomodoro for this task")}" aria-label="Start Pomodoro">🍅</button>` : ""}<button class="icon-btn" data-act="editTask" data-id="${t.id}" id="edt-${t.id}" title="${L("แก้ไข", "Edit")}" aria-label="${L("แก้ไขงาน", "Edit task")}">✏️</button><button class="icon-btn" data-act="tomorrow" data-id="${t.id}" id="tmr-${t.id}" title="${L("ย้ายไปวันถัดไป", "Move to next day")}" aria-label="${L("ย้ายไปวันถัดไป", "Move to next day")}">➡️</button><button class="icon-btn" data-act="delTask" data-id="${t.id}" id="del-${t.id}" title="${L("ลบ", "Delete")}" aria-label="${L("ลบงาน", "Delete task")}">🗑️</button></div>
+    </div>
+    <div class="task-main">
+      <div class="task-block-box" style="${blockAccent}">
+        <div class="task-title ${isLongText && !isExpanded ? "clamped" : ""}">${isSleep ? "🌙 " : isRest ? "☕ " : ""}${esc(cleanTxt)}</div>
+        ${isLongText ? `<div><button type="button" class="task-expand-btn" data-act="toggleTaskExpand" data-id="${t.id}">${isExpanded ? "🔼 " + L("ย่อข้อความ", "Show less") : "🔽 " + L("อ่านรายละเอียดทั้งหมด", "Read full details")}</button></div>` : ""}
+        <div class="chips">${isSleep ? `<span class="chip chip-indigo">🌙 ${L("เวลานอนหลับ", "Sleep & Recovery")}</span>` : isRest ? `<span class="chip chip-emerald">🌿 ${L("เวลาพักผ่อน", "Rest & Recharge")}</span>` : ""}${p ? `<span class="chip chip-violet">🗂️ ${esc(trunc(p.title, 24))}</span>` : ""}${stepChip(t)}${prioChip(t)}${t.gcalId ? `<span class="chip chip-sky" title="Google Calendar">📆</span>` : ""}${live ? `<span class="chip chip-amber">● ${L("กำลังทำ", "Now")}</span>` : ""}${overdue && !isSleep ? `<span class="chip chip-rose">${L("เลยเวลา", "Overdue")}</span>` : ""}${over && !isSleep ? `<span class="chip chip-rose">⚠️ ${L("เกิน 22:00", "Past 22:00")}</span>` : ""}</div>
+        ${t.bookmark && !t.done ? `<div class="bookmark-note sm">📌 ${esc(t.bookmark)}</div>` : ""}
+      </div>
+    </div>
   </li>`;
     }
     function routineRow(r) {
       const today = dkey(), on = !!r.log?.[today];
-      return `<li class="task ${on ? "done" : ""}"><button class="check ${on ? "on" : ""}" data-act="routineCheck" data-id="${r.id}" id="rchk-${r.id}" aria-label="${L("เช็กอินกิจวัตร", "Check in routine")}">${on ? "✓" : ""}</button>
-    <div class="task-main"><div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r)}</span></div><div class="task-title">${esc(r.title)}</div>
-    <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div></div>
-    <div class="task-actions"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redt-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button></div></li>`;
+      return `<li class="task ${on ? "done" : ""}">
+    <div class="task-head-row">
+      <div class="task-head-left">
+        <button class="check ${on ? "on" : ""}" data-act="routineCheck" data-id="${r.id}" id="rchk-${r.id}" aria-label="${L("เช็กอินกิจวัตร", "Check in routine")}">${on ? "✓" : ""}</button>
+        <div class="task-time mono">${r.time ? esc(r.time) : L("ทั้งวัน", "Any time")} <span class="muted">· ${freqLabel(r)}</span></div>
+      </div>
+      <div class="task-actions"><button class="icon-btn" data-act="editItem" data-kind="routine" data-id="${r.id}" id="redt-${r.id}" title="${L("แก้ไขกิจวัตร", "Edit routine")}" aria-label="${L("แก้ไขกิจวัตร", "Edit routine")}">✏️</button></div>
+    </div>
+    <div class="task-main">
+      <div class="task-block-box" style="border-left-color:var(--emerald)">
+        <div class="task-title">${esc(r.title)}</div>
+        <div class="chips"><span class="chip chip-amber">🔥 Streak ${streak(r)}</span><span class="chip chip-emerald">${L("สม่ำเสมอ", "Consistency")} ${consistency(r)}%</span></div>
+      </div>
+    </div>
+  </li>`;
     }
     function renderQueue() {
       const today = dkey(), date = state.queueDate || today, list = tasksOn(date);
@@ -5284,7 +5656,7 @@
         }
       });
 
-      if (changed) save();
+      if (changed) saveLocalOnly();
     }
 
     function cleanPlanTitle(s) {
@@ -8461,9 +8833,24 @@
         toast(L(`☕ แทรกเวลาพัก ${dur} นาทีเข้าคิวแล้ว`, `☕ Inserted ${dur} min break into queue`));
       },
       dismissReflow: () => { state.focus.lastReflow = null; rerender(); },
-      toggleTask: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.done = !t.done; rerender(); if (t.done) { toast(L("✅ เยี่ยม! +10 แต้ม Level Up", "✅ Nice! +10 Level Up points")); vibrate(40); } },
-      delTask: d => { if (!confirm(L("ลบงานนี้?", "Delete this task?"))) return; state.tasks = state.tasks.filter(x => x.id !== d.id); rerender(); },
-      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = addDays(t.date, 1); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
+      toggleTask: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.done = !t.done; t.updatedAt = Date.now(); rerender(); if (t.done) { toast(L("✅ เยี่ยม! +10 แต้ม Level Up", "✅ Nice! +10 Level Up points")); vibrate(40); } },
+      delTask: d => {
+        if (!confirm(L("ลบงานนี้?", "Delete this task?"))) return;
+        const removed = state.tasks.find(x => x.id === d.id);
+        state.tasks = state.tasks.filter(x => x.id !== d.id);
+        if (d.id) {
+          state.deletedTaskIds ||= [];
+          if (!state.deletedTaskIds.includes(d.id)) state.deletedTaskIds.push(d.id);
+        }
+        rerender();
+        if (removed) {
+          toast(L(`🗑️ ลบงาน "${trunc(removed.title, 22)}" แล้ว`, `🗑️ Deleted "${trunc(removed.title, 22)}"`), () => {
+            state.deletedTaskIds = (state.deletedTaskIds || []).filter(id => id !== removed.id);
+            state.tasks.push(removed);
+          });
+        }
+      },
+      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = addDays(t.date, 1); t.updatedAt = Date.now(); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
       moveSecondary: d => {
         const cur = currentTask(); let n = 0;
         state.tasks.forEach(t => { if (t.date === d.date && !t.done && t.priority === "secondary" && t !== cur) { t.date = addDays(d.date, 1); n++; } });
@@ -8577,7 +8964,7 @@
       idea: (fd, f) => { const text = (fd.idea || "").trim(); if (!text) return; state.ideas.push({ id: uid(), text, at: Date.now() }); f.reset(); f.querySelector("input").blur(); save(); renderTopbar(); toast(L("💡 เก็บไอเดียแล้ว — กลับไปโฟกัสต่อ!", "💡 Idea saved — back to focus!")); },
       addTask: fd => {
         const title = fd.title.trim(); if (!title) return;
-        state.tasks.push({ id: uid(), title, date: state.queueDate || dkey(), start: toMin(fd.start), dur: Number(fd.dur) || 60, projectId: fd.project || null, priority: fd.priority, done: false, bookmark: "" });
+        state.tasks.push({ id: uid(), title, date: state.queueDate || dkey(), start: toMin(fd.start), dur: Number(fd.dur) || 60, projectId: fd.project || null, priority: fd.priority, done: false, bookmark: "", updatedAt: Date.now() });
         rerender(); toast(L("＋ เพิ่มงานเข้าคิวแล้ว", "＋ Task added")); $("#task-title")?.focus();
       },
       addRoutine: fd => { const title = fd.title.trim(); if (!title) return; state.routines.push({ id: uid(), title, freq: fd.freq, time: fd.time || "", created: dkey(), log: {} }); rerender(); toast(L("🔁 สร้างกิจวัตรแล้ว", "🔁 Routine created")); },
@@ -10065,6 +10452,7 @@
       toggleTask: d => {
         _toggleTask(d);
         const t = state.tasks.find(x => x.id === d.id);
+        if (t) t.updatedAt = Date.now();
         if (t?.done && !t.actualMin) t.actualMin = t.dur || 30;
         if (t?.actId) {
           const [p, s, a] = findAct(t.projectId, t.stepId, t.actId);
@@ -10080,7 +10468,7 @@
           }
         }
       },
-      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = nextWorkDay(t.date); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
+      tomorrow: d => { const t = state.tasks.find(x => x.id === d.id); if (!t) return; t.date = nextWorkDay(t.date); t.updatedAt = Date.now(); rerender(); toast(L(`➡️ ย้าย "${trunc(t.title, 24)}" ไป ${fmtDate(t.date)}`, `➡️ Moved "${trunc(t.title, 24)}" to ${fmtDate(t.date)}`)); },
       moveSecondary: d => {
         const cur = currentTask(), to = nextWorkDay(d.date); let n = 0;
         state.tasks.forEach(t => { if (t.date === d.date && !t.done && t.priority === "secondary" && t !== cur) { t.date = to; n++; } });
@@ -12107,6 +12495,7 @@
         ov.forEach(t => {
           t.date = today;
           t.start = Math.min(23 * 60, nextSlot);
+          t.updatedAt = Date.now();
           nextSlot = Math.min(23 * 60 + 30, t.start + (t.dur || 30));
         });
         rerender();
@@ -12117,6 +12506,7 @@
         if (!t) return;
         const delta = Number(d.v) || 15;
         t.start = Math.max(0, Math.min(23 * 60 + 45, (t.start || 0) + delta));
+        t.updatedAt = Date.now();
         rerender();
         if (t.gcalId) gSyncChanges().catch(() => {});
         toast(L(`⏰ เลื่อนเวลา "${trunc(t.title, 20)}" เป็น ${fmt(t.start)} น.`, `⏰ Shifted "${trunc(t.title, 20)}" to ${fmt(t.start)}`));
@@ -12332,6 +12722,7 @@
         t.priority = fd.priority === "secondary" ? "secondary" : "main";
         t.projectId = fd.project || null;
         t.bookmark = (fd.bookmark || "").trim();
+        t.updatedAt = Date.now();
         if (fd.actualMin !== undefined && fd.actualMin !== "") {
           t.actualMin = Math.max(0, Number(fd.actualMin) || 0);
         } else {
@@ -13075,6 +13466,17 @@
         save();
         renderView();
       },
+      toggleTaskExpand: d => {
+        if (!d?.id) return;
+        state.expandedTasks ||= {};
+        if (state.expandedTasks[d.id]) {
+          delete state.expandedTasks[d.id];
+        } else {
+          state.expandedTasks[d.id] = true;
+        }
+        saveLocalOnly();
+        renderView();
+      },
       startTaskNow: d => {
         const today = dkey();
         const t = (d?.id && state.tasks.find(x => x.id === d.id)) || nextTask() || tasksOn(today).find(x => !x.done && !x.isSleep);
@@ -13089,9 +13491,11 @@
         if (cur && cur.id !== t.id) {
           prevCurStart = cur.start;
           cur.start = Math.min(23 * 60 + 45, nowM + (Number(t.dur) || 60));
+          cur.updatedAt = Date.now();
         }
         t.date = today;
         t.start = nowM;
+        t.updatedAt = Date.now();
         if (t.actId) {
           const [, , a] = findAct(t.projectId, t.stepId, t.actId);
           if (a) { a.date = today; a.time = fmt(nowM); }
@@ -13627,13 +14031,16 @@
           if (s.exists()) applyCloudStripeSettings(s.data());
         }, () => {});
       } catch {}
-      let unsub = null;
+      let unsub = null, unsubData = null;
       auth.onAuthStateChanged(fb.auth, async u => {
         unsub?.(); unsub = null;
-        if (!u) { state.user = null; save(); showAuth(); return; }
+        unsubData?.(); unsubData = null;
+        if (!u) { state.user = null; saveLocalOnly(); showAuth(); return; }
         const switched = state.user?.uid !== u.uid;
+        const localBeforeCloud = switched ? null : JSON.parse(JSON.stringify(state));
         state.user = { uid: u.uid, name: u.displayName || u.email, email: u.email, photo: u.photoURL || "" };
         const uref = fb.doc(fb.db, "users", u.uid);
+        const dref = fb.doc(fb.db, "users", u.uid, "data", "main");
         let isBrandNewUser = false;
         try {
           const snap = await fb.getDoc(uref);
@@ -13673,19 +14080,24 @@
             grantAdminLifetime(false);
           }
           unsub = fb.onSnapshot(uref, s => s.exists() && applyServerSub(s.data()));
-          const ds = await fb.getDoc(fb.doc(fb.db, "users", u.uid, "data", "main"));
+          const ds = await fb.getDoc(dref);
           if (ds.exists()) {
             const keep = { user: state.user, sub: state.sub, lang: state.lang || detectBrowserLang() };
-            state = hydrate({ ...JSON.parse(ds.data().payload || "{}"), ...keep });
+            const cloudParsed = JSON.parse(ds.data().payload || "{}");
+            const mergedPayload = localBeforeCloud ? mergeCloudAndLocalState(cloudParsed, localBeforeCloud) : cloudParsed;
+            state = hydrate({ ...mergedPayload, ...keep });
             state.lang = state.lang || detectBrowserLang();
             state.queueDate = dkey();
             state.plannerDate = dkey();
             if (state.finView) state.finView.date = dkey();
             if (state.habitView) state.habitView.date = dkey();
+            let needsCloudSync = false;
             if (!state.explicitSampleLoaded && (hasAnyRealUserData() || isUserAdmin())) {
               const removed = purgeSampleItemsOnly();
-              if (removed > 0) cloudSave();
+              if (removed > 0) needsCloudSync = true;
             }
+            if (reconcileAndRecoverTasks()) needsCloudSync = true;
+            if (needsCloudSync) cloudSave();
           } else {
             if (switched) {
               const keep = { user: state.user, sub: state.sub, theme: state.theme, lang: state.lang || detectBrowserLang() };
@@ -13699,11 +14111,39 @@
             if (isBrandNewUser && !isUserAdmin()) {
               seed(true);
             }
+            reconcileAndRecoverTasks();
             cloudSave();
           }
+          // Live-sync user data across mobile & desktop tabs so a stale tab never overwrites newer tasks
+          unsubData = fb.onSnapshot(dref, snapDoc => {
+            if (!snapDoc.exists() || snapDoc.metadata?.hasPendingWrites) return;
+            const dData = snapDoc.data() || {};
+            const remoteAt = Number(dData.updatedAt) || 0;
+            if (remoteAt && remoteAt <= (Number(state.updatedAt) || 0)) return;
+            if (document.activeElement?.closest?.("input, textarea, select, dialog[open]")) return;
+            try {
+              const remoteObj = JSON.parse(dData.payload || "{}");
+              const keep = {
+                user: state.user,
+                sub: state.sub,
+                lang: state.lang || detectBrowserLang(),
+                tab: state.tab,
+                queueDate: state.queueDate || dkey(),
+                plannerDate: state.plannerDate || dkey(),
+                expandedTasks: state.expandedTasks || {}
+              };
+              const merged = mergeCloudAndLocalState(remoteObj, state);
+              state = hydrate({ ...merged, ...keep, updatedAt: Math.max(remoteAt, Number(state.updatedAt) || 0) });
+              reconcileAndRecoverTasks();
+              saveLocalOnly();
+              renderTopbar();
+              renderView();
+            } catch {}
+          }, () => {});
         } catch (e) { console.error(e); toast(L("โหลดข้อมูลจากคลาวด์ไม่สำเร็จ — ใช้ข้อมูลในเครื่องชั่วคราว", "Couldn't load cloud data — using local data for now")); }
+        reconcileAndRecoverTasks();
         state.lang = state.lang || detectBrowserLang();
-        LANG = state.lang; save(); renderStatic(); showApp(isBrandNewUser && !isUserAdmin());
+        LANG = state.lang; saveLocalOnly(); renderStatic(); showApp(isBrandNewUser && !isUserAdmin());
       });
     }
 
@@ -13720,7 +14160,15 @@
       if (tick % 15 === 0) checkAlerts();
       if (tick % 30 === 0) { renderBanner(); checkPaywall(); }
     }, 1000);
-    document.addEventListener("visibilitychange", () => { if (!document.hidden && state.user) { renderBanner(); checkPaywall(); checkAlerts(); if (state.tab === "focus") renderView(); } });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && state.user) {
+        if (reconcileAndRecoverTasks()) save();
+        renderBanner();
+        checkPaywall();
+        checkAlerts();
+        if (state.tab === "focus" || state.tab === "queue") renderView();
+      }
+    });
 
     /* ---------- PWA Service Worker & Install Prompt ---------- */
     window.deferredPwaPrompt = null;
